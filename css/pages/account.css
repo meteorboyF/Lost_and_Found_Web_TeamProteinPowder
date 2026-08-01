@@ -1,7 +1,7 @@
 .account-head{padding-block:var(--sp-7) var(--sp-5);border-bottom:1px solid var(--line)}
 .account-head h1{font-size:clamp(2.7rem,7vw,5.5rem)}
-.account-grid{display:grid;gap:var(--sp-6);padding-block:var(--sp-7)}
-.account-nav{display:flex;gap:var(--sp-1);overflow:auto;border-bottom:1px solid var(--line)}
+.account-grid{display:grid;gap:var(--sp-6);padding-block:var(--sp-7)}.account-grid>*{min-width:0}.account-grid .state{max-width:100%;overflow-wrap:anywhere}
+.account-nav{display:flex;max-width:100%;gap:var(--sp-1);overflow-x:auto;border-bottom:1px solid var(--line)}
 .account-nav a{padding:var(--sp-3);white-space:nowrap;text-decoration:none;color:var(--fg-muted)}
 .account-nav a[aria-current='page']{color:var(--fg-primary);font-weight:var(--fw-bold);border-bottom:2px solid var(--accent-found)}
 .record-row{display:grid;gap:var(--sp-3);padding:var(--sp-4) 0;border-bottom:1px solid var(--line)}

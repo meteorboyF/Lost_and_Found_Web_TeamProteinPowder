@@ -36,3 +36,4 @@
 @import url('components/controls.css');
 
 @import url('utilities.css');
+@import url('pages/print.css') print;

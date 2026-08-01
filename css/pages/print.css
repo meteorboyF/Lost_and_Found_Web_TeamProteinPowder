@@ -1,0 +1,33 @@
+/* Shared print contract. Artefact-specific rules remain beside their pages. */
+@page { margin: 18mm; }
+
+@media print {
+  .masthead,
+  .footer,
+  .rail,
+  .account-nav,
+  .filter-panel,
+  .toast-region,
+  .no-print { display: none; }
+
+  .shell,
+  .workbench,
+  .flow-shell,
+  .detail-layout { display: block; }
+
+  main,
+  .workbench__main,
+  .container { max-width: none; padding: 0; }
+
+  .card,
+  .panel,
+  .certificate,
+  .success-ticket { break-inside: avoid; box-shadow: none; }
+
+  .item-grid { grid-template-columns: repeat(2, 1fr); }
+
+  .card__media,
+  .detail-media { max-height: 70mm; }
+
+  a[href^='http']::after { content: ' (' attr(href) ')'; }
+}

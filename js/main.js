@@ -128,6 +128,7 @@
     function setOpen(open) {
       nav.dataset.open = open ? 'true' : 'false';
       toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      toggle.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
     }
 
     toggle.addEventListener('click', function () {

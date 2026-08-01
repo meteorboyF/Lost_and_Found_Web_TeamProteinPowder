@@ -11,6 +11,7 @@
   display: grid;
   grid-template-rows: auto 1fr auto;
   min-height: 100svh;
+  overflow-x: clip;
 }
 
 .skip-link {
