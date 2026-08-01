@@ -1,0 +1,215 @@
+/* ==========================================================================
+   button.css
+   ========================================================================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-5);
+  min-height: 2.75rem;
+  border: var(--border-w) solid transparent;
+  border-radius: var(--r-2);
+  font-family: var(--font-ui);
+  font-size: var(--fs-200);
+  font-weight: var(--fw-bold);
+  line-height: 1;
+  letter-spacing: var(--tr-normal);
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--dur-1) var(--ease),
+              border-color var(--dur-1) var(--ease),
+              color var(--dur-1) var(--ease),
+              transform var(--dur-1) var(--ease);
+}
+
+.btn:active:not(:disabled):not([aria-disabled='true']) {
+  transform: translateY(1px);
+}
+
+.btn:disabled,
+.btn[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: 0.45;
+  transform: none;
+}
+
+/* Variants -------------------------------------------------------------- */
+
+.btn--primary {
+  background-color: var(--fg-primary);
+  border-color: var(--fg-primary);
+  color: var(--bg-surface);
+}
+
+.btn--primary:hover:not(:disabled):not([aria-disabled='true']) {
+  background-color: var(--accent-found);
+  border-color: var(--accent-found);
+  color: var(--c-white);
+}
+
+:root[data-theme='dark'] .btn--primary:hover:not(:disabled),
+.btn--primary:hover:not(:disabled) {
+  color: var(--btn-primary-hover-fg, var(--c-white));
+}
+
+.btn--secondary {
+  background-color: transparent;
+  border-color: var(--line-strong);
+  color: var(--fg-primary);
+}
+
+.btn--secondary:hover:not(:disabled):not([aria-disabled='true']) {
+  border-color: var(--fg-primary);
+  background-color: var(--bg-hover);
+}
+
+.btn--ghost {
+  background-color: transparent;
+  border-color: transparent;
+  color: var(--fg-secondary);
+}
+
+.btn--ghost:hover:not(:disabled):not([aria-disabled='true']) {
+  background-color: var(--bg-hover);
+  color: var(--fg-primary);
+}
+
+/* The one loud button in the system — reserved for reporting a loss. */
+.btn--urgent {
+  background-color: var(--accent-lost);
+  border-color: var(--accent-lost);
+  color: var(--c-white);
+}
+
+.btn--urgent:hover:not(:disabled):not([aria-disabled='true']) {
+  background-color: var(--c-lost);
+  filter: brightness(0.9);
+}
+
+:root[data-theme='dark'] .btn--urgent,
+:root[data-theme='dark'] .btn--urgent:hover:not(:disabled) {
+  color: var(--c-base-d);
+}
+
+.btn--danger {
+  background-color: transparent;
+  border-color: var(--accent-lost);
+  color: var(--accent-lost);
+}
+
+.btn--danger:hover:not(:disabled):not([aria-disabled='true']) {
+  background-color: var(--accent-lost-wash);
+  color: var(--accent-on-wash);
+}
+
+/* Sizes ----------------------------------------------------------------- */
+
+.btn--sm {
+  min-height: 2.125rem;
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--fs-100);
+}
+
+.btn--lg {
+  min-height: 3.25rem;
+  padding: var(--sp-4) var(--sp-6);
+  font-size: var(--fs-300);
+}
+
+.btn--block {
+  display: flex;
+  width: 100%;
+}
+
+/* Icon-only ------------------------------------------------------------- */
+
+.btn--icon {
+  padding: 0;
+  width: 2.75rem;
+  min-height: 2.75rem;
+  flex-shrink: 0;
+}
+
+.btn--icon.btn--sm { width: 2.125rem; min-height: 2.125rem; }
+.btn--icon.btn--lg { width: 3.25rem; min-height: 3.25rem; }
+
+/* Link-styled button — a real <button> that reads as inline text. */
+.btn-inline {
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+  text-decoration-color: var(--line-strong);
+  cursor: pointer;
+}
+
+.btn-inline:hover { text-decoration-color: currentColor; }
+
+/* Loading state — the label stays put so the button never resizes. */
+.btn[data-loading='true'] {
+  position: relative;
+  color: transparent;
+  pointer-events: none;
+}
+
+.btn[data-loading='true']::after {
+  content: '';
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 1em;
+  height: 1em;
+  margin: -0.5em 0 0 -0.5em;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  color: var(--bg-surface);
+  animation: btn-spin 700ms linear infinite;
+}
+
+.btn--secondary[data-loading='true']::after,
+.btn--ghost[data-loading='true']::after {
+  color: var(--fg-primary);
+}
+
+@keyframes btn-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn[data-loading='true']::after {
+    animation: none;
+    border-top-color: currentColor;
+    opacity: 0.5;
+  }
+}
+
+/* Button group — segmented control, shared hairlines. */
+.btn-group {
+  display: inline-flex;
+  border: var(--border-w) solid var(--line-strong);
+  border-radius: var(--r-2);
+  overflow: hidden;
+}
+
+.btn-group .btn {
+  border-radius: 0;
+  border-color: transparent;
+  border-inline-end: var(--border-w) solid var(--line);
+}
+
+.btn-group .btn:last-child { border-inline-end: 0; }
+
+.btn-group .btn[aria-pressed='true'],
+.btn-group .btn[aria-current='true'] {
+  background-color: var(--fg-primary);
+  color: var(--bg-surface);
+}

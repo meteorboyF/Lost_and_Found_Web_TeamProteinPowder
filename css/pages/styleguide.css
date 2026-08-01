@@ -1,0 +1,300 @@
+/* ==========================================================================
+   pages/styleguide.css — only loaded by the component library page
+   ========================================================================== */
+
+.sg {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 64em) {
+  .sg {
+    grid-template-columns: 14rem minmax(0, 1fr);
+    gap: var(--sp-8);
+  }
+}
+
+/* Contents rail */
+.sg__toc {
+  position: sticky;
+  top: 5rem;
+  align-self: start;
+  max-height: calc(100svh - 7rem);
+  overflow-y: auto;
+  padding-right: var(--sp-3);
+}
+
+@media (max-width: 63.99em) {
+  .sg__toc { display: none; }
+}
+
+.sg__toc-list { display: grid; gap: var(--sp-1); }
+
+.sg__toc a {
+  display: block;
+  padding: var(--sp-1) var(--sp-2);
+  border-left: 2px solid var(--line);
+  font-size: var(--fs-100);
+  text-decoration: none;
+  color: var(--fg-muted);
+  transition: border-color var(--dur-1) var(--ease),
+              color var(--dur-1) var(--ease);
+}
+
+.sg__toc a:hover {
+  border-left-color: var(--accent-found);
+  color: var(--fg-primary);
+}
+
+/* A demo block: hairline frame, label, and the specimen inside. */
+.spec {
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-2);
+  margin-bottom: var(--sp-5);
+  background-color: var(--bg-surface);
+}
+
+.spec__label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-4);
+  border-bottom: var(--border-w) solid var(--line);
+  background-color: var(--bg-sunken);
+  font-family: var(--font-mono);
+  font-size: var(--fs-100);
+  color: var(--fg-muted);
+}
+
+.spec__note {
+  font-family: var(--font-ui);
+  max-width: 46ch;
+  text-align: right;
+}
+
+.spec__stage {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-5);
+}
+
+.spec__stage--grid {
+  display: grid;
+  gap: var(--sp-4);
+}
+
+.spec__stage--block { display: block; }
+
+.spec__stage--dense { gap: var(--sp-2); }
+
+/* Swatches */
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: var(--sp-4);
+  width: 100%;
+}
+
+.swatch {
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-2);
+  overflow: hidden;
+}
+
+.swatch__chip {
+  height: 4.5rem;
+  border-bottom: var(--border-w) solid var(--line);
+}
+
+.swatch__meta {
+  display: grid;
+  gap: 2px;
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--fs-100);
+}
+
+.swatch__name { font-weight: var(--fw-bold); }
+
+.swatch__value {
+  font-family: var(--font-mono);
+  color: var(--fg-muted);
+}
+
+.swatch__ratio {
+  font-family: var(--font-mono);
+  color: var(--fg-muted);
+}
+
+/* Type specimen rows */
+.type-row {
+  display: grid;
+  gap: var(--sp-2);
+  padding-block: var(--sp-4);
+  border-bottom: var(--border-w) solid var(--line);
+}
+
+.type-row:last-child { border-bottom: 0; }
+
+.type-row__meta {
+  font-family: var(--font-mono);
+  font-size: var(--fs-100);
+  color: var(--fg-muted);
+}
+
+.type-row__sample {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Spacing ruler */
+.ruler { display: grid; gap: var(--sp-2); width: 100%; }
+
+.ruler__row {
+  display: grid;
+  grid-template-columns: 5rem 4rem 1fr;
+  align-items: center;
+  gap: var(--sp-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-100);
+  color: var(--fg-muted);
+}
+
+.ruler__bar {
+  height: 0.75rem;
+  background-color: var(--accent-found);
+  border-radius: 1px;
+}
+
+/* Status chip matrix */
+.chip-matrix {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: var(--sp-4);
+  width: 100%;
+}
+
+.chip-cell {
+  display: grid;
+  gap: var(--sp-2);
+  justify-items: start;
+  padding: var(--sp-3);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-2);
+}
+
+.chip-cell__key {
+  font-family: var(--font-mono);
+  font-size: var(--fs-100);
+  color: var(--fg-muted);
+}
+
+/* Icon grid */
+.icon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
+  gap: var(--sp-3);
+  width: 100%;
+}
+
+.icon-cell {
+  display: grid;
+  justify-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-2);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-2);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--fg-muted);
+  text-align: center;
+  word-break: break-all;
+}
+
+.icon-cell .icon { --icon-size: 1.5rem; color: var(--fg-primary); }
+
+/* Grid demo */
+.grid-demo > * {
+  padding: var(--sp-3);
+  border: var(--border-w) dashed var(--line-strong);
+  border-radius: var(--r-1);
+  background-color: var(--bg-sunken);
+  font-family: var(--font-mono);
+  font-size: var(--fs-100);
+  text-align: center;
+  color: var(--fg-muted);
+}
+
+/* Motion demo */
+.motion-box {
+  width: 3rem;
+  height: 3rem;
+  border-radius: var(--r-2);
+  background-color: var(--accent-found);
+  transition-property: transform;
+  transition-timing-function: var(--ease);
+}
+
+.spec__stage:hover .motion-box { transform: translateX(6rem); }
+
+.motion-box--1 { transition-duration: var(--dur-1); }
+.motion-box--2 { transition-duration: var(--dur-2); }
+.motion-box--3 { transition-duration: var(--dur-3); }
+.motion-box--4 { transition-duration: var(--dur-slow); }
+
+/* Shape / elevation specimens ------------------------------------------- */
+
+.demo-shape {
+  width: 5rem;
+  height: 3.5rem;
+  background-color: var(--bg-sunken);
+  border: var(--border-w) solid var(--line);
+}
+
+.demo-shape--0 { border-radius: var(--r-0); }
+.demo-shape--1 { border-radius: var(--r-1); }
+.demo-shape--2 { border-radius: var(--r-2); }
+.demo-shape--3 { border-radius: var(--r-3); }
+
+.demo-elev {
+  width: 9rem;
+  height: 4rem;
+  border-radius: var(--r-2);
+  background-color: var(--bg-surface);
+}
+
+.demo-elev--1 { box-shadow: var(--elev-1); }
+.demo-elev--2 { box-shadow: var(--elev-2); }
+.demo-elev--3 { box-shadow: var(--elev-3); }
+
+/* Width constraints for specimens that would otherwise fill the stage. */
+.demo-narrow { max-width: 22rem; }
+.demo-mid    { max-width: 26rem; }
+.demo-figure { max-width: 22rem; }
+
+.select--auto { width: auto; }
+
+/* The greyscale proof stage. */
+.spec__stage--grey { filter: grayscale(1); }
+
+/* Hero specimen row — the one place --fs-900 is shown at full size. */
+.type-row__sample--hero {
+  font-size: var(--fs-900);
+  line-height: var(--lh-tight);
+}
+
+/* Square skeletons inside the upload thumbnail strip. */
+.thumb .skeleton--media { aspect-ratio: 1; }
+
+/* Denser card grids used by the card and skeleton specimens. */
+.u-autogrid--card { --autogrid-min: 17rem; }
+.u-autogrid--tight { --autogrid-min: 15rem; }
+
+/* Contrast audit table */
+.audit td, .audit th { font-size: var(--fs-100); }
+
+.audit__pass { color: var(--accent-found); font-weight: var(--fw-bold); }
+.audit__fail { color: var(--accent-lost); font-weight: var(--fw-bold); }

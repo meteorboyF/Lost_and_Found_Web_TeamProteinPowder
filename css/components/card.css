@@ -1,0 +1,266 @@
+/* ==========================================================================
+   card.css — item cards, stat tiles, and the media privacy treatment
+   ========================================================================== */
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-2);
+  background-color: var(--bg-surface);
+  overflow: hidden;
+  transition: border-color var(--dur-2) var(--ease),
+              transform var(--dur-2) var(--ease);
+}
+
+.card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-4);
+  flex: 1 1 auto;
+}
+
+.card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border-top: var(--border-w) solid var(--line);
+  font-size: var(--fs-100);
+  color: var(--fg-muted);
+}
+
+.card__title {
+  font-family: var(--font-display);
+  font-size: var(--fs-400);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--tr-display);
+}
+
+.card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-3);
+  font-size: var(--fs-100);
+  color: var(--fg-muted);
+}
+
+.card__meta > * + *::before {
+  content: '·';
+  margin-inline-end: var(--sp-3);
+  color: var(--line-strong);
+}
+
+/* Whole-card link. The <a> covers the card via a pseudo-element so the
+   markup keeps a real heading and a real link, and text stays selectable. */
+.card__link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.card__link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.card:has(.card__link:hover) {
+  border-color: var(--fg-muted);
+}
+
+.card:has(.card__link:focus-visible) {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.card:has(.card__link:hover) .card__title {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.16em;
+}
+
+/* Controls that must stay clickable above the card-wide link. */
+.card__action {
+  position: relative;
+  z-index: 2;
+}
+
+/* --------------------------------------------------------------------------
+   Media — the privacy treatment lives here.
+
+   Found-item photography is public, but the identifying region is obscured.
+   The obscured area is a real, visible design element: we do not pretend the
+   photo is complete.
+   -------------------------------------------------------------------------- */
+
+.card__media {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  background-color: var(--bg-sunken);
+  overflow: hidden;
+}
+
+.card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--dur-slow) var(--ease);
+}
+
+.card:has(.card__link:hover) .card__media img {
+  transform: scale(1.03);
+}
+
+.card__media-badges {
+  position: absolute;
+  inset: var(--sp-2) var(--sp-2) auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.card__media-badges > * { pointer-events: auto; }
+
+/* The obscured region. Positioned per-item from the fixture data via inline
+   custom properties, which is the one place inline style is permitted. */
+.obscured {
+  position: absolute;
+  top: var(--obscure-y, 55%);
+  left: var(--obscure-x, 8%);
+  width: var(--obscure-w, 40%);
+  height: var(--obscure-h, 24%);
+  z-index: 1;
+  border: 1px solid rgb(247 245 241 / 0.5);
+  border-radius: var(--r-1);
+  backdrop-filter: blur(9px) saturate(0.5);
+  background-color: rgb(15 17 21 / 0.22);
+}
+
+/* Hatching so the region still reads as deliberate where backdrop-filter is
+   unsupported, and in forced-colors mode. */
+.obscured::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgb(247 245 241 / 0.16) 0 2px,
+    transparent 2px 7px
+  );
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .obscured { background-color: rgb(15 17 21 / 0.82); }
+}
+
+/* Reduced-data: swap photography for a typographic placeholder. */
+.media-placeholder {
+  display: none;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-sunken);
+  color: var(--fg-muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-100);
+  text-align: center;
+  padding: var(--sp-4);
+}
+
+/* --------------------------------------------------------------------------
+   Stat tile — used by the hero strip and the analytics dashboard
+   -------------------------------------------------------------------------- */
+
+.stat {
+  display: grid;
+  gap: var(--sp-1);
+  padding: var(--sp-4) 0;
+}
+
+.stat__value {
+  font-family: var(--font-display);
+  font-size: var(--fs-700);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: var(--tr-display);
+}
+
+.stat__label {
+  font-size: var(--fs-100);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tr-caps);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.stat__delta {
+  font-family: var(--font-mono);
+  font-size: var(--fs-100);
+  color: var(--fg-secondary);
+}
+
+/* Divided strip of stats, hairline rules between. */
+.stat-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0;
+  border-top: var(--border-w) solid var(--line);
+  border-bottom: var(--border-w) solid var(--line);
+}
+
+.stat-strip .stat {
+  padding-inline: var(--sp-4);
+  border-left: var(--border-w) solid var(--line);
+}
+
+.stat-strip .stat:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Panel — a card without the media affordances. Admin surfaces use this.
+   -------------------------------------------------------------------------- */
+
+.panel {
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-2);
+  background-color: var(--bg-surface);
+}
+
+.panel__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  border-bottom: var(--border-w) solid var(--line);
+}
+
+.panel__title {
+  font-size: var(--fs-100);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tr-caps);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.panel__body { padding: var(--sp-4); }
+
+.panel--sunken { background-color: var(--bg-sunken); }
+
+@media (forced-colors: active) {
+  .obscured {
+    background-color: Canvas;
+    border: 1px solid CanvasText;
+  }
+}

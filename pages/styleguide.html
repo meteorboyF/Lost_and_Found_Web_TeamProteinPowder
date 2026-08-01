@@ -1,0 +1,1475 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Component library — Lost &amp; Found</title>
+<meta name="description" content="Every component, token, and state in the Lost &amp; Found design system.">
+
+<!-- Critical tokens + reset, inlined to avoid the FOUC caused by main.css's
+     import waterfall. Full definitions in css/tokens.css win by source order. -->
+<style>
+  *,*::before,*::after{box-sizing:border-box}
+  body,h1,h2,h3,h4,p,figure,ul,ol{margin:0;padding:0}
+  img,svg{display:block;max-width:100%}
+  :root{
+    --c-ink:#0f1115;--c-paper:#f7f5f1;--c-white:#fffdf9;--c-bone:#efece6;
+    --c-gray-1:#3b3e46;--c-gray-2:#676a73;--c-gray-3:#9a9ca3;--c-hairline:#dcd8d0;
+    --c-found:#8a5606;--c-found-wash:#f2e3c4;--c-lost:#9e2b25;--c-lost-wash:#f6dcda;
+    --font-display:'Serif Display',georgia,serif;
+    --font-ui:'Sans Display',system-ui,-apple-system,sans-serif;
+    --font-mono:'Registry Mono',ui-monospace,menlo,monospace;
+    --bg-page:var(--c-paper);--bg-surface:var(--c-white);--bg-sunken:var(--c-bone);
+    --fg-primary:var(--c-ink);--fg-muted:var(--c-gray-2);--line:var(--c-hairline);
+    color-scheme:light;
+  }
+  :root[data-theme='dark']{
+    --bg-page:#14161b;--bg-surface:#1c1f26;--bg-sunken:#0e1014;
+    --fg-primary:#ede9e1;--fg-muted:#9aa0a8;--line:#30343c;
+    color-scheme:dark;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme='light']){
+      --bg-page:#14161b;--bg-surface:#1c1f26;--bg-sunken:#0e1014;
+      --fg-primary:#ede9e1;--fg-muted:#9aa0a8;--line:#30343c;
+      color-scheme:dark;
+    }
+  }
+  body{
+    min-height:100svh;font-family:var(--font-ui);font-size:1rem;line-height:1.55;
+    color:var(--fg-primary);background-color:var(--bg-page);
+    -webkit-font-smoothing:antialiased;
+  }
+</style>
+
+<!-- Applied before first paint so a dark-theme user never sees a light flash. -->
+<script>
+  (function () {
+    try {
+      var t = JSON.parse(localStorage.getItem('lf.v1.theme'));
+      if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+    } catch (e) {}
+  })();
+</script>
+
+<link rel="preload" href="../assets/fonts/serif-display-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/fonts/sans-display-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/main.css">
+<link rel="stylesheet" href="../css/pages/styleguide.css">
+</head>
+
+<body>
+<div class="shell">
+  <a class="skip-link visually-hidden" href="#main">Skip to content</a>
+
+  <header class="masthead">
+    <div class="container masthead__inner">
+      <a class="wordmark" href="../index.html">
+        Lost <span class="wordmark__amp">&amp;</span> Found
+        <span class="wordmark__sub">Registry</span>
+      </a>
+
+      <nav class="masthead__utils" aria-label="Utilities">
+        <a class="btn btn--sm btn--ghost" href="../index.html">Back to site</a>
+        <button type="button" class="btn btn--icon btn--sm btn--ghost" data-theme-toggle aria-label="Switch theme" aria-pressed="false">
+          <svg class="icon" aria-hidden="true" focusable="false" data-theme-icon="light"><use href="#i-sun"></use></svg>
+          <svg class="icon" aria-hidden="true" focusable="false" data-theme-icon="dark" hidden><use href="#i-moon"></use></svg>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="container section">
+
+    <div class="stack stack-5 u-mb-6">
+      <p class="eyebrow">Internal reference</p>
+      <h1 class="u-fs-hero">Component&nbsp;library</h1>
+      <p class="lead u-measure">
+        Every token, component, and state in the system, rendered from the same
+        stylesheets the product uses. If something here looks wrong, it is wrong
+        everywhere. Toggle the theme in the masthead — both themes are authored,
+        neither is an inversion of the other.
+      </p>
+      <p class="meta">
+        No frameworks, no libraries, no build step. Icons are hand-drawn inline SVG
+        from <code>assets/icons.svg</code>; type is self-hosted WOFF2.
+      </p>
+    </div>
+
+    <div class="sg">
+      <!-- ============================ contents ============================ -->
+      <nav class="sg__toc" aria-label="Sections">
+        <p class="h5 u-mb-3">Contents</p>
+        <ul class="sg__toc-list" role="list">
+          <li><a href="#colour">Colour</a></li>
+          <li><a href="#type">Typography</a></li>
+          <li><a href="#space">Space &amp; shape</a></li>
+          <li><a href="#grid">Grid</a></li>
+          <li><a href="#motion">Motion</a></li>
+          <li><a href="#icons">Icons</a></li>
+          <li><a href="#buttons">Buttons</a></li>
+          <li><a href="#status">Status chips</a></li>
+          <li><a href="#forms">Forms</a></li>
+          <li><a href="#cards">Cards &amp; media</a></li>
+          <li><a href="#privacy">Privacy treatment</a></li>
+          <li><a href="#stepper">Stepper</a></li>
+          <li><a href="#timeline">Timeline</a></li>
+          <li><a href="#controls">Controls</a></li>
+          <li><a href="#tables">Tables</a></li>
+          <li><a href="#overlays">Overlays</a></li>
+          <li><a href="#states">List states</a></li>
+          <li><a href="#feedback">Meters &amp; callouts</a></li>
+        </ul>
+      </nav>
+
+      <div>
+
+      <!-- ============================ colour ============================ -->
+      <section id="colour" class="u-mb-7" aria-labelledby="colour-h">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Foundations</p>
+            <h2 id="colour-h">Colour</h2>
+          </div>
+          <p class="meta u-measure-short">
+            Two hues in the entire system. Amber marks the found side, crimson the
+            lost side. Everything else is a warm neutral.
+          </p>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label">
+            <span>Surfaces &amp; ink</span>
+            <span class="spec__note">Ratios measured against <code>--bg-page</code> in the active theme.</span>
+          </p>
+          <div class="spec__stage">
+            <div class="swatches" data-swatches></div>
+          </div>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label">
+            <span>Signal accents</span>
+            <span class="spec__note">Used for status, primary actions, and focus rings. Nothing else is coloured.</span>
+          </p>
+          <div class="spec__stage">
+            <div class="swatches" data-swatches-accent></div>
+          </div>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>Contrast audit</span><span class="spec__note">Live, recomputed from the resolved custom properties.</span></p>
+          <div class="spec__stage spec__stage--block">
+            <div class="table-wrap">
+              <table class="table table--responsive audit">
+                <caption>Every text colour against every surface, current theme</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Foreground</th>
+                    <th scope="col">Surface</th>
+                    <th scope="col" class="table__num">Ratio</th>
+                    <th scope="col">WCAG</th>
+                  </tr>
+                </thead>
+                <tbody data-audit></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ type ============================ -->
+      <section id="type" class="u-mb-7" aria-labelledby="type-h">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Foundations</p>
+            <h2 id="type-h">Typography</h2>
+          </div>
+          <p class="meta u-measure-short">
+            Noto Serif Display for headings, Noto Sans Display for UI, Noto Sans Mono
+            for anything machine-readable. Scale ratio 1.25.
+          </p>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>Display scale</span><span class="spec__note">Serif, tracking &minus;0.02em, line-height 1.05.</span></p>
+          <div class="spec__stage spec__stage--block">
+            <div class="type-row">
+              <p class="type-row__meta">--fs-900 · 76.3px · h1 hero</p>
+              <p class="type-row__sample type-row__sample--hero u-display">Unclaimed</p>
+            </div>
+            <div class="type-row">
+              <p class="type-row__meta">--fs-700 · 48.8px · h1</p>
+              <h1 class="type-row__sample">Twelve items entered storage today</h1>
+            </div>
+            <div class="type-row">
+              <p class="type-row__meta">--fs-600 · 39px · h2</p>
+              <h2 class="type-row__sample">Recently recovered</h2>
+            </div>
+            <div class="type-row">
+              <p class="type-row__meta">--fs-500 · 31.25px · h3</p>
+              <h3 class="type-row__sample">Chain of custody</h3>
+            </div>
+            <div class="type-row">
+              <p class="type-row__meta">--fs-400 · 25px · h4 / card title</p>
+              <h4 class="type-row__sample">Black canvas backpack</h4>
+            </div>
+          </div>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>UI &amp; body</span><span class="spec__note">h5/h6 drop out of the serif and become small-caps eyebrows.</span></p>
+          <div class="spec__stage spec__stage--block">
+            <div class="type-row">
+              <p class="type-row__meta">--fs-300 · 20px · .lead</p>
+              <p class="lead">A found item is held for ninety days before it is archived.</p>
+            </div>
+            <div class="type-row">
+              <p class="type-row__meta">--fs-200 · 16px · body</p>
+              <p>Report what you lost and we will match it against everything handed in across campus. Photographs of found items are published with the identifying detail obscured, so only the owner can describe it.</p>
+            </div>
+            <div class="type-row">
+              <p class="type-row__meta">--fs-100 · 12.8px · .meta</p>
+              <p class="meta">Handed in at Central Library, level 2 · 4 hours ago</p>
+            </div>
+            <div class="type-row">
+              <p class="type-row__meta">h5 / .u-caps</p>
+              <h5>Identifying marks</h5>
+            </div>
+            <div class="type-row">
+              <p class="type-row__meta">--font-mono · reference codes, counts, timestamps</p>
+              <p class="mono">LF-2026-0418-K7Q3 · bin B-14 · 2026-07-28 14:32</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>বাংলা</span><span class="spec__note">Noto Serif/Sans Bengali, loaded only when Bengali glyphs are present.</span></p>
+          <div class="spec__stage spec__stage--block">
+            <div class="type-row">
+              <p class="type-row__meta">Display · bn</p>
+              <h2 class="type-row__sample" lang="bn">হারানো ও প্রাপ্ত</h2>
+            </div>
+            <div class="type-row">
+              <p class="type-row__meta">Body · bn</p>
+              <p lang="bn">আপনার হারানো জিনিসের বিবরণ দিন। আমরা ক্যাম্পাসে জমা পড়া সব জিনিসের সাথে মিলিয়ে দেখব।</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ space ============================ -->
+      <section id="space" class="u-mb-7" aria-labelledby="space-h">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Foundations</p>
+            <h2 id="space-h">Space &amp; shape</h2>
+          </div>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>Spacing scale</span><span class="spec__note">4px base, 8pt rhythm from --sp-2 up.</span></p>
+          <div class="spec__stage">
+            <div class="ruler" data-ruler></div>
+          </div>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>Radius</span><span class="spec__note">Architectural. Pills appear once, on removable filter tokens.</span></p>
+          <div class="spec__stage">
+            <div class="u-grid u-gap-2 u-center">
+              <div class="demo-shape demo-shape--0"></div>
+              <p class="meta mono">--r-0 · 0</p>
+            </div>
+            <div class="u-grid u-gap-2 u-center">
+              <div class="demo-shape demo-shape--1"></div>
+              <p class="meta mono">--r-1 · 2px</p>
+            </div>
+            <div class="u-grid u-gap-2 u-center">
+              <div class="demo-shape demo-shape--2"></div>
+              <p class="meta mono">--r-2 · 4px</p>
+            </div>
+            <div class="u-grid u-gap-2 u-center">
+              <div class="demo-shape demo-shape--3"></div>
+              <p class="meta mono">--r-3 · 8px</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>Elevation</span><span class="spec__note">Hairlines and contrast, not blur. Level 3 is the only one with a shadow.</span></p>
+          <div class="spec__stage">
+            <div class="u-grid u-gap-2 u-center">
+              <div class="demo-elev demo-elev--1"></div>
+              <p class="meta mono">--elev-1</p>
+            </div>
+            <div class="u-grid u-gap-2 u-center">
+              <div class="demo-elev demo-elev--2"></div>
+              <p class="meta mono">--elev-2</p>
+            </div>
+            <div class="u-grid u-gap-2 u-center">
+              <div class="demo-elev demo-elev--3"></div>
+              <p class="meta mono">--elev-3</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ grid ============================ -->
+      <section id="grid" class="u-mb-7" aria-labelledby="grid-h">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Foundations</p>
+            <h2 id="grid-h">Grid</h2>
+          </div>
+          <p class="meta u-measure-short">12 columns, 1280px max. Single column below 768px.</p>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>Column spans</span></p>
+          <div class="spec__stage spec__stage--block">
+            <div class="grid grid-demo u-mb-4">
+              <div class="col-12">col-12</div>
+            </div>
+            <div class="grid grid-demo u-mb-4">
+              <div class="col-8">col-8</div>
+              <div class="col-4">col-4</div>
+            </div>
+            <div class="grid grid-demo u-mb-4">
+              <div class="col-4">col-4</div>
+              <div class="col-4">col-4</div>
+              <div class="col-4">col-4</div>
+            </div>
+            <div class="grid grid-demo">
+              <div class="col-6 start-4">col-6 start-4</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>Sidebar primitive</span><span class="spec__note">Collapses without a media query, at its own content threshold.</span></p>
+          <div class="spec__stage spec__stage--block">
+            <div class="sidebar grid-demo">
+              <div>sidebar · 17rem</div>
+              <div>main · grows</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ motion ============================ -->
+      <section id="motion" class="u-mb-7" aria-labelledby="motion-h">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Foundations</p>
+            <h2 id="motion-h">Motion</h2>
+          </div>
+          <p class="meta u-measure-short">
+            <code>cubic-bezier(0.2, 0, 0, 1)</code>. All durations collapse to 0ms
+            under <code>prefers-reduced-motion</code>.
+          </p>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>Durations</span><span class="spec__note">Hover the stage to play.</span></p>
+          <div class="spec__stage spec__stage--grid">
+            <div class="u-inline-flex u-gap-4">
+              <div class="motion-box motion-box--1"></div>
+              <p class="meta mono">--dur-1 · 150ms · hover, focus</p>
+            </div>
+            <div class="u-inline-flex u-gap-4">
+              <div class="motion-box motion-box--2"></div>
+              <p class="meta mono">--dur-2 · 200ms · state change</p>
+            </div>
+            <div class="u-inline-flex u-gap-4">
+              <div class="motion-box motion-box--3"></div>
+              <p class="meta mono">--dur-3 · 250ms · enter, exit</p>
+            </div>
+            <div class="u-inline-flex u-gap-4">
+              <div class="motion-box motion-box--4"></div>
+              <p class="meta mono">--dur-slow · 400ms · progress, reveal</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ icons ============================ -->
+      <section id="icons" class="u-mb-7" aria-labelledby="icons-h">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Foundations</p>
+            <h2 id="icons-h">Icons</h2>
+          </div>
+          <p class="meta u-measure-short">
+            One sprite, 24&times;24 grid, stroked with <code>currentColor</code>.
+            Every icon in the product is here or it does not exist.
+          </p>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>Sprite</span><span class="spec__note">Referenced via <code>&lt;use href="#id"&gt;</code>; resolved to the sprite file at boot.</span></p>
+          <div class="spec__stage">
+            <div class="icon-grid" data-icon-grid></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ buttons ============================ -->
+      <section id="buttons" class="u-mb-7" aria-labelledby="buttons-h">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Components</p>
+            <h2 id="buttons-h">Buttons</h2>
+          </div>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>Variants</span><span class="spec__note">Primary is ink and turns amber on hover. Urgent is the only filled crimson control.</span></p>
+          <div class="spec__stage">
+            <button type="button" class="btn btn--primary">Report a found item</button>
+            <button type="button" class="btn btn--secondary">Browse the registry</button>
+            <button type="button" class="btn btn--ghost">Cancel</button>
+            <button type="button" class="btn btn--urgent">Report something lost</button>
+            <button type="button" class="btn btn--danger">Withdraw claim</button>
+          </div>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>Sizes &amp; icons</span></p>
+          <div class="spec__stage">
+            <button type="button" class="btn btn--primary btn--sm">Small</button>
+            <button type="button" class="btn btn--primary">Default</button>
+            <button type="button" class="btn btn--primary btn--lg">Large</button>
+            <button type="button" class="btn btn--secondary">
+              <svg class="icon icon--sm" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
+              With icon
+            </button>
+            <button type="button" class="btn btn--icon btn--secondary" aria-label="Filter results">
+              <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-filter"></use></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>States</span><span class="spec__note">The loading label is hidden, not removed — the button never changes width.</span></p>
+          <div class="spec__stage">
+            <button type="button" class="btn btn--primary" disabled>Disabled</button>
+            <button type="button" class="btn btn--primary" data-loading="true">Submitting claim</button>
+            <button type="button" class="btn btn--secondary" data-demo-loading>Click to load</button>
+            <button type="button" class="btn-inline">Inline text button</button>
+          </div>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>Segmented group</span><span class="spec__note">Real buttons with <code>aria-pressed</code>, not a radio group in disguise.</span></p>
+          <div class="spec__stage">
+            <div class="btn-group" role="group" aria-label="Result layout">
+              <button type="button" class="btn btn--sm btn--ghost" aria-pressed="true">Grid</button>
+              <button type="button" class="btn btn--sm btn--ghost" aria-pressed="false">List</button>
+              <button type="button" class="btn btn--sm btn--ghost" aria-pressed="false">Map</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ status ============================ -->
+      <section id="status" class="u-mb-7" aria-labelledby="status-h">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Components</p>
+            <h2 id="status-h">Status chips</h2>
+          </div>
+          <p class="meta u-measure-short">
+            Ten lifecycle states. Each carries a distinct glyph, a distinct fill
+            weight, and a literal label — colour is never the only signal.
+          </p>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>Lifecycle</span><span class="spec__note">Reported → In Storage → Match Suggested → Claim Pending → Verified → Returned</span></p>
+          <div class="spec__stage">
+            <div class="chip-matrix" data-chip-matrix></div>
+          </div>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>Greyscale check</span><span class="spec__note">The same ten chips desaturated. If two are indistinguishable here, the design has failed.</span></p>
+          <div class="spec__stage spec__stage--grey">
+            <div class="chip-matrix" data-chip-matrix-grey></div>
+          </div>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>Kind tags &amp; badges</span></p>
+          <div class="spec__stage">
+            <span class="kind-tag kind-tag--lost">Lost</span>
+            <span class="kind-tag kind-tag--found">Found</span>
+            <span class="badge">7</span>
+            <span class="badge badge--neutral">24</span>
+            <span class="badge badge--dot" role="img" aria-label="Unread"></span>
+            <span class="status-chip status-chip--lg" data-status="verified">
+              <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-st-verified"></use></svg>
+              <span class="status-chip__label">Verified</span>
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ forms ============================ -->
+      <section id="forms" class="u-mb-7" aria-labelledby="forms-h">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Components</p>
+            <h2 id="forms-h">Forms</h2>
+          </div>
+          <p class="meta u-measure-short">
+            Every field reserves its message row, so validation appears without
+            shifting a single pixel of layout.
+          </p>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>Text inputs</span><span class="spec__note">Type an invalid address in the third field to see the error appear in place.</span></p>
+          <div class="spec__stage spec__stage--grid">
+            <div class="field">
+              <label class="field__label" for="sg-title">
+                Item title
+                <span class="field__count"><span data-count-for="sg-title">0</span>/60</span>
+              </label>
+              <input class="input" type="text" id="sg-title" maxlength="60" placeholder="Black canvas backpack" aria-describedby="sg-title-hint sg-title-msg">
+              <p class="field__hint" id="sg-title-hint">Describe the object, not where you lost it.</p>
+              <p class="field__message" id="sg-title-msg" role="status"></p>
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="sg-notes">
+                Description <span class="field__optional">optional</span>
+              </label>
+              <textarea class="textarea" id="sg-notes" rows="3" placeholder="Anything a stranger could see from the outside."></textarea>
+              <p class="field__message"></p>
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="sg-email">University email</label>
+              <input class="input" type="email" id="sg-email" placeholder="you@university.edu" data-validate="email" aria-describedby="sg-email-msg">
+              <p class="field__message" id="sg-email-msg" role="status"></p>
+            </div>
+
+            <div class="field-row">
+              <div class="field">
+                <label class="field__label" for="sg-cat">Category</label>
+                <select class="select" id="sg-cat">
+                  <option>Bags &amp; luggage</option>
+                  <option>Electronics</option>
+                  <option>Keys</option>
+                  <option>Documents &amp; cards</option>
+                  <option>Clothing</option>
+                </select>
+                <p class="field__message"></p>
+              </div>
+              <div class="field">
+                <label class="field__label" for="sg-when">Approximate date</label>
+                <input class="input" type="date" id="sg-when" value="2026-07-28">
+                <p class="field__message"></p>
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="sg-invalid">Reference code</label>
+              <input class="input" type="text" id="sg-invalid" value="LF-2026-XXXX" aria-invalid="true" aria-describedby="sg-invalid-msg">
+              <p class="field__message" id="sg-invalid-msg">
+                <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-alert"></use></svg>
+                That reference code does not match any record.
+              </p>
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="sg-disabled">Assigned bin</label>
+              <input class="input" type="text" id="sg-disabled" value="B-14" disabled>
+              <p class="field__message"></p>
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="sg-search">Search</label>
+              <div class="input-group">
+                <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
+                <input class="input" type="search" id="sg-search" placeholder="Search the registry">
+              </div>
+              <p class="field__message"></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>Choices &amp; switches</span><span class="spec__note">Checkbox and radio are hand-drawn — no <code>appearance:auto</code>.</span></p>
+          <div class="spec__stage spec__stage--grid">
+            <fieldset class="fieldset">
+              <legend class="fieldset__legend">Who can see your name</legend>
+              <label class="choice">
+                <input class="choice__control" type="radio" name="sg-anon" value="named" checked>
+                <span>
+                  <span class="choice__title">Show my name</span>
+                  <span class="choice__desc">The person who lost the item can see who handed it in and thank you.</span>
+                </span>
+              </label>
+              <label class="choice">
+                <input class="choice__control" type="radio" name="sg-anon" value="anon">
+                <span>
+                  <span class="choice__title">Stay anonymous</span>
+                  <span class="choice__desc">Messages are routed through the registry. Your identity is never shown.</span>
+                </span>
+              </label>
+              <label class="choice">
+                <input class="choice__control" type="radio" name="sg-anon" value="staff" disabled>
+                <span>
+                  <span class="choice__title">Staff-only visibility</span>
+                  <span class="choice__desc">Available to registry staff accounts.</span>
+                </span>
+              </label>
+            </fieldset>
+
+            <fieldset class="fieldset">
+              <legend class="fieldset__legend">Filter — compact variant</legend>
+              <label class="choice choice--bare">
+                <input class="choice__control" type="checkbox" checked>
+                <span>Electronics <span class="filter-count">42</span></span>
+              </label>
+              <label class="choice choice--bare">
+                <input class="choice__control" type="checkbox">
+                <span>Keys <span class="filter-count">18</span></span>
+              </label>
+              <label class="choice choice--bare">
+                <input class="choice__control" type="checkbox">
+                <span>Documents &amp; cards <span class="filter-count">9</span></span>
+              </label>
+            </fieldset>
+
+            <div class="panel">
+              <div class="panel__body stack stack-4">
+                <label class="switch">
+                  <span class="switch__text">
+                    <span class="u-bold">Email alerts</span>
+                    <span class="meta">Notify me when a new item matches a saved search.</span>
+                  </span>
+                  <input class="switch__control" type="checkbox" checked>
+                </label>
+                <label class="switch">
+                  <span class="switch__text">
+                    <span class="u-bold">SMS alerts</span>
+                    <span class="meta">Only for claim verification steps.</span>
+                  </span>
+                  <input class="switch__control" type="checkbox">
+                </label>
+                <label class="switch">
+                  <span class="switch__text">
+                    <span class="u-bold">Push notifications</span>
+                    <span class="meta">Requires a supported browser.</span>
+                  </span>
+                  <input class="switch__control" type="checkbox" disabled>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>Upload</span></p>
+          <div class="spec__stage spec__stage--grid">
+            <label class="dropzone">
+              <svg class="icon dropzone__glyph" aria-hidden="true" focusable="false"><use href="#i-upload"></use></svg>
+              <span class="u-bold">Add photographs</span>
+              <span class="dropzone__hint">Drag files here, or choose from your device. JPEG or PNG, up to 5&nbsp;MB each.</span>
+              <input type="file" class="visually-hidden" accept="image/*" multiple>
+            </label>
+            <div class="thumbs">
+              <div class="thumb">
+                <div class="skeleton skeleton--media"></div>
+                <button type="button" class="thumb__remove" aria-label="Remove photograph 1">
+                  <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-close"></use></svg>
+                </button>
+              </div>
+              <div class="thumb">
+                <div class="skeleton skeleton--media"></div>
+                <button type="button" class="thumb__remove" aria-label="Remove photograph 2">
+                  <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-close"></use></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ cards ============================ -->
+      <section id="cards" class="u-mb-7" aria-labelledby="cards-h">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Components</p>
+            <h2 id="cards-h">Cards &amp; media</h2>
+          </div>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>Item card</span><span class="spec__note">The whole card is a link, but the heading and the save button stay independently reachable.</span></p>
+          <div class="spec__stage spec__stage--block">
+            <div class="u-autogrid u-autogrid--card">
+
+              <article class="card">
+                <div class="card__media">
+                  <div class="media-placeholder" data-media="placeholder">Photograph withheld<br>on reduced data</div>
+                  <img data-media="optional" src="../assets/img/placeholder-bag.svg" alt="A black canvas backpack photographed on a plain surface" width="400" height="300">
+                  <div class="obscured" style="--obscure-x:52%;--obscure-y:20%;--obscure-w:34%;--obscure-h:26%" role="img" aria-label="Part of this photograph is obscured for verification"></div>
+                  <div class="card__media-badges">
+                    <span class="kind-tag kind-tag--found">Found</span>
+                    <span class="privacy-badge">
+                      <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-eye-off"></use></svg>
+                      Detail hidden
+                    </span>
+                  </div>
+                </div>
+                <div class="card__body">
+                  <h3 class="card__title"><a class="card__link" href="#cards">Black canvas backpack</a></h3>
+                  <p class="card__meta">
+                    <span>Central Library</span>
+                    <span>4 hours ago</span>
+                  </p>
+                  <p class="u-clamp-2 u-fg-secondary u-fs-100">Handed in at the level 2 desk. Contains stationery; no electronics.</p>
+                </div>
+                <div class="card__footer">
+                  <span class="status-chip" data-status="in-storage">
+                    <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-st-storage"></use></svg>
+                    <span class="status-chip__label">In Storage</span>
+                  </span>
+                  <button type="button" class="btn btn--icon btn--sm btn--ghost card__action" aria-label="Save this item" aria-pressed="false">
+                    <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-bookmark"></use></svg>
+                  </button>
+                </div>
+              </article>
+
+              <article class="card">
+                <div class="card__media">
+                  <img src="../assets/img/placeholder-keys.svg" alt="A set of keys on a plain surface" width="400" height="300">
+                  <div class="card__media-badges">
+                    <span class="kind-tag kind-tag--lost">Lost</span>
+                  </div>
+                </div>
+                <div class="card__body">
+                  <h3 class="card__title"><a class="card__link" href="#cards">Keys with a blue lanyard</a></h3>
+                  <p class="card__meta">
+                    <span>Engineering Block C</span>
+                    <span>2 days ago</span>
+                  </p>
+                  <p class="u-clamp-2 u-fg-secondary u-fs-100">Three keys on a ring, blue fabric lanyard. Possibly dropped near the stairwell.</p>
+                </div>
+                <div class="card__footer">
+                  <span class="status-chip" data-status="match-suggested">
+                    <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-st-match"></use></svg>
+                    <span class="status-chip__label">Match Suggested</span>
+                  </span>
+                  <button type="button" class="btn btn--icon btn--sm btn--ghost card__action" aria-label="Save this item" aria-pressed="true">
+                    <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-bookmark"></use></svg>
+                  </button>
+                </div>
+              </article>
+
+              <div class="skeleton-card" aria-hidden="true">
+                <div class="skeleton skeleton--media"></div>
+                <div class="skeleton-card__body">
+                  <div class="skeleton skeleton--title"></div>
+                  <div class="skeleton skeleton--short"></div>
+                  <div class="skeleton skeleton--line"></div>
+                  <div class="skeleton skeleton--chip"></div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>Stat strip</span><span class="spec__note">Hairline-divided, tabular numerals, counts animate on the landing page.</span></p>
+          <div class="spec__stage spec__stage--block">
+            <div class="stat-strip">
+              <div class="stat">
+                <p class="stat__value">1,284</p>
+                <p class="stat__label">Items returned</p>
+              </div>
+              <div class="stat">
+                <p class="stat__value">312</p>
+                <p class="stat__label">In storage</p>
+              </div>
+              <div class="stat">
+                <p class="stat__value">68%</p>
+                <p class="stat__label">Return rate</p>
+                <p class="stat__delta">+4 pts this term</p>
+              </div>
+              <div class="stat">
+                <p class="stat__value">2.4d</p>
+                <p class="stat__label">Median to claim</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>Panel &amp; avatars</span></p>
+          <div class="spec__stage spec__stage--grid">
+            <div class="panel">
+              <div class="panel__head">
+                <p class="panel__title">Possible matches</p>
+                <button type="button" class="btn btn--sm btn--ghost">View all</button>
+              </div>
+              <div class="panel__body cluster">
+                <span class="avatar">FJ</span>
+                <span class="avatar avatar--sm">MR</span>
+                <span class="avatar avatar--lg">AK</span>
+                <span class="avatar avatar--anon" aria-label="Anonymous participant">?</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ privacy ============================ -->
+      <section id="privacy" class="u-mb-7" aria-labelledby="privacy-h">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Components</p>
+            <h2 id="privacy-h">Privacy treatment</h2>
+          </div>
+          <p class="meta u-measure-short">
+            The verification model made visible. The obscured region is a deliberate
+            design element, not a rendering artefact.
+          </p>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label">
+            <span>Obscured detail</span>
+            <span class="spec__note">
+              <code>identifyingMarks</code> is never rendered on a public page. It is the
+              claim challenge answer, so revealing it would defeat verification entirely.
+            </span>
+          </p>
+          <div class="spec__stage">
+            <figure class="demo-figure">
+              <div class="card__media u-radius u-hairline">
+                <img src="../assets/img/placeholder-bag.svg" alt="A black canvas backpack, with one region obscured" width="400" height="300">
+                <div class="obscured" style="--obscure-x:52%;--obscure-y:20%;--obscure-w:34%;--obscure-h:26%"></div>
+                <div class="card__media-badges">
+                  <span></span>
+                  <span class="privacy-badge">
+                    <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-eye-off"></use></svg>
+                    Detail hidden for verification
+                  </span>
+                </div>
+              </div>
+              <figcaption>Public view. The obscured region hides the marking the owner must describe.</figcaption>
+            </figure>
+
+            <div class="callout callout--warn demo-mid">
+              <svg class="icon callout__icon" aria-hidden="true" focusable="false"><use href="#i-shield"></use></svg>
+              <div class="callout__body">
+                <p class="callout__title">Why part of this photo is hidden</p>
+                <p>Anyone can see a photograph of a found item. Only the person who lost it can describe the detail underneath. That description is the claim challenge.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ stepper ============================ -->
+      <section id="stepper" class="u-mb-7" aria-labelledby="stepper-h">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Components</p>
+            <h2 id="stepper-h">Stepper</h2>
+          </div>
+          <p class="meta u-measure-short">
+            The marker morphs from a hairline ring to a filled square as the connector
+            fills. Used by both report flows.
+          </p>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>Three-step flow</span><span class="spec__note">Use the buttons to advance — this is the real component, not a mockup.</span></p>
+          <div class="spec__stage spec__stage--block">
+            <ol class="stepper" data-stepper role="list">
+              <li class="stepper__step" data-state="current">
+                <span class="stepper__marker" aria-hidden="true">1</span>
+                <span class="stepper__label">What was it</span>
+                <span class="stepper__desc">Category, colour, distinguishing features</span>
+              </li>
+              <li class="stepper__step" data-state="todo">
+                <span class="stepper__marker" aria-hidden="true">2</span>
+                <span class="stepper__label">Where &amp; when</span>
+                <span class="stepper__desc">Building, floor, approximate time</span>
+              </li>
+              <li class="stepper__step" data-state="todo">
+                <span class="stepper__marker" aria-hidden="true">3</span>
+                <span class="stepper__label">Contact</span>
+                <span class="stepper__desc">How we reach you about a match</span>
+              </li>
+            </ol>
+            <p class="visually-hidden" role="status" data-stepper-status>Step 1 of 3</p>
+            <div class="cluster">
+              <button type="button" class="btn btn--secondary" data-step-prev>Back</button>
+              <button type="button" class="btn btn--primary" data-step-next>Continue</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ timeline ============================ -->
+      <section id="timeline" class="u-mb-7" aria-labelledby="timeline-h">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Components</p>
+            <h2 id="timeline-h">Timeline</h2>
+          </div>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>Status rail</span><span class="spec__note">The filled rail animates its height from <code>--progress</code>.</span></p>
+          <div class="spec__stage spec__stage--block">
+            <ol class="timeline" role="list" data-reveal style="--progress:0.6">
+              <li class="timeline__entry" data-state="done">
+                <span class="timeline__node" aria-hidden="true"></span>
+                <p class="timeline__title">Reported</p>
+                <p class="timeline__time">28 Jul 2026, 14:32</p>
+                <p class="timeline__note">Handed in at Central Library, level 2 desk.</p>
+              </li>
+              <li class="timeline__entry" data-state="done">
+                <span class="timeline__node" aria-hidden="true"></span>
+                <p class="timeline__title">In Storage</p>
+                <p class="timeline__time">28 Jul 2026, 16:05</p>
+                <p class="timeline__note">Logged and assigned to bin B-14.</p>
+              </li>
+              <li class="timeline__entry" data-state="current">
+                <span class="timeline__node" aria-hidden="true"></span>
+                <p class="timeline__title">Claim Pending</p>
+                <p class="timeline__time">30 Jul 2026, 09:14</p>
+                <p class="timeline__note">Awaiting the challenge response from the claimant.</p>
+              </li>
+              <li class="timeline__entry" data-state="todo">
+                <span class="timeline__node" aria-hidden="true"></span>
+                <p class="timeline__title">Verified</p>
+                <p class="timeline__time">Not yet</p>
+              </li>
+              <li class="timeline__entry" data-state="todo">
+                <span class="timeline__node" aria-hidden="true"></span>
+                <p class="timeline__title">Returned</p>
+                <p class="timeline__time">Not yet</p>
+              </li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>Chain of custody</span><span class="spec__note">Denser variant. Every physical handover is a row, and rows are append-only.</span></p>
+          <div class="spec__stage spec__stage--block">
+            <ol class="timeline timeline--custody" role="list">
+              <li class="timeline__entry" data-state="done">
+                <span class="timeline__node" aria-hidden="true"></span>
+                <p class="timeline__title">Received from finder</p>
+                <p class="timeline__time">2026-07-28 14:32 · desk staff A. Rahman</p>
+              </li>
+              <li class="timeline__entry" data-state="done">
+                <span class="timeline__node" aria-hidden="true"></span>
+                <p class="timeline__title">Photographed and catalogued</p>
+                <p class="timeline__time">2026-07-28 15:50 · intake terminal 2</p>
+              </li>
+              <li class="timeline__entry" data-state="done">
+                <span class="timeline__node" aria-hidden="true"></span>
+                <p class="timeline__title">Moved to long-term storage</p>
+                <p class="timeline__time">2026-07-29 08:10 · bin B-14</p>
+              </li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ controls ============================ -->
+      <section id="controls" class="u-mb-7" aria-labelledby="controls-h">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Components</p>
+            <h2 id="controls-h">Controls</h2>
+          </div>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>Tabs</span><span class="spec__note">Full ARIA tab pattern: roving tabindex, arrow keys, Home and End.</span></p>
+          <div class="spec__stage spec__stage--block">
+            <div class="tabs" role="tablist" aria-label="Dashboard sections">
+              <button class="tab" role="tab" id="sg-tab-1" aria-controls="sg-panel-1" aria-selected="true" type="button">
+                Lost <span class="tab__count">3</span>
+              </button>
+              <button class="tab" role="tab" id="sg-tab-2" aria-controls="sg-panel-2" aria-selected="false" type="button">
+                Found <span class="tab__count">7</span>
+              </button>
+              <button class="tab" role="tab" id="sg-tab-3" aria-controls="sg-panel-3" aria-selected="false" type="button">
+                Claims <span class="tab__count">1</span>
+              </button>
+            </div>
+            <div class="tabpanel u-mt-4" role="tabpanel" id="sg-panel-1" aria-labelledby="sg-tab-1" tabindex="0">
+              <p>Three open lost reports.</p>
+            </div>
+            <div class="tabpanel u-mt-4" role="tabpanel" id="sg-panel-2" aria-labelledby="sg-tab-2" tabindex="0" hidden>
+              <p>Seven items you handed in.</p>
+            </div>
+            <div class="tabpanel u-mt-4" role="tabpanel" id="sg-panel-3" aria-labelledby="sg-tab-3" tabindex="0" hidden>
+              <p>One claim awaiting verification.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>Filters &amp; results bar</span><span class="spec__note">The result count is a live region, so filtering announces itself.</span></p>
+          <div class="spec__stage spec__stage--block">
+            <div class="filter-pills u-mb-4">
+              <span class="filter-pill">
+                Electronics
+                <button type="button" class="filter-pill__remove" aria-label="Remove filter: Electronics">
+                  <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-close"></use></svg>
+                </button>
+              </span>
+              <span class="filter-pill">
+                Central Library
+                <button type="button" class="filter-pill__remove" aria-label="Remove filter: Central Library">
+                  <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-close"></use></svg>
+                </button>
+              </span>
+              <button type="button" class="btn-inline u-fs-100">Clear all</button>
+            </div>
+
+            <div class="results-bar">
+              <p class="results-count" role="status"><strong>42</strong> items match your filters</p>
+              <div class="cluster cluster-2">
+                <label class="u-caps u-fg-muted" for="sg-sort">Sort</label>
+                <select class="select select--auto" id="sg-sort">
+                  <option>Most recent</option>
+                  <option>Oldest first</option>
+                  <option>Relevance</option>
+                </select>
+              </div>
+            </div>
+
+            <details class="filter-group u-mt-5" open>
+              <summary class="filter-group__summary">
+                Category
+                <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-chevron-down"></use></svg>
+              </summary>
+              <div class="filter-group__body">
+                <label class="choice choice--bare">
+                  <input class="choice__control" type="checkbox" checked>
+                  <span>Electronics <span class="filter-count">42</span></span>
+                </label>
+                <label class="choice choice--bare">
+                  <input class="choice__control" type="checkbox">
+                  <span>Bags &amp; luggage <span class="filter-count">31</span></span>
+                </label>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>Pagination</span></p>
+          <div class="spec__stage spec__stage--block">
+            <nav class="pagination" aria-label="Result pages">
+              <a class="pagination__link" href="#controls" aria-disabled="true" aria-label="Previous page">
+                <svg class="icon icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-left"></use></svg>
+              </a>
+              <a class="pagination__link" href="#controls" aria-current="page">1</a>
+              <a class="pagination__link" href="#controls">2</a>
+              <a class="pagination__link" href="#controls">3</a>
+              <span class="pagination__gap" aria-hidden="true">&hellip;</span>
+              <a class="pagination__link" href="#controls">9</a>
+              <a class="pagination__link" href="#controls" aria-label="Next page">
+                <svg class="icon icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-right"></use></svg>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ tables ============================ -->
+      <section id="tables" class="u-mb-7" aria-labelledby="tables-h">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Components</p>
+            <h2 id="tables-h">Data table</h2>
+          </div>
+          <p class="meta u-measure-short">
+            Narrow the window past 1024px: rows become cards built from the column
+            headers. It never scrolls sideways.
+          </p>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>Inventory table</span><span class="spec__note">Select a row to reveal the bulk-action bar.</span></p>
+          <div class="spec__stage spec__stage--block">
+            <div class="table-wrap">
+              <div class="bulkbar" data-bulkbar hidden>
+                <span class="bulkbar__count" data-bulkbar-count>0 selected</span>
+                <button type="button" class="btn btn--sm btn--secondary">Assign bin</button>
+                <button type="button" class="btn btn--sm btn--secondary">Mark archived</button>
+                <button type="button" class="btn btn--sm btn--danger">Dispose</button>
+              </div>
+              <table class="table table--responsive">
+                <caption>Items currently in storage</caption>
+                <thead>
+                  <tr>
+                    <th scope="col"><span class="visually-hidden">Select</span></th>
+                    <th scope="col">Reference</th>
+                    <th scope="col">
+                      <button type="button" class="table__sort">
+                        Item
+                        <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-sort"></use></svg>
+                      </button>
+                    </th>
+                    <th scope="col">Location</th>
+                    <th scope="col">Status</th>
+                    <th scope="col" class="table__num">Days held</th>
+                  </tr>
+                </thead>
+                <tbody data-selectable>
+                  <tr>
+                    <td data-label=""><input type="checkbox" class="choice__control" aria-label="Select LF-2026-0418-K7Q3"></td>
+                    <td data-label="Reference" class="table__id">LF-2026-0418-K7Q3</td>
+                    <td data-label="Item">Black canvas backpack</td>
+                    <td data-label="Location">Central Library · B-14</td>
+                    <td data-label="Status">
+                      <span class="status-chip" data-status="in-storage">
+                        <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-st-storage"></use></svg>
+                        <span class="status-chip__label">In Storage</span>
+                      </span>
+                    </td>
+                    <td data-label="Days held" class="table__num">3</td>
+                  </tr>
+                  <tr>
+                    <td data-label=""><input type="checkbox" class="choice__control" aria-label="Select LF-2026-0411-M2X8"></td>
+                    <td data-label="Reference" class="table__id">LF-2026-0411-M2X8</td>
+                    <td data-label="Item">Silver laptop, 13-inch</td>
+                    <td data-label="Location">Engineering C · B-02</td>
+                    <td data-label="Status">
+                      <span class="status-chip" data-status="claim-pending">
+                        <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-st-pending"></use></svg>
+                        <span class="status-chip__label">Claim Pending</span>
+                      </span>
+                    </td>
+                    <td data-label="Days held" class="table__num">10</td>
+                  </tr>
+                  <tr>
+                    <td data-label=""><input type="checkbox" class="choice__control" aria-label="Select LF-2026-0302-P9L1"></td>
+                    <td data-label="Reference" class="table__id">LF-2026-0302-P9L1</td>
+                    <td data-label="Item">Grey wool scarf</td>
+                    <td data-label="Location">Student Centre · B-21</td>
+                    <td data-label="Status">
+                      <span class="status-chip" data-status="archived">
+                        <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-st-archived"></use></svg>
+                        <span class="status-chip__label">Archived</span>
+                      </span>
+                    </td>
+                    <td data-label="Days held" class="table__num">121</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>Key / value</span><span class="spec__note">Used in drawers and on item detail.</span></p>
+          <div class="spec__stage spec__stage--block">
+            <dl class="kv">
+              <dt>Reference</dt><dd class="mono">LF-2026-0418-K7Q3</dd>
+              <dt>Category</dt><dd>Bags &amp; luggage</dd>
+              <dt>Colour</dt><dd>Black</dd>
+              <dt>Handed in</dt><dd>28 July 2026, 14:32</dd>
+              <dt>Bin</dt><dd class="mono">B-14</dd>
+            </dl>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ overlays ============================ -->
+      <section id="overlays" class="u-mb-7" aria-labelledby="overlays-h">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Components</p>
+            <h2 id="overlays-h">Overlays</h2>
+          </div>
+          <p class="meta u-measure-short">
+            Focus is trapped, ESC closes, and focus returns to whatever opened it.
+            Try it with the keyboard.
+          </p>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>Modal, drawer, toast, tooltip, popover</span></p>
+          <div class="spec__stage">
+            <button type="button" class="btn btn--secondary" data-opens="sg-modal">Open modal</button>
+            <button type="button" class="btn btn--secondary" data-opens="sg-drawer">Open drawer</button>
+            <button type="button" class="btn btn--secondary" data-toast="info">Info toast</button>
+            <button type="button" class="btn btn--secondary" data-toast="success">Success toast</button>
+            <button type="button" class="btn btn--secondary" data-toast="error">Error toast</button>
+
+            <span class="tooltip">
+              <button type="button" class="btn btn--icon btn--secondary" aria-label="What is a reference code?" aria-describedby="sg-tip">
+                <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-info"></use></svg>
+              </button>
+              <span class="tooltip__bubble" id="sg-tip" role="tooltip">
+                A reference code identifies one record in the registry. You get one when you report or claim.
+              </span>
+            </span>
+
+            <span class="popover">
+              <button type="button" class="btn btn--secondary" data-popover aria-controls="sg-popover" aria-expanded="false" aria-haspopup="true">
+                Account
+                <svg class="icon icon--sm" aria-hidden="true" focusable="false"><use href="#i-chevron-down"></use></svg>
+              </button>
+              <span class="popover__panel" id="sg-popover" hidden>
+                <a class="popover__item" href="#overlays">
+                  <svg class="icon icon--sm" aria-hidden="true" focusable="false"><use href="#i-user"></use></svg>
+                  My dashboard
+                </a>
+                <a class="popover__item" href="#overlays">
+                  <svg class="icon icon--sm" aria-hidden="true" focusable="false"><use href="#i-settings"></use></svg>
+                  Settings
+                </a>
+                <span class="popover__sep"></span>
+                <a class="popover__item" href="#overlays">Sign out</a>
+              </span>
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ states ============================ -->
+      <section id="states" class="u-mb-7" aria-labelledby="states-h">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Components</p>
+            <h2 id="states-h">List states</h2>
+          </div>
+          <p class="meta u-measure-short">
+            Every list view in the product ships all four. A view without an empty
+            state is not finished.
+          </p>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>Loading skeleton</span><span class="spec__note">Mirrors the real card geometry exactly, so nothing shifts on load.</span></p>
+          <div class="spec__stage spec__stage--block">
+            <div class="u-autogrid u-autogrid--tight" aria-hidden="true">
+              <div class="skeleton-card">
+                <div class="skeleton skeleton--media"></div>
+                <div class="skeleton-card__body">
+                  <div class="skeleton skeleton--title"></div>
+                  <div class="skeleton skeleton--short"></div>
+                  <div class="skeleton skeleton--chip"></div>
+                </div>
+              </div>
+              <div class="skeleton-card">
+                <div class="skeleton skeleton--media"></div>
+                <div class="skeleton-card__body">
+                  <div class="skeleton skeleton--title"></div>
+                  <div class="skeleton skeleton--short"></div>
+                  <div class="skeleton skeleton--chip"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>Empty</span></p>
+          <div class="spec__stage spec__stage--block">
+            <div class="state">
+              <svg class="icon state__glyph" aria-hidden="true" focusable="false"><use href="#i-inbox"></use></svg>
+              <p class="state__title">Nothing matches those filters</p>
+              <p class="state__desc">Try widening the date range, or clear the building filter — most items are handed in somewhere other than where they were lost.</p>
+              <div class="state__actions">
+                <button type="button" class="btn btn--secondary">Clear filters</button>
+                <button type="button" class="btn btn--primary">Save this search</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>Error</span><span class="spec__note">Names the actual failure and offers the actual fix.</span></p>
+          <div class="spec__stage spec__stage--block">
+            <div class="state state--error" role="alert">
+              <svg class="icon state__glyph" aria-hidden="true" focusable="false"><use href="#i-alert"></use></svg>
+              <p class="state__title">Could not load the registry</p>
+              <p class="state__desc">The item data could not be read. If you opened this page directly from a folder, serve it over HTTP instead.</p>
+              <div class="state__actions">
+                <button type="button" class="btn btn--secondary">Try again</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ feedback ============================ -->
+      <section id="feedback" class="u-mb-7" aria-labelledby="feedback-h">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Components</p>
+            <h2 id="feedback-h">Meters &amp; callouts</h2>
+          </div>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label">
+            <span>Match confidence</span>
+            <span class="spec__note">Segmented, not continuous — a smooth bar would over-claim the precision of an estimate.</span>
+          </p>
+          <div class="spec__stage spec__stage--grid">
+            <div class="meter meter--high demo-narrow" data-meter="0.8">
+              <div class="meter__head">
+                <span class="u-caps u-fg-muted">Match confidence</span>
+                <span class="meter__value">80%</span>
+              </div>
+              <div class="meter__track" role="img" aria-label="Match confidence 80 percent"></div>
+            </div>
+            <div class="meter meter--low demo-narrow" data-meter="0.3">
+              <div class="meter__head">
+                <span class="u-caps u-fg-muted">Match confidence</span>
+                <span class="meter__value">30%</span>
+              </div>
+              <div class="meter__track" role="img" aria-label="Match confidence 30 percent"></div>
+            </div>
+            <div class="demo-narrow">
+              <p class="u-caps u-fg-muted u-mb-2">Upload progress</p>
+              <div class="progress"><div class="progress__bar" style="--value:0.62"></div></div>
+            </div>
+            <div class="demo-narrow">
+              <p class="u-caps u-fg-muted u-mb-2">Indeterminate</p>
+              <div class="progress progress--indeterminate"><div class="progress__bar"></div></div>
+            </div>
+            <div class="attempts">
+              <span>Attempts remaining</span>
+              <span class="attempts__pip" data-used="true"></span>
+              <span class="attempts__pip"></span>
+              <span class="attempts__pip"></span>
+              <span class="mono">2 of 3</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="spec">
+          <p class="spec__label"><span>Callouts</span></p>
+          <div class="spec__stage spec__stage--grid">
+            <div class="callout">
+              <svg class="icon callout__icon" aria-hidden="true" focusable="false"><use href="#i-info"></use></svg>
+              <div class="callout__body">
+                <p class="callout__title">Items are held for 90 days</p>
+                <p>After that they are archived, then donated or disposed of. You will be emailed before that happens.</p>
+              </div>
+            </div>
+            <div class="callout callout--warn">
+              <svg class="icon callout__icon" aria-hidden="true" focusable="false"><use href="#i-alert"></use></svg>
+              <div class="callout__body">
+                <p class="callout__title">You may have already reported this</p>
+                <p>A report you filed on 26 July describes a black backpack lost in the same building. Continue only if this is a different item.</p>
+              </div>
+            </div>
+            <div class="callout callout--danger">
+              <svg class="icon callout__icon" aria-hidden="true" focusable="false"><use href="#i-st-disputed"></use></svg>
+              <div class="callout__body">
+                <p class="callout__title">This claim is disputed</p>
+                <p>Two people have claimed this item. It is locked until a member of staff adjudicates.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__base">
+        <p class="meta">Component library · internal reference</p>
+        <p class="meta">Lost &amp; Found Registry</p>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- ============================ overlays ============================ -->
+
+<dialog class="modal" id="sg-modal" aria-labelledby="sg-modal-title">
+  <div class="modal__inner">
+    <div class="modal__head">
+      <div>
+        <p class="eyebrow">Confirm</p>
+        <h2 class="modal__title" id="sg-modal-title">Withdraw this claim?</h2>
+      </div>
+      <button type="button" class="btn btn--icon btn--sm btn--ghost" data-modal-close aria-label="Close dialog">
+        <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-close"></use></svg>
+      </button>
+    </div>
+    <div class="modal__body stack">
+      <p>The item returns to storage and becomes claimable by others. Your verification attempts are not restored.</p>
+      <div class="field">
+        <label class="field__label" for="sg-modal-reason">Reason <span class="field__optional">optional</span></label>
+        <textarea class="textarea" id="sg-modal-reason" rows="3"></textarea>
+        <p class="field__message"></p>
+      </div>
+    </div>
+    <div class="modal__foot">
+      <button type="button" class="btn btn--ghost" data-modal-close>Keep my claim</button>
+      <button type="button" class="btn btn--danger" data-modal-close>Withdraw claim</button>
+    </div>
+  </div>
+</dialog>
+
+<aside class="drawer" id="sg-drawer" aria-labelledby="sg-drawer-title">
+  <div class="drawer__head">
+    <div>
+      <p class="eyebrow">Inventory record</p>
+      <h2 class="modal__title" id="sg-drawer-title">Black canvas backpack</h2>
+    </div>
+    <button type="button" class="btn btn--icon btn--sm btn--ghost" data-drawer-close aria-label="Close panel">
+      <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-close"></use></svg>
+    </button>
+  </div>
+  <div class="drawer__body stack stack-5">
+    <span class="status-chip" data-status="in-storage">
+      <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-st-storage"></use></svg>
+      <span class="status-chip__label">In Storage</span>
+    </span>
+    <dl class="kv">
+      <dt>Reference</dt><dd class="mono">LF-2026-0418-K7Q3</dd>
+      <dt>Bin</dt><dd class="mono">B-14</dd>
+      <dt>Handed in</dt><dd>28 July 2026</dd>
+      <dt>Days held</dt><dd class="mono">3</dd>
+    </dl>
+    <div class="callout">
+      <svg class="icon callout__icon" aria-hidden="true" focusable="false"><use href="#i-lock"></use></svg>
+      <div class="callout__body">
+        <p class="callout__title">Identifying marks are staff-only</p>
+        <p>Visible here because this is the admin surface. Never rendered on a public page.</p>
+      </div>
+    </div>
+  </div>
+  <div class="drawer__foot">
+    <button type="button" class="btn btn--secondary u-grow" data-drawer-close>Close</button>
+    <button type="button" class="btn btn--primary u-grow">Edit record</button>
+  </div>
+</aside>
+
+<script src="../js/store.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/components/toast.js"></script>
+<script src="../js/components/modal.js"></script>
+<script src="../js/main.js"></script>
+<script src="../js/pages/styleguide.js"></script>
+</body>
+</html>

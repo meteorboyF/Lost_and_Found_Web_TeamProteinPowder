@@ -1,0 +1,288 @@
+/* ==========================================================================
+   feedback.css — the four states every list view must ship:
+   default, loading (skeleton), empty, error. Plus callouts and meters.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Skeleton
+   -------------------------------------------------------------------------- */
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--r-1);
+  background-color: var(--skeleton-base);
+}
+
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--skeleton-sheen),
+    transparent
+  );
+  transform: translateX(-100%);
+  animation: skeleton-sweep 1.4s var(--ease) infinite;
+}
+
+@keyframes skeleton-sweep {
+  to { transform: translateX(100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after { animation: none; opacity: 0.4; transform: none; }
+}
+
+.skeleton--text   { height: 1em; }
+.skeleton--title  { height: 1.6em; width: 70%; }
+.skeleton--line   { height: 0.85em; width: 100%; }
+.skeleton--short  { height: 0.85em; width: 45%; }
+.skeleton--chip   { height: 1.5rem; width: 6rem; border-radius: var(--r-1); }
+.skeleton--media  { aspect-ratio: 4 / 3; width: 100%; border-radius: 0; }
+.skeleton--avatar { width: 2.5rem; height: 2.5rem; border-radius: 50%; }
+
+/* A skeleton card mirrors the real card's geometry exactly, so the swap
+   from loading to loaded does not shift the grid. */
+.skeleton-card {
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-2);
+  background-color: var(--bg-surface);
+  overflow: hidden;
+}
+
+.skeleton-card__body {
+  display: grid;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+}
+
+/* --------------------------------------------------------------------------
+   Empty / error state
+   -------------------------------------------------------------------------- */
+
+.state {
+  display: grid;
+  justify-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-9) var(--sp-5);
+  border: var(--border-w) dashed var(--line-strong);
+  border-radius: var(--r-2);
+  text-align: center;
+}
+
+.state__glyph {
+  --icon-size: 2.5rem;
+  color: var(--fg-disabled);
+  stroke-width: 1;
+}
+
+.state__title {
+  font-family: var(--font-display);
+  font-size: var(--fs-400);
+  letter-spacing: var(--tr-display);
+}
+
+.state__desc {
+  max-width: 42ch;
+  color: var(--fg-muted);
+}
+
+.state__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-3);
+  margin-top: var(--sp-2);
+}
+
+.state--error {
+  border-style: solid;
+  border-color: var(--accent-lost);
+  background-color: var(--accent-lost-wash);
+  color: var(--accent-on-wash);
+}
+
+.state--error .state__glyph { color: var(--accent-lost); }
+.state--error .state__desc  { color: inherit; opacity: 0.85; }
+
+.state--compact { padding: var(--sp-6) var(--sp-4); }
+
+/* --------------------------------------------------------------------------
+   Callout — inline advisory. Used for the duplicate-detection warning,
+   the anonymity explainer, and the privacy notice.
+   -------------------------------------------------------------------------- */
+
+.callout {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  border: var(--border-w) solid var(--line);
+  border-left: 3px solid var(--fg-muted);
+  border-radius: var(--r-2);
+  background-color: var(--bg-sunken);
+  font-size: var(--fs-200);
+}
+
+.callout__icon { margin-top: 0.15em; color: var(--fg-muted); }
+
+.callout__title { font-weight: var(--fw-bold); margin-bottom: var(--sp-1); }
+
+.callout__body > p { max-width: var(--measure); }
+
+.callout--warn {
+  border-left-color: var(--accent-found);
+  background-color: var(--accent-found-wash);
+  color: var(--accent-on-wash);
+}
+
+.callout--warn .callout__icon { color: var(--accent-found); }
+
+.callout--danger {
+  border-left-color: var(--accent-lost);
+  background-color: var(--accent-lost-wash);
+  color: var(--accent-on-wash);
+}
+
+.callout--danger .callout__icon { color: var(--accent-lost); }
+
+/* --------------------------------------------------------------------------
+   Meter — match confidence. Segmented rather than continuous, because a
+   confidence score is an estimate and a smooth bar over-claims precision.
+   -------------------------------------------------------------------------- */
+
+.meter {
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.meter__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  font-size: var(--fs-100);
+}
+
+.meter__value {
+  font-family: var(--font-mono);
+  font-weight: var(--fw-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+.meter__track {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 2px;
+  height: 0.5rem;
+}
+
+.meter__seg {
+  background-color: var(--bg-sunken);
+  border: var(--border-w) solid var(--line);
+  transition: background-color var(--dur-2) var(--ease),
+              border-color var(--dur-2) var(--ease);
+  transition-delay: calc(var(--i, 0) * 30ms);
+}
+
+.meter__seg[data-on='true'] {
+  background-color: var(--accent-found);
+  border-color: var(--accent-found);
+}
+
+.meter--low .meter__seg[data-on='true'] {
+  background-color: var(--fg-muted);
+  border-color: var(--fg-muted);
+}
+
+.meter--high .meter__seg[data-on='true'] {
+  background-color: var(--accent-found);
+  border-color: var(--accent-found);
+}
+
+/* Linear progress, for uploads and multi-step submits. */
+.progress {
+  height: 4px;
+  border-radius: var(--r-1);
+  background-color: var(--bg-sunken);
+  overflow: hidden;
+}
+
+.progress__bar {
+  height: 100%;
+  width: calc(var(--value, 0) * 100%);
+  background-color: var(--accent-found);
+  transition: width var(--dur-3) var(--ease);
+}
+
+.progress--indeterminate .progress__bar {
+  width: 35%;
+  animation: progress-slide 1.2s var(--ease) infinite;
+}
+
+@keyframes progress-slide {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(340%); }
+}
+
+/* --------------------------------------------------------------------------
+   Attempt pips — the 3-attempt claim challenge. Shape changes on failure,
+   not just colour.
+   -------------------------------------------------------------------------- */
+
+.attempts {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-100);
+  color: var(--fg-muted);
+}
+
+.attempts__pip {
+  width: 0.7rem;
+  height: 0.7rem;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 50%;
+  transition: all var(--dur-2) var(--ease);
+}
+
+.attempts__pip[data-used='true'] {
+  border-color: var(--accent-lost);
+  background-color: var(--accent-lost);
+  border-radius: var(--r-1);
+  transform: rotate(45deg);
+}
+
+/* --------------------------------------------------------------------------
+   Avatar — initials only. We never render a student's photograph publicly.
+   -------------------------------------------------------------------------- */
+
+.avatar {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: var(--avatar-size, 2.5rem);
+  height: var(--avatar-size, 2.5rem);
+  border: var(--border-w) solid var(--line);
+  border-radius: 50%;
+  background-color: var(--bg-sunken);
+  font-family: var(--font-ui);
+  font-size: calc(var(--avatar-size, 2.5rem) * 0.36);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tr-wide);
+  color: var(--fg-secondary);
+  text-transform: uppercase;
+  user-select: none;
+}
+
+.avatar--sm { --avatar-size: 1.75rem; }
+.avatar--lg { --avatar-size: 4rem; }
+
+/* Anonymous participant in a message thread. */
+.avatar--anon {
+  border-style: dashed;
+  color: var(--fg-muted);
+}

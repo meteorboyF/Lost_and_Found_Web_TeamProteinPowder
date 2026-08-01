@@ -1,0 +1,356 @@
+/* ==========================================================================
+   tokens.css — the single source of truth for the design system
+   Nothing below this file may hard-code a colour, size, or duration.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Typefaces. Subset WOFF2, self-hosted. Bengali faces carry a unicode-range
+   so a browser only downloads the 292 KB of Bengali outlines if Bengali
+   glyphs actually appear on the page.
+   -------------------------------------------------------------------------- */
+
+@font-face {
+  font-family: 'Serif Display';
+  src: url('../assets/fonts/serif-display-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Serif Display';
+  src: url('../assets/fonts/serif-display-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Serif Display';
+  src: url('../assets/fonts/serif-display-400i.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Serif Display';
+  src: url('../assets/fonts/bn-serif-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0980-09FF, U+200C-200D, U+0964-0965;
+}
+
+@font-face {
+  font-family: 'Serif Display';
+  src: url('../assets/fonts/bn-serif-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0980-09FF, U+200C-200D, U+0964-0965;
+}
+
+@font-face {
+  font-family: 'Sans Display';
+  src: url('../assets/fonts/sans-display-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Sans Display';
+  src: url('../assets/fonts/sans-display-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Sans Display';
+  src: url('../assets/fonts/bn-sans-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0980-09FF, U+200C-200D, U+0964-0965;
+}
+
+@font-face {
+  font-family: 'Sans Display';
+  src: url('../assets/fonts/bn-sans-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0980-09FF, U+200C-200D, U+0964-0965;
+}
+
+@font-face {
+  font-family: 'Registry Mono';
+  src: url('../assets/fonts/mono-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* --------------------------------------------------------------------------
+   Primitives — raw values, never referenced directly by components.
+   Components consume the semantic aliases further down.
+   -------------------------------------------------------------------------- */
+
+:root {
+  /* Ink & paper */
+  --c-ink: #0f1115;
+  --c-paper: #f7f5f1;
+  --c-white: #fffdf9;
+  --c-bone: #efece6;
+
+  /* Warm neutral ramp */
+  --c-gray-1: #3b3e46;
+  --c-gray-2: #676a73;
+  --c-gray-3: #9a9ca3;
+  --c-hairline: #dcd8d0;
+
+  /* Signal — the only two hues in the entire system */
+  --c-found: #8a5606;
+  --c-found-wash: #f2e3c4;
+  --c-lost: #9e2b25;
+  --c-lost-wash: #f6dcda;
+
+  /* Dark-theme primitives */
+  --c-base-d: #14161b;
+  --c-surface-d: #1c1f26;
+  --c-sunken-d: #0e1014;
+  --c-ink-d: #ede9e1;
+  --c-gray-1-d: #c2bfb8;
+  --c-gray-2-d: #9aa0a8;
+  --c-gray-3-d: #6a6d75;
+  --c-hairline-d: #30343c;
+  --c-found-d: #e0a64b;
+  --c-found-wash-d: #3a2c11;
+  --c-lost-d: #e8736b;
+  --c-lost-wash-d: #3b1c1a;
+
+  /* ------------------------------------------------------------------
+     Type. Modular scale, ratio 1.25, 16px root.
+     ------------------------------------------------------------------ */
+  --font-display: 'Serif Display', georgia, 'Times New Roman', serif;
+  --font-ui: 'Sans Display', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Registry Mono', ui-monospace, 'SF Mono', menlo, monospace;
+
+  --fs-100: 0.8rem;      /* 12.8 — meta, table captions          */
+  --fs-200: 1rem;        /* 16   — body                          */
+  --fs-300: 1.25rem;     /* 20   — lead paragraph                */
+  --fs-400: 1.5625rem;   /* 25   — h4                            */
+  --fs-500: 1.953rem;    /* 31.25 — h3                           */
+  --fs-600: 2.441rem;    /* 39   — h2                            */
+  --fs-700: 3.052rem;    /* 48.8 — h1                            */
+  --fs-800: 3.815rem;    /* 61   — section display               */
+  --fs-900: 4.768rem;    /* 76.3 — hero display                  */
+
+  /* Fluid display sizes for the grid-breaking moments */
+  --fs-hero: clamp(2.441rem, 1.2rem + 6.2vw, 4.768rem);
+  --fs-section: clamp(1.953rem, 1.3rem + 3.2vw, 3.052rem);
+
+  --lh-tight: 1.05;
+  --lh-snug: 1.2;
+  --lh-normal: 1.55;
+  --lh-loose: 1.7;
+
+  --tr-display: -0.02em;   /* tight tracking on large serif       */
+  --tr-normal: 0;
+  --tr-wide: 0.02em;
+  --tr-caps: 0.09em;       /* small-caps eyebrows                 */
+
+  --fw-regular: 400;
+  --fw-bold: 700;
+
+  /* ------------------------------------------------------------------
+     Space — 4px base, 8pt rhythm above --sp-2
+     ------------------------------------------------------------------ */
+  --sp-1: 0.25rem;   /* 4  */
+  --sp-2: 0.5rem;    /* 8  */
+  --sp-3: 0.75rem;   /* 12 */
+  --sp-4: 1rem;      /* 16 */
+  --sp-5: 1.5rem;    /* 24 */
+  --sp-6: 2rem;      /* 32 */
+  --sp-7: 3rem;      /* 48 */
+  --sp-8: 4rem;      /* 64 */
+  --sp-9: 6rem;      /* 96 */
+  --sp-10: 8rem;     /* 128 */
+
+  /* ------------------------------------------------------------------
+     Layout
+     ------------------------------------------------------------------ */
+  --measure: 68ch;
+  --content-max: 80rem;      /* 1280 */
+  --content-narrow: 46rem;   /* long-form reading column */
+  --gutter: var(--sp-4);
+  --grid-cols: 12;
+  --grid-gap: var(--sp-5);
+
+  /* ------------------------------------------------------------------
+     Shape — architectural, not pill-shaped
+     ------------------------------------------------------------------ */
+  --r-0: 0;
+  --r-1: 2px;    /* chips, inputs         */
+  --r-2: 4px;    /* default              */
+  --r-3: 8px;    /* drawers, modals only */
+  --border-w: 1px;
+
+  /* ------------------------------------------------------------------
+     Motion
+     ------------------------------------------------------------------ */
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --ease-out: cubic-bezier(0, 0, 0, 1);
+  --dur-1: 150ms;
+  --dur-2: 200ms;
+  --dur-3: 250ms;
+  --dur-slow: 400ms;
+
+  /* ------------------------------------------------------------------
+     Z-index ladder
+     ------------------------------------------------------------------ */
+  --z-base: 0;
+  --z-sticky: 100;
+  --z-header: 200;
+  --z-drawer: 300;
+  --z-modal: 400;
+  --z-toast: 500;
+}
+
+/* --------------------------------------------------------------------------
+   Semantic aliases — LIGHT. Components only ever reference these.
+   -------------------------------------------------------------------------- */
+
+:root,
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --bg-page: var(--c-paper);
+  --bg-surface: var(--c-white);
+  --bg-sunken: var(--c-bone);
+  --bg-inverse: var(--c-ink);
+  --bg-scrim: rgb(15 17 21 / 0.55);
+  --bg-hover: rgb(15 17 21 / 0.04);
+  --bg-active: rgb(15 17 21 / 0.08);
+
+  --fg-primary: var(--c-ink);
+  --fg-secondary: var(--c-gray-1);
+  --fg-muted: var(--c-gray-2);
+  --fg-disabled: var(--c-gray-3);   /* non-text only: icons, rules */
+  --fg-inverse: var(--c-paper);
+
+  --line: var(--c-hairline);
+  --line-strong: var(--c-gray-3);
+  --line-inverse: rgb(247 245 241 / 0.22);
+
+  --accent-found: var(--c-found);
+  --accent-found-wash: var(--c-found-wash);
+  --accent-lost: var(--c-lost);
+  --accent-lost-wash: var(--c-lost-wash);
+  --accent-on-wash: var(--c-ink);
+
+  --focus-ring: var(--c-found);
+  --focus-offset: var(--bg-page);
+
+  /* Depth comes from contrast, not blur. */
+  --elev-1: inset 0 0 0 1px var(--line);
+  --elev-2: inset 0 0 0 1px var(--line), 0 1px 0 0 rgb(15 17 21 / 0.04);
+  --elev-3: inset 0 0 0 1px var(--line), 0 8px 24px -12px rgb(15 17 21 / 0.28);
+
+  --skeleton-base: var(--c-bone);
+  --skeleton-sheen: rgb(255 253 249 / 0.85);
+}
+
+/* --------------------------------------------------------------------------
+   Semantic aliases — DARK. Authored, not inverted: surfaces get LIGHTER with
+   elevation, hairlines carry more of the structure, accents desaturate.
+   -------------------------------------------------------------------------- */
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg-page: var(--c-base-d);
+  --bg-surface: var(--c-surface-d);
+  --bg-sunken: var(--c-sunken-d);
+  --bg-inverse: var(--c-ink-d);
+  --bg-scrim: rgb(6 7 9 / 0.68);
+  --bg-hover: rgb(237 233 225 / 0.06);
+  --bg-active: rgb(237 233 225 / 0.11);
+
+  --fg-primary: var(--c-ink-d);
+  --fg-secondary: var(--c-gray-1-d);
+  --fg-muted: var(--c-gray-2-d);
+  --fg-disabled: var(--c-gray-3-d);
+  --fg-inverse: var(--c-base-d);
+
+  --line: var(--c-hairline-d);
+  --line-strong: var(--c-gray-3-d);
+  --line-inverse: rgb(20 22 27 / 0.28);
+
+  --accent-found: var(--c-found-d);
+  --accent-found-wash: var(--c-found-wash-d);
+  --accent-lost: var(--c-lost-d);
+  --accent-lost-wash: var(--c-lost-wash-d);
+  --accent-on-wash: var(--c-ink-d);
+
+  --focus-ring: var(--c-found-d);
+  --focus-offset: var(--bg-page);
+
+  --elev-1: inset 0 0 0 1px var(--line);
+  --elev-2: inset 0 0 0 1px var(--line);
+  --elev-3: inset 0 0 0 1px var(--line), 0 12px 32px -16px rgb(0 0 0 / 0.7);
+
+  --skeleton-base: #23262e;
+  --skeleton-sheen: rgb(237 233 225 / 0.07);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+
+    --bg-page: var(--c-base-d);
+    --bg-surface: var(--c-surface-d);
+    --bg-sunken: var(--c-sunken-d);
+    --bg-inverse: var(--c-ink-d);
+    --bg-scrim: rgb(6 7 9 / 0.68);
+    --bg-hover: rgb(237 233 225 / 0.06);
+    --bg-active: rgb(237 233 225 / 0.11);
+
+    --fg-primary: var(--c-ink-d);
+    --fg-secondary: var(--c-gray-1-d);
+    --fg-muted: var(--c-gray-2-d);
+    --fg-disabled: var(--c-gray-3-d);
+    --fg-inverse: var(--c-base-d);
+
+    --line: var(--c-hairline-d);
+    --line-strong: var(--c-gray-3-d);
+    --line-inverse: rgb(20 22 27 / 0.28);
+
+    --accent-found: var(--c-found-d);
+    --accent-found-wash: var(--c-found-wash-d);
+    --accent-lost: var(--c-lost-d);
+    --accent-lost-wash: var(--c-lost-wash-d);
+    --accent-on-wash: var(--c-ink-d);
+
+    --focus-ring: var(--c-found-d);
+
+    --elev-1: inset 0 0 0 1px var(--line);
+    --elev-2: inset 0 0 0 1px var(--line);
+    --elev-3: inset 0 0 0 1px var(--line), 0 12px 32px -16px rgb(0 0 0 / 0.7);
+
+    --skeleton-base: #23262e;
+    --skeleton-sheen: rgb(237 233 225 / 0.07);
+  }
+}
+
+/* Motion kill switch — one place, honoured system-wide. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-1: 0ms;
+    --dur-2: 0ms;
+    --dur-3: 0ms;
+    --dur-slow: 0ms;
+  }
+}

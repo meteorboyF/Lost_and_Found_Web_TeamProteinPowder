@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300" role="img" aria-label="Illustration of a canvas backpack">
+  <title>Canvas backpack</title>
+  <rect width="400" height="300" fill="#efece6"/>
+  <g stroke="#0f1115" stroke-width="2.5" fill="none" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M148 118c0-32 10-52 52-52s52 20 52 52" opacity="0.35"/>
+    <path d="M132 116h136a16 16 0 0 1 16 16v96a16 16 0 0 1-16 16H132a16 16 0 0 1-16-16v-96a16 16 0 0 1 16-16z" fill="#dcd8d0"/>
+    <path d="M116 168h168"/>
+    <path d="M156 116v-14a14 14 0 0 1 14-14h60a14 14 0 0 1 14 14v14" fill="#c9c5bd"/>
+    <rect x="166" y="188" width="68" height="42" rx="6" fill="#efece6"/>
+    <path d="M186 188v-8a14 14 0 0 1 28 0v8"/>
+  </g>
+  <g fill="#0f1115" opacity="0.25">
+    <circle cx="200" cy="209" r="4"/>
+  </g>
+</svg>

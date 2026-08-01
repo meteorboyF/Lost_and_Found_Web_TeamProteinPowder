@@ -1,0 +1,25 @@
+# Editor / tooling
+.claude/
+CLAUDE.md
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Scratch / local notes
+scratch/
+tmp/
+*.local.*
+notes.local.md
+
+# Logs
+*.log
+npm-debug.log*
+
+# Local server artifacts
+.cache/

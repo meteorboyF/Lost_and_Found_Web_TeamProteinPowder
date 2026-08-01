@@ -1,0 +1,38 @@
+/* ==========================================================================
+   main.css — the single stylesheet every page links.
+
+   Order matters and is the only cascade mechanism used here:
+     tokens  →  resolve before anything consumes them
+     base    →  element defaults
+     layout  →  scaffolding
+     components
+     utilities  →  last, so single-purpose helpers win specificity ties
+                   without ever needing !important
+
+   Deliberately NOT using @layer: every page inlines a critical tokens+reset
+   block in its <head> to avoid the FOUC caused by this import waterfall, and
+   unlayered inline CSS would outrank a layered stylesheet. Plain source order
+   keeps the inline block and this file in the same cascade origin, so the
+   full definitions here always win.
+
+   Page-specific files are linked by the pages that need them, not imported
+   here — no page should download another page's CSS.
+   ========================================================================== */
+
+@import url('reset.css');
+@import url('tokens.css');
+@import url('base.css');
+@import url('layout.css');
+
+@import url('components/button.css');
+@import url('components/status-chip.css');
+@import url('components/form.css');
+@import url('components/card.css');
+@import url('components/nav.css');
+@import url('components/table.css');
+@import url('components/overlay.css');
+@import url('components/stepper.css');
+@import url('components/feedback.css');
+@import url('components/controls.css');
+
+@import url('utilities.css');

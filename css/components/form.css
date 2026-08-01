@@ -1,0 +1,325 @@
+/* ==========================================================================
+   form.css — fields, validation, and the controls built from scratch.
+   Rule enforced throughout: an error message NEVER shifts layout. Every
+   field reserves its message row up front.
+   ========================================================================== */
+
+.field {
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.field__label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  font-size: var(--fs-100);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tr-caps);
+  text-transform: uppercase;
+  color: var(--fg-secondary);
+}
+
+.field__optional {
+  font-weight: var(--fw-regular);
+  letter-spacing: var(--tr-normal);
+  text-transform: none;
+  color: var(--fg-muted);
+}
+
+.field__hint {
+  font-size: var(--fs-100);
+  color: var(--fg-muted);
+}
+
+/* The reserved message row. Always present, collapses to zero content but
+   keeps its line box, so validation never reflows the form. */
+.field__message {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  min-height: 1.25rem;
+  font-size: var(--fs-100);
+  line-height: 1.25rem;
+  color: var(--accent-lost);
+}
+
+.field__message:empty::before {
+  content: '';
+}
+
+.field__message .icon { --icon-size: 0.9rem; }
+
+/* Inputs ---------------------------------------------------------------- */
+
+.input,
+.textarea,
+.select {
+  width: 100%;
+  padding: var(--sp-3);
+  min-height: 2.75rem;
+  border: var(--border-w) solid var(--line-strong);
+  border-radius: var(--r-1);
+  background-color: var(--bg-surface);
+  color: var(--fg-primary);
+  font-family: var(--font-ui);
+  font-size: var(--fs-200);
+  transition: border-color var(--dur-1) var(--ease),
+              background-color var(--dur-1) var(--ease);
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--fg-muted);
+  opacity: 1;
+}
+
+.input:hover:not(:disabled),
+.textarea:hover:not(:disabled),
+.select:hover:not(:disabled) {
+  border-color: var(--fg-muted);
+}
+
+.input:disabled,
+.textarea:disabled,
+.select:disabled {
+  background-color: var(--bg-sunken);
+  color: var(--fg-muted);
+  cursor: not-allowed;
+}
+
+.input[readonly] {
+  background-color: var(--bg-sunken);
+}
+
+.textarea {
+  min-height: 7rem;
+  resize: vertical;
+  line-height: var(--lh-normal);
+}
+
+/* Invalid: border + message + icon, never colour alone. */
+.input[aria-invalid='true'],
+.textarea[aria-invalid='true'],
+.select[aria-invalid='true'] {
+  border-color: var(--accent-lost);
+  border-width: 2px;
+  padding: calc(var(--sp-3) - 1px);
+}
+
+/* Valid confirmation, used by the claim challenge and email validation. */
+.input[data-valid='true'] {
+  border-color: var(--accent-found);
+}
+
+/* Native select needs its own arrow since we ship no images. */
+.select {
+  appearance: none;
+  padding-right: var(--sp-7);
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+                    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 1.15rem) 55%, calc(100% - 0.8rem) 55%;
+  background-size: 0.35rem 0.35rem, 0.35rem 0.35rem;
+  background-repeat: no-repeat;
+}
+
+/* Input with a leading icon (search, reference code lookup). */
+.input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-group .icon {
+  position: absolute;
+  left: var(--sp-3);
+  color: var(--fg-muted);
+  pointer-events: none;
+}
+
+.input-group .input {
+  padding-left: var(--sp-7);
+}
+
+.input-group__action {
+  position: absolute;
+  right: var(--sp-1);
+}
+
+/* Character counter sits in the label row, right-aligned. */
+.field__count {
+  font-family: var(--font-mono);
+  font-size: var(--fs-100);
+  font-weight: var(--fw-regular);
+  letter-spacing: var(--tr-normal);
+  text-transform: none;
+  color: var(--fg-muted);
+}
+
+.field__count[data-over='true'] { color: var(--accent-lost); }
+
+/* Checkbox and radio — hand-drawn, no appearance:auto ------------------- */
+
+.choice {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--sp-3);
+  align-items: start;
+  padding: var(--sp-3);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-2);
+  cursor: pointer;
+  transition: border-color var(--dur-1) var(--ease),
+              background-color var(--dur-1) var(--ease);
+}
+
+.choice:hover { background-color: var(--bg-hover); }
+
+.choice:has(input:checked) {
+  border-color: var(--fg-primary);
+  background-color: var(--bg-hover);
+}
+
+.choice:has(input:focus-visible) {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.choice:has(input:disabled) {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.choice__control {
+  appearance: none;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-top: 0.2em;
+  border: 1.5px solid var(--line-strong);
+  background-color: var(--bg-surface);
+  cursor: inherit;
+  transition: border-color var(--dur-1) var(--ease),
+              background-color var(--dur-1) var(--ease);
+}
+
+.choice__control[type='checkbox'] { border-radius: var(--r-1); }
+.choice__control[type='radio']    { border-radius: 50%; }
+
+.choice__control:checked {
+  border-color: var(--fg-primary);
+  background-color: var(--fg-primary);
+}
+
+.choice__control[type='checkbox']:checked {
+  background-image: linear-gradient(45deg, transparent 42%, var(--bg-surface) 42%, var(--bg-surface) 56%, transparent 56%),
+                    linear-gradient(-45deg, transparent 55%, var(--bg-surface) 55%, var(--bg-surface) 69%, transparent 69%);
+  background-position: 0.05rem 0.12rem, -0.05rem 0.02rem;
+  background-size: 0.75rem 0.75rem;
+  background-repeat: no-repeat;
+}
+
+.choice__control[type='radio']:checked {
+  background-color: var(--bg-surface);
+  box-shadow: inset 0 0 0 4px var(--fg-primary);
+}
+
+.choice__title { font-weight: var(--fw-bold); }
+
+.choice__desc {
+  font-size: var(--fs-100);
+  color: var(--fg-muted);
+}
+
+/* Compact inline variant for filter panels. */
+.choice--bare {
+  padding: var(--sp-1) 0;
+  border: 0;
+  border-radius: 0;
+  align-items: center;
+}
+
+.choice--bare:hover { background-color: transparent; }
+.choice--bare:has(input:checked) { background-color: transparent; }
+
+/* Switch ---------------------------------------------------------------- */
+
+.switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  cursor: pointer;
+}
+
+.switch__control {
+  appearance: none;
+  position: relative;
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 1.5rem;
+  border: var(--border-w) solid var(--line-strong);
+  border-radius: var(--r-1);
+  background-color: var(--bg-sunken);
+  cursor: inherit;
+  transition: background-color var(--dur-2) var(--ease),
+              border-color var(--dur-2) var(--ease);
+}
+
+.switch__control::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: calc(1.5rem - 8px);
+  height: calc(1.5rem - 8px);
+  border-radius: 1px;
+  background-color: var(--fg-muted);
+  transition: transform var(--dur-2) var(--ease),
+              background-color var(--dur-2) var(--ease);
+}
+
+.switch__control:checked {
+  border-color: var(--accent-found);
+  background-color: var(--accent-found-wash);
+}
+
+.switch__control:checked::after {
+  transform: translateX(1.25rem);
+  background-color: var(--accent-found);
+}
+
+.switch__control:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.switch__text { display: grid; gap: 2px; }
+
+/* Fieldset -------------------------------------------------------------- */
+
+.fieldset {
+  display: grid;
+  gap: var(--sp-4);
+  padding: var(--sp-5);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-2);
+}
+
+.fieldset__legend {
+  padding-inline: var(--sp-2);
+  margin-inline-start: calc(var(--sp-2) * -1);
+  font-size: var(--fs-100);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tr-caps);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+/* Two-up field row that stacks on small screens. */
+.field-row {
+  display: grid;
+  gap: var(--sp-4);
+}
+
+@media (min-width: 40em) {
+  .field-row { grid-template-columns: 1fr 1fr; }
+  .field-row--3 { grid-template-columns: repeat(3, 1fr); }
+}

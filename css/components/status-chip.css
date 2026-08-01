@@ -1,0 +1,220 @@
+/* ==========================================================================
+   status-chip.css — the ten lifecycle states.
+
+   The palette only has two hues, so a chip is NEVER identified by colour
+   alone. Three signals stack on every chip:
+     1. a glyph with a distinct silhouette
+     2. a fill weight  (ghost / outline / wash / solid)
+     3. the literal text label
+   Colour is the fourth signal and only appears on the states where urgency
+   or ownership actually matters: found-side, lost-side, disputed.
+   ========================================================================== */
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-3) var(--sp-1) var(--sp-2);
+  border: var(--border-w) solid var(--line-strong);
+  border-radius: var(--r-1);
+  background-color: transparent;
+  color: var(--fg-secondary);
+  font-family: var(--font-ui);
+  font-size: var(--fs-100);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tr-wide);
+  line-height: 1.4;
+  white-space: nowrap;
+  vertical-align: middle;
+  transition: background-color var(--dur-2) var(--ease),
+              border-color var(--dur-2) var(--ease),
+              color var(--dur-2) var(--ease);
+}
+
+.status-chip .icon {
+  --icon-size: 0.95rem;
+  stroke-width: 1.75;
+}
+
+.status-chip--lg {
+  padding: var(--sp-2) var(--sp-4) var(--sp-2) var(--sp-3);
+  font-size: var(--fs-200);
+  letter-spacing: var(--tr-normal);
+}
+
+.status-chip--lg .icon { --icon-size: 1.15rem; }
+
+/* -- 1. Reported ---------------------------------------------------------
+   Ghost weight, dashed edge: nothing has been physically confirmed yet. */
+.status-chip[data-status='reported'] {
+  border-style: dashed;
+  border-color: var(--line-strong);
+  color: var(--fg-muted);
+}
+
+/* -- 2. In Storage -------------------------------------------------------
+   Outline, solid edge, neutral. The item is real and on a shelf. */
+.status-chip[data-status='in-storage'] {
+  border-color: var(--fg-muted);
+  color: var(--fg-secondary);
+}
+
+/* -- 3. Match Suggested --------------------------------------------------
+   Found-side accent, outline weight. The system is proposing, not asserting. */
+.status-chip[data-status='match-suggested'] {
+  border-color: var(--accent-found);
+  color: var(--accent-found);
+}
+
+/* -- 4. Claim Pending ----------------------------------------------------
+   Wash fill: a human is now waiting on this. */
+.status-chip[data-status='claim-pending'] {
+  border-color: var(--accent-found);
+  background-color: var(--accent-found-wash);
+  color: var(--accent-on-wash);
+}
+
+/* -- 5. Verified ---------------------------------------------------------
+   Wash fill plus a leading rule — identity has been proven. */
+.status-chip[data-status='verified'] {
+  border-color: var(--accent-found);
+  border-left-width: 3px;
+  background-color: var(--accent-found-wash);
+  color: var(--accent-on-wash);
+}
+
+/* -- 6. Returned ---------------------------------------------------------
+   Solid ink. The only fully-filled neutral chip: the terminal success. */
+.status-chip[data-status='returned'] {
+  border-color: var(--fg-primary);
+  background-color: var(--fg-primary);
+  color: var(--bg-surface);
+}
+
+/* -- 7. Archived ---------------------------------------------------------
+   Sunken fill, muted. Out of circulation but still on the books. */
+.status-chip[data-status='archived'] {
+  border-color: var(--line);
+  background-color: var(--bg-sunken);
+  color: var(--fg-muted);
+}
+
+/* -- 8. Disposed / Donated ----------------------------------------------
+   Struck through. The record survives, the object does not. */
+.status-chip[data-status='disposed'] {
+  border-color: var(--line);
+  background-color: var(--bg-sunken);
+  color: var(--fg-muted);
+}
+
+.status-chip[data-status='disposed'] .status-chip__label {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+/* -- 9. Disputed ---------------------------------------------------------
+   The only crimson chip. Two people want the same object. */
+.status-chip[data-status='disputed'] {
+  border-color: var(--accent-lost);
+  border-left-width: 3px;
+  background-color: var(--accent-lost-wash);
+  color: var(--accent-on-wash);
+}
+
+/* -- 10. Self-Closed -----------------------------------------------------
+   Ghost weight, no border. The user resolved it themselves and left. */
+.status-chip[data-status='self-closed'] {
+  border-color: transparent;
+  background-color: var(--bg-hover);
+  color: var(--fg-muted);
+}
+
+/* --------------------------------------------------------------------------
+   Kind tag — is this record a LOST report or a FOUND record? Deliberately a
+   different silhouette from a status chip so the two never read as the same
+   class of information.
+   -------------------------------------------------------------------------- */
+
+.kind-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding-inline: var(--sp-2);
+  border-left: 3px solid currentColor;
+  font-family: var(--font-ui);
+  font-size: var(--fs-100);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tr-caps);
+  text-transform: uppercase;
+  line-height: 1.6;
+}
+
+.kind-tag--lost  { color: var(--accent-lost); }
+.kind-tag--found { color: var(--accent-found); }
+
+/* --------------------------------------------------------------------------
+   Count badge — notification and queue counts.
+   -------------------------------------------------------------------------- */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.35rem;
+  height: 1.35rem;
+  padding-inline: 0.35em;
+  border-radius: var(--r-1);
+  background-color: var(--accent-lost);
+  color: var(--c-white);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+:root[data-theme='dark'] .badge { color: var(--c-base-d); }
+
+.badge--neutral {
+  background-color: var(--bg-sunken);
+  border: var(--border-w) solid var(--line);
+  color: var(--fg-secondary);
+}
+
+.badge--dot {
+  min-width: 0.5rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  padding: 0;
+  border-radius: 50%;
+}
+
+/* --------------------------------------------------------------------------
+   Privacy badge — the UI expression of the verification model. Appears on
+   every public photo whose identifying detail has been obscured.
+   -------------------------------------------------------------------------- */
+
+.privacy-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-3);
+  border: var(--border-w) solid var(--line-inverse);
+  border-radius: var(--r-1);
+  background-color: rgb(15 17 21 / 0.78);
+  color: var(--c-paper);
+  font-size: var(--fs-100);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tr-wide);
+  backdrop-filter: blur(3px);
+}
+
+.privacy-badge .icon { --icon-size: 0.9rem; }
+
+@media (forced-colors: active) {
+  .status-chip,
+  .kind-tag,
+  .badge,
+  .privacy-badge {
+    border: 1px solid CanvasText;
+  }
+}

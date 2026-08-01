@@ -1,0 +1,224 @@
+/* ==========================================================================
+   table.css — the admin data table.
+
+   Below 64em the table stops being a table: every row becomes a card built
+   from the column labels carried in data-label. It never overflows.
+   ========================================================================== */
+
+.table-wrap {
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-2);
+  background-color: var(--bg-surface);
+  overflow: hidden;
+}
+
+.table {
+  width: 100%;
+  font-size: var(--fs-200);
+  font-variant-numeric: tabular-nums;
+}
+
+.table caption {
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: var(--border-w) solid var(--line);
+  font-size: var(--fs-100);
+  text-align: left;
+  color: var(--fg-muted);
+}
+
+.table thead th {
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: var(--border-w) solid var(--line-strong);
+  background-color: var(--bg-sunken);
+  font-size: var(--fs-100);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tr-caps);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  white-space: nowrap;
+}
+
+.table tbody td,
+.table tbody th {
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: var(--border-w) solid var(--line);
+  vertical-align: middle;
+}
+
+.table tbody tr:last-child td,
+.table tbody tr:last-child th { border-bottom: 0; }
+
+.table tbody tr {
+  transition: background-color var(--dur-1) var(--ease);
+}
+
+.table tbody tr:hover { background-color: var(--bg-hover); }
+
+.table tbody tr[aria-selected='true'] {
+  background-color: var(--accent-found-wash);
+}
+
+.table__num {
+  text-align: right;
+  font-family: var(--font-mono);
+}
+
+.table__id {
+  font-family: var(--font-mono);
+  font-size: var(--fs-100);
+  color: var(--fg-muted);
+}
+
+.table__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-1);
+}
+
+/* Sortable header — a real button inside the th. */
+.table__sort {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+}
+
+.table__sort:hover { color: var(--fg-primary); }
+
+.table__sort .icon {
+  --icon-size: 0.85rem;
+  opacity: 0;
+  transition: opacity var(--dur-1) var(--ease),
+              transform var(--dur-1) var(--ease);
+}
+
+.table__sort:hover .icon { opacity: 0.5; }
+
+th[aria-sort] .table__sort { color: var(--fg-primary); }
+th[aria-sort] .table__sort .icon { opacity: 1; }
+th[aria-sort='descending'] .table__sort .icon { transform: rotate(180deg); }
+
+/* Bulk-action bar — appears above the table when rows are selected. */
+.bulkbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: var(--border-w) solid var(--line);
+  background-color: var(--accent-found-wash);
+  color: var(--accent-on-wash);
+  font-size: var(--fs-100);
+}
+
+.bulkbar__count {
+  font-family: var(--font-mono);
+  font-weight: var(--fw-bold);
+}
+
+.bulkbar[hidden] { display: none; }
+
+/* --------------------------------------------------------------------------
+   Card mode. Applied by default on narrow screens.
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 63.99em) {
+  .table--responsive thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .table--responsive,
+  .table--responsive tbody,
+  .table--responsive tr,
+  .table--responsive td,
+  .table--responsive th {
+    display: block;
+    width: auto;
+  }
+
+  .table--responsive tbody tr {
+    padding: var(--sp-3) var(--sp-4);
+    border-bottom: var(--border-w) solid var(--line);
+  }
+
+  .table--responsive tbody td,
+  .table--responsive tbody th {
+    display: grid;
+    grid-template-columns: 8rem 1fr;
+    gap: var(--sp-3);
+    align-items: baseline;
+    padding: var(--sp-1) 0;
+    border-bottom: 0;
+  }
+
+  .table--responsive tbody td::before,
+  .table--responsive tbody th[data-label]::before {
+    content: attr(data-label);
+    font-size: var(--fs-100);
+    font-weight: var(--fw-bold);
+    letter-spacing: var(--tr-caps);
+    text-transform: uppercase;
+    color: var(--fg-muted);
+  }
+
+  .table--responsive .table__num { text-align: left; }
+
+  .table--responsive .table__actions { justify-content: flex-start; }
+
+  /* Cells that carry no label render full-width (the title row). */
+  .table--responsive tbody td[data-label='']::before { content: none; }
+  .table--responsive tbody td[data-label=''] { grid-template-columns: 1fr; }
+}
+
+/* Wide tables that genuinely cannot collapse get a scroll container with a
+   visible edge affordance instead. */
+.table-scroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  background:
+    linear-gradient(to right, var(--bg-surface) 30%, transparent),
+    linear-gradient(to left, var(--bg-surface) 30%, transparent) 100% 0,
+    linear-gradient(to right, rgb(15 17 21 / 0.12), transparent 12px),
+    linear-gradient(to left, rgb(15 17 21 / 0.12), transparent 12px) 100% 0;
+  background-repeat: no-repeat;
+  background-size: 40px 100%, 40px 100%, 14px 100%, 14px 100%;
+  background-attachment: local, local, scroll, scroll;
+}
+
+/* Definition-style key/value table used in drawers and item detail. */
+.kv {
+  display: grid;
+  grid-template-columns: minmax(7rem, auto) 1fr;
+  gap: var(--sp-2) var(--sp-4);
+  font-size: var(--fs-200);
+}
+
+.kv dt {
+  font-size: var(--fs-100);
+  letter-spacing: var(--tr-caps);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  padding-top: 0.15em;
+}
+
+.kv dd { margin: 0; }
+
+.kv--rows {
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+.kv--rows dt {
+  padding-top: var(--sp-3);
+  border-top: var(--border-w) solid var(--line);
+}
+
+.kv--rows dd { padding-bottom: var(--sp-3); }

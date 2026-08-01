@@ -1,0 +1,251 @@
+/* ==========================================================================
+   base.css — element defaults. Typography lives here, layout does not.
+   ========================================================================== */
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-ui);
+  font-size: var(--fs-200);
+  line-height: var(--lh-normal);
+  color: var(--fg-primary);
+  background-color: var(--bg-page);
+  transition: background-color var(--dur-2) var(--ease),
+              color var(--dur-2) var(--ease);
+}
+
+/* --------------------------------------------------------------------------
+   Headings — high-contrast serif, tight tracking, hanging-punctuation feel
+   -------------------------------------------------------------------------- */
+
+h1, h2, h3, h4,
+.h1, .h2, .h3, .h4 {
+  font-family: var(--font-display);
+  font-weight: var(--fw-regular);
+  letter-spacing: var(--tr-display);
+  line-height: var(--lh-tight);
+  hanging-punctuation: first last;
+}
+
+h1, .h1 { font-size: var(--fs-700); }
+h2, .h2 { font-size: var(--fs-600); }
+h3, .h3 { font-size: var(--fs-500); line-height: var(--lh-snug); }
+h4, .h4 { font-size: var(--fs-400); line-height: var(--lh-snug); }
+
+/* h5 / h6 drop out of the serif and become UI labels — an archive uses
+   small caps for sub-structure, not ever-smaller headlines. */
+h5, h6,
+.h5, .h6 {
+  font-family: var(--font-ui);
+  font-size: var(--fs-100);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tr-caps);
+  line-height: var(--lh-snug);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+/* --------------------------------------------------------------------------
+   Body copy
+   -------------------------------------------------------------------------- */
+
+p {
+  max-width: var(--measure);
+}
+
+.lead {
+  font-size: var(--fs-300);
+  line-height: var(--lh-loose);
+  color: var(--fg-secondary);
+}
+
+small,
+.meta {
+  font-size: var(--fs-100);
+  color: var(--fg-muted);
+}
+
+strong, b { font-weight: var(--fw-bold); }
+em, i     { font-style: italic; }
+
+/* Anything that is a code, an ID, a timestamp or a count is set in mono.
+   In a registry, machine-readable strings should look machine-readable. */
+code, kbd, samp, pre,
+.mono,
+[data-numeric] {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  font-variant-numeric: tabular-nums;
+}
+
+kbd {
+  padding: 0.1em 0.4em;
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-1);
+  background-color: var(--bg-sunken);
+  font-size: 0.85em;
+}
+
+pre {
+  padding: var(--sp-4);
+  overflow-x: auto;
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--r-2);
+  background-color: var(--bg-sunken);
+  line-height: var(--lh-normal);
+}
+
+blockquote {
+  padding-left: var(--sp-4);
+  border-left: 2px solid var(--accent-found);
+  font-family: var(--font-display);
+  font-size: var(--fs-300);
+  font-style: italic;
+}
+
+/* --------------------------------------------------------------------------
+   Links
+   -------------------------------------------------------------------------- */
+
+a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+  text-decoration-color: var(--line-strong);
+  transition: text-decoration-color var(--dur-1) var(--ease),
+              color var(--dur-1) var(--ease);
+}
+
+a:hover {
+  text-decoration-color: currentColor;
+}
+
+/* Navigation and control links opt out of the underline. */
+a.unlink,
+a[class*='btn'],
+a[class*='nav'],
+a[class*='card'] {
+  text-decoration: none;
+}
+
+/* --------------------------------------------------------------------------
+   Focus — one visible treatment everywhere, never removed
+   -------------------------------------------------------------------------- */
+
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--r-1);
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* --------------------------------------------------------------------------
+   Selection
+   -------------------------------------------------------------------------- */
+
+::selection {
+  background-color: var(--accent-found-wash);
+  color: var(--accent-on-wash);
+}
+
+/* --------------------------------------------------------------------------
+   Lists
+   -------------------------------------------------------------------------- */
+
+ul:not([role='list']),
+ol:not([role='list']) {
+  padding-left: var(--sp-5);
+}
+
+li + li {
+  margin-top: var(--sp-1);
+}
+
+dl {
+  display: grid;
+  gap: var(--sp-1) var(--sp-4);
+}
+
+dt {
+  font-size: var(--fs-100);
+  letter-spacing: var(--tr-caps);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+/* --------------------------------------------------------------------------
+   Media
+   -------------------------------------------------------------------------- */
+
+img {
+  height: auto;
+  background-color: var(--bg-sunken);
+}
+
+figure {
+  display: grid;
+  gap: var(--sp-2);
+}
+
+figcaption {
+  font-size: var(--fs-100);
+  color: var(--fg-muted);
+}
+
+/* --------------------------------------------------------------------------
+   Scrollbars — thin, neutral, themed
+   -------------------------------------------------------------------------- */
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+/* --------------------------------------------------------------------------
+   Reduced data: the image-heavy grids swap to a flat placeholder rather than
+   pulling photography. Components hook onto this attribute.
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-data: reduce) {
+  [data-media='optional'] {
+    display: none;
+  }
+
+  [data-media='placeholder'] {
+    display: grid;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Forced-colors / Windows High Contrast
+   -------------------------------------------------------------------------- */
+
+@media (forced-colors: active) {
+  :focus-visible {
+    outline: 2px solid CanvasText;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Print — global reset; per-artefact rules live in css/pages/print.css
+   -------------------------------------------------------------------------- */
+
+@media print {
+  body {
+    background: #fff;
+    color: #000;
+    font-size: 11pt;
+  }
+
+  a[href^='http']::after {
+    content: ' (' attr(href) ')';
+    font-size: 0.85em;
+    word-break: break-all;
+  }
+}

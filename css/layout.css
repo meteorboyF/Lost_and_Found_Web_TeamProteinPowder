@@ -1,0 +1,246 @@
+/* ==========================================================================
+   layout.css — page scaffolding, the 12-column grid, and the bleed escape
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Shell. Header / main / footer with a sticky header that does not overlap
+   anchor targets.
+   -------------------------------------------------------------------------- */
+
+.shell {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100svh;
+}
+
+.skip-link {
+  position: absolute;
+  top: var(--sp-2);
+  left: var(--sp-2);
+  z-index: calc(var(--z-header) + 1);
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--r-2);
+  background-color: var(--bg-surface);
+  box-shadow: var(--elev-3);
+  text-decoration: none;
+  font-weight: var(--fw-bold);
+}
+
+/* --------------------------------------------------------------------------
+   Container. `--gutter` widens with the viewport so the content column stays
+   optically centred rather than mathematically centred.
+   -------------------------------------------------------------------------- */
+
+.container {
+  width: 100%;
+  max-width: var(--content-max);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.container--narrow {
+  max-width: var(--content-narrow);
+}
+
+.container--wide {
+  max-width: 96rem;
+}
+
+@media (min-width: 48em) {
+  :root { --gutter: var(--sp-6); }
+}
+
+@media (min-width: 64em) {
+  :root { --gutter: var(--sp-7); }
+}
+
+/* --------------------------------------------------------------------------
+   The 12-column grid. Mobile-first: everything is one column until 48em,
+   then children opt into spans.
+   -------------------------------------------------------------------------- */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
+  gap: var(--grid-gap);
+}
+
+.grid > * {
+  grid-column: span 12;
+  min-width: 0;
+}
+
+@media (min-width: 48em) {
+  .col-1  { grid-column: span 1; }
+  .col-2  { grid-column: span 2; }
+  .col-3  { grid-column: span 3; }
+  .col-4  { grid-column: span 4; }
+  .col-5  { grid-column: span 5; }
+  .col-6  { grid-column: span 6; }
+  .col-7  { grid-column: span 7; }
+  .col-8  { grid-column: span 8; }
+  .col-9  { grid-column: span 9; }
+  .col-10 { grid-column: span 10; }
+  .col-11 { grid-column: span 11; }
+  .col-12 { grid-column: span 12; }
+
+  .start-2  { grid-column-start: 2; }
+  .start-3  { grid-column-start: 3; }
+  .start-4  { grid-column-start: 4; }
+  .start-5  { grid-column-start: 5; }
+  .start-7  { grid-column-start: 7; }
+  .start-8  { grid-column-start: 8; }
+}
+
+/* Tablet-only spans for the awkward 768–1024 band. */
+@media (min-width: 48em) and (max-width: 63.99em) {
+  .col-md-6  { grid-column: span 6; }
+  .col-md-12 { grid-column: span 12; }
+}
+
+/* --------------------------------------------------------------------------
+   Full-bleed escape. Lets a hero or gallery break the content column while
+   still living inside it in the markup.
+   -------------------------------------------------------------------------- */
+
+.bleed {
+  width: 100vw;
+  max-width: 100vw;
+  margin-inline: calc(50% - 50vw);
+}
+
+/* Bleeds the background but keeps text on the grid. */
+.bleed-inner {
+  width: 100%;
+  max-width: var(--content-max);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+/* --------------------------------------------------------------------------
+   Stack / cluster / sidebar — the three layout primitives everything else
+   is built from.
+   -------------------------------------------------------------------------- */
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--stack-gap, var(--sp-4));
+}
+
+.stack > * { margin-block: 0; }
+
+.stack-2  { --stack-gap: var(--sp-2); }
+.stack-3  { --stack-gap: var(--sp-3); }
+.stack-5  { --stack-gap: var(--sp-5); }
+.stack-6  { --stack-gap: var(--sp-6); }
+.stack-7  { --stack-gap: var(--sp-7); }
+
+.cluster {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--cluster-gap, var(--sp-3));
+}
+
+.cluster-2 { --cluster-gap: var(--sp-2); }
+.cluster-4 { --cluster-gap: var(--sp-4); }
+
+.cluster--between { justify-content: space-between; }
+.cluster--end     { justify-content: flex-end; }
+.cluster--baseline { align-items: baseline; }
+
+/* Sidebar collapses below its breakpoint without a media query. */
+.sidebar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--grid-gap);
+}
+
+.sidebar > :first-child {
+  flex-basis: var(--sidebar-w, 17rem);
+  flex-grow: 1;
+}
+
+.sidebar > :last-child {
+  flex-basis: 0;
+  flex-grow: 999;
+  min-width: var(--sidebar-min, 60%);
+}
+
+.sidebar--right > :first-child { order: 2; }
+
+/* --------------------------------------------------------------------------
+   Section rhythm
+   -------------------------------------------------------------------------- */
+
+.section {
+  padding-block: var(--sp-8);
+}
+
+.section--tight { padding-block: var(--sp-6); }
+.section--loose { padding-block: var(--sp-9); }
+
+@media (min-width: 64em) {
+  .section       { padding-block: var(--sp-9); }
+  .section--loose { padding-block: var(--sp-10); }
+}
+
+.section + .section {
+  border-top: var(--border-w) solid var(--line);
+}
+
+.section--sunken  { background-color: var(--bg-sunken); }
+.section--inverse {
+  background-color: var(--bg-inverse);
+  color: var(--fg-inverse);
+}
+
+.section--inverse .h1,
+.section--inverse h2 { color: inherit; }
+
+/* --------------------------------------------------------------------------
+   Section header — eyebrow + title + optional action, hairline rule under
+   -------------------------------------------------------------------------- */
+
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding-bottom: var(--sp-4);
+  margin-bottom: var(--sp-6);
+  border-bottom: var(--border-w) solid var(--line);
+}
+
+.eyebrow {
+  display: block;
+  margin-bottom: var(--sp-2);
+  font-size: var(--fs-100);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tr-caps);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+/* --------------------------------------------------------------------------
+   Admin shell — persistent rail + workspace
+   -------------------------------------------------------------------------- */
+
+.workbench {
+  display: grid;
+  grid-template-columns: 1fr;
+  min-height: 100svh;
+}
+
+@media (min-width: 64em) {
+  .workbench {
+    grid-template-columns: 15rem minmax(0, 1fr);
+  }
+}
+
+.workbench__main {
+  min-width: 0;
+  padding: var(--sp-5) var(--gutter) var(--sp-8);
+}
