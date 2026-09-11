@@ -159,21 +159,17 @@
     var checked = document.querySelector('input[name="kind"]:checked');
     var heading = document.querySelector('[data-heading]');
     var sub = document.querySelector('[data-subheading]');
-    var eyebrow = document.querySelector('[data-eyebrow]');
 
     if (!checked) {
-      eyebrow.textContent = 'Report';
       heading.textContent = 'Post an item';
       sub.textContent = 'The more specific you are, the better the matching works.';
       return;
     }
 
     if (checked.value === 'LOST') {
-      eyebrow.textContent = 'Lost something';
       heading.textContent = 'Tell us what you lost';
       sub.textContent = 'We will check it against everything handed in and let you know if something lines up.';
     } else {
-      eyebrow.textContent = 'Found something';
       heading.textContent = 'Post what you found';
       sub.textContent = 'Describe it plainly. The owner will recognise it faster than you think.';
     }
@@ -252,33 +248,40 @@
   }
 
   function showSuccess(item) {
+    var e = LF.escapeHtml;
     form.classList.add('hidden');
-    document.querySelector('fieldset').classList.add('hidden');
-    document.querySelector('[data-heading]').parentElement.classList.add('hidden');
+    document.querySelector('[data-kind-block]').classList.add('hidden');
+    document.querySelector('[data-intro]').classList.add('hidden');
 
     var e = LF.escapeHtml;
     successHost.className = '';
     successHost.innerHTML =
-      '<div class="rounded-sm border border-found bg-found-wash p-8 text-on-wash">' +
-        '<svg class="icon h-10 w-10 text-found" aria-hidden="true"><use href="/assets/icons.svg#i-st-verified"></use></svg>' +
-        '<h1 class="mt-4 text-3xl">Posted to the board</h1>' +
-        '<p class="mt-3 max-w-xl">' +
-          (item.kind === 'LOST'
-            ? 'We will watch the found side and email you if something matches.'
-            : 'Whoever lost this can now find it and start a conversation with you.') +
-        '</p>' +
-        '<dl class="mt-6 grid gap-2 border-t border-found/30 pt-6 sm:grid-cols-[8rem_1fr]">' +
-          '<dt class="u-caps opacity-70">Reference</dt>' +
-          '<dd class="font-mono text-lg font-bold">' + e(item.reference) + '</dd>' +
-          '<dt class="u-caps opacity-70">Item</dt><dd>' + e(item.title) + '</dd>' +
-          '<dt class="u-caps opacity-70">Where</dt><dd>' + e(item.location) + '</dd>' +
-        '</dl>' +
-        '<p class="mt-4 text-2xs opacity-80">Keep the reference code — it identifies this post in any conversation.</p>' +
-        '<div class="mt-8 flex flex-wrap gap-3">' +
-          '<a href="/item.html?ref=' + encodeURIComponent(item.reference) + '" ' +
-            'class="rounded-sm bg-primary px-5 py-3 font-bold text-surface hover:opacity-90">View the post</a>' +
-          '<a href="/browse.html" class="rounded-sm border border-current px-5 py-3 font-bold">Browse the board</a>' +
-          '<a href="/report.html" class="rounded-sm px-5 py-3 font-bold underline underline-offset-4">Post another</a>' +
+      '<div class="card overflow-hidden">' +
+        '<div class="flex flex-col items-center gap-3 bg-found-soft px-6 py-10 text-center">' +
+          '<span class="grid h-14 w-14 place-items-center rounded-2xl bg-found text-white shadow-[var(--shadow-lift)]">' +
+            '<svg class="icon h-7 w-7" aria-hidden="true"><use href="/assets/icons.svg#i-check"></use></svg></span>' +
+          '<h1 class="mt-1 text-2xl text-heading">Posted to the board</h1>' +
+          '<p class="max-w-md text-sm text-body">' +
+            (item.kind === 'LOST'
+              ? 'We will watch the found side and email you if something matches.'
+              : 'Whoever lost this can now find it and start a conversation with you.') +
+          '</p>' +
+        '</div>' +
+        '<div class="divide-y divide-line px-6">' +
+          '<div class="flex items-center justify-between gap-4 py-4">' +
+            '<span class="text-sm text-muted">Reference</span>' +
+            '<span class="font-mono text-lg font-semibold text-heading">' + e(item.reference) + '</span></div>' +
+          '<div class="flex items-center justify-between gap-4 py-4">' +
+            '<span class="text-sm text-muted">Item</span>' +
+            '<span class="text-sm font-medium text-heading">' + e(item.title) + '</span></div>' +
+          '<div class="flex items-center justify-between gap-4 py-4">' +
+            '<span class="text-sm text-muted">Where</span>' +
+            '<span class="truncate text-sm font-medium text-heading">' + e(item.location) + '</span></div>' +
+        '</div>' +
+        '<div class="flex flex-wrap gap-3 bg-sunken p-6">' +
+          '<a href="/item.html?ref=' + encodeURIComponent(item.reference) + '" class="btn btn-primary">View the post</a>' +
+          '<a href="/browse.html" class="btn btn-secondary">Browse the board</a>' +
+          '<a href="/report.html" class="btn btn-ghost">Post another</a>' +
         '</div>' +
       '</div>';
 

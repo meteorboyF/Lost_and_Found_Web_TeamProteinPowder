@@ -18,52 +18,54 @@
   })();
 </script>
 
-<link rel="preload" href="/assets/fonts/serif-display-400.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="/assets/fonts/sans-display-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/inter-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/inter-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/css/app.css">
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 </head>
 
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col bg-page">
 
 <a class="skip-link" href="#main">Skip to content</a>
 
-<header class="sticky top-0 z-40 border-b border-line bg-page/90 backdrop-blur-sm">
-  <div class="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
+<header class="sticky top-0 z-40 border-b border-line bg-page/80 backdrop-blur-xl">
+  <div class="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6 lg:px-8">
 
-    <a href="/" class="flex items-baseline gap-2 font-display text-lg tracking-tight whitespace-nowrap">
-      Lost <span class="italic text-found">&amp;</span> Found
-      <span class="hidden border-l border-line-strong pl-2 font-sans u-caps text-muted sm:inline">Registry</span>
+    <a href="/" class="flex items-center gap-2.5 font-bold tracking-tight text-heading">
+      <span class="grid h-9 w-9 place-items-center rounded-xl bg-brand text-white shadow-[var(--shadow-brand)]">
+        <svg class="icon h-5 w-5" aria-hidden="true"><use href="/assets/icons.svg#i-pin"></use></svg>
+      </span>
+      <span class="text-[1.0625rem]">Lost &amp; Found</span>
     </a>
 
     <nav id="primary-nav" aria-label="Primary"
-         class="fixed inset-x-0 top-16 z-30 flex-col gap-0 border-b border-line bg-page px-4 py-2 shadow-lg
-                data-[open=false]:hidden lg:static lg:z-auto lg:flex lg:flex-row lg:gap-1 lg:border-0 lg:bg-transparent
-                lg:px-0 lg:py-0 lg:shadow-none"
+         class="fixed inset-x-0 top-16 z-30 flex-col gap-1 border-b border-line bg-page p-4 shadow-lg
+                data-[open=false]:hidden lg:static lg:ml-4 lg:flex lg:flex-row lg:border-0 lg:bg-transparent
+                lg:p-0 lg:shadow-none"
          data-open="false">
-      <a href="/browse.html" aria-current="page"            class="rounded-sm px-3 py-3 text-secondary hover:bg-primary/5 hover:text-primary lg:py-2 aria-[current=page]:font-bold aria-[current=page]:text-primary">Browse</a>
-      <a href="/report.html?kind=lost"    class="rounded-sm px-3 py-3 text-secondary hover:bg-primary/5 hover:text-primary lg:py-2 aria-[current=page]:font-bold aria-[current=page]:text-primary">Report lost</a>
-      <a href="/report.html?kind=found"  class="rounded-sm px-3 py-3 text-secondary hover:bg-primary/5 hover:text-primary lg:py-2 aria-[current=page]:font-bold aria-[current=page]:text-primary">Report found</a>
-      <a href="/dashboard.html"           class="rounded-sm px-3 py-3 text-secondary hover:bg-primary/5 hover:text-primary lg:py-2 aria-[current=page]:font-bold aria-[current=page]:text-primary">My items</a>
+      <a href="/browse.html" aria-current="page" class="rounded-lg px-3 py-2.5 text-sm font-medium text-body transition hover:bg-sunken hover:text-heading lg:py-2 aria-[current=page]:bg-brand-soft aria-[current=page]:text-brand-text aria-[current=page]:font-semibold">Browse</a>
+      <a href="/report.html?kind=lost" class="rounded-lg px-3 py-2.5 text-sm font-medium text-body transition hover:bg-sunken hover:text-heading lg:py-2 aria-[current=page]:bg-brand-soft aria-[current=page]:text-brand-text aria-[current=page]:font-semibold">Report lost</a>
+      <a href="/report.html?kind=found" class="rounded-lg px-3 py-2.5 text-sm font-medium text-body transition hover:bg-sunken hover:text-heading lg:py-2 aria-[current=page]:bg-brand-soft aria-[current=page]:text-brand-text aria-[current=page]:font-semibold">Report found</a>
+      <a href="/dashboard.html" class="rounded-lg px-3 py-2.5 text-sm font-medium text-body transition hover:bg-sunken hover:text-heading lg:py-2 aria-[current=page]:bg-brand-soft aria-[current=page]:text-brand-text aria-[current=page]:font-semibold">My items</a>
     </nav>
 
-    <div class="ml-auto flex items-center gap-1">
+    <div class="ml-auto flex items-center gap-2">
       <button type="button" data-theme-toggle
-              class="grid h-10 w-10 place-items-center rounded-sm text-secondary hover:bg-primary/5 hover:text-primary"
+              class="grid h-9 w-9 place-items-center rounded-lg text-muted transition hover:bg-sunken hover:text-heading"
               aria-label="Switch to dark theme" aria-pressed="false">
-        <svg class="icon" aria-hidden="true" data-theme-icon="light"><use href="/assets/icons.svg#i-sun"></use></svg>
-        <svg class="icon" aria-hidden="true" data-theme-icon="dark" hidden><use href="/assets/icons.svg#i-moon"></use></svg>
+        <svg class="icon h-[1.15rem] w-[1.15rem]" aria-hidden="true" data-theme-icon="light"><use href="/assets/icons.svg#i-sun"></use></svg>
+        <svg class="icon h-[1.15rem] w-[1.15rem]" aria-hidden="true" data-theme-icon="dark" hidden><use href="/assets/icons.svg#i-moon"></use></svg>
       </button>
 
-      <a href="/login.html"
-         class="hidden rounded-sm border border-line-strong px-4 py-2 text-sm font-bold hover:border-primary sm:inline-block">
-        Sign in
+      <a href="/report.html" class="btn btn-primary btn-sm hidden sm:inline-flex">
+        <svg class="icon h-4 w-4" aria-hidden="true"><use href="/assets/icons.svg#i-plus"></use></svg>
+        Post an item
       </a>
 
       <button type="button" data-nav-toggle aria-controls="primary-nav" aria-expanded="false"
               aria-label="Open navigation"
-              class="grid h-10 w-10 place-items-center rounded-sm text-secondary hover:bg-primary/5 hover:text-primary lg:hidden">
-        <svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#i-menu"></use></svg>
+              class="grid h-9 w-9 place-items-center rounded-lg text-muted transition hover:bg-sunken hover:text-heading lg:hidden">
+        <svg class="icon h-[1.15rem] w-[1.15rem]" aria-hidden="true"><use href="/assets/icons.svg#i-menu"></use></svg>
       </button>
     </div>
   </div>
@@ -74,79 +76,70 @@
 <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
 
   <div class="mb-8">
-    <p class="u-caps text-muted">The board</p>
-    <h1 class="mt-3 text-3xl sm:text-4xl">Browse everything</h1>
-    <p class="mt-3 max-w-2xl text-secondary">
+    <h1 class="text-3xl text-heading sm:text-4xl">Browse the board</h1>
+    <p class="mt-3 max-w-2xl text-body">
       Every item posted across campus. Filter down to the ones worth checking.
     </p>
   </div>
 
-  <div class="lg:grid lg:grid-cols-[16rem_minmax(0,1fr)] lg:gap-10">
+  <div class="lg:grid lg:grid-cols-[17rem_minmax(0,1fr)] lg:gap-10">
 
-    <!-- ---------- filters ---------- -->
     <aside class="mb-8 lg:mb-0">
       <form data-filters class="lg:sticky lg:top-24">
-        <div class="mb-5">
+
+        <div class="relative mb-5 flex items-center">
           <label for="f-q" class="sr-only">Search items</label>
-          <div class="relative flex items-center">
-            <svg class="icon pointer-events-none absolute left-3 text-muted" aria-hidden="true">
-              <use href="/assets/icons.svg#i-search"></use>
-            </svg>
-            <input type="search" id="f-q" name="q" placeholder="Search the board"
-                   class="w-full rounded-xs border border-line-strong bg-surface py-3 pl-11 pr-3
-                          placeholder:text-muted focus:border-found">
-          </div>
+          <svg class="icon pointer-events-none absolute left-3.5 h-[1.15rem] w-[1.15rem] text-faint" aria-hidden="true">
+            <use href="/assets/icons.svg#i-search"></use>
+          </svg>
+          <input type="search" id="f-q" placeholder="Search the board" class="field pl-11">
         </div>
 
-        <fieldset class="mb-5 border-b border-line pb-5">
-          <legend class="mb-3 u-caps text-muted">Side of the board</legend>
-          <div class="flex flex-wrap gap-2" role="group">
-            <button type="button" data-kind="" aria-pressed="true"
-                    class="rounded-full border border-line-strong px-3 py-1.5 text-2xs font-bold transition
-                           aria-[pressed=true]:border-primary aria-[pressed=true]:bg-primary aria-[pressed=true]:text-surface">All</button>
-            <button type="button" data-kind="LOST" aria-pressed="false"
-                    class="rounded-full border border-line-strong px-3 py-1.5 text-2xs font-bold transition
-                           aria-[pressed=true]:border-primary aria-[pressed=true]:bg-primary aria-[pressed=true]:text-surface">Lost</button>
-            <button type="button" data-kind="FOUND" aria-pressed="false"
-                    class="rounded-full border border-line-strong px-3 py-1.5 text-2xs font-bold transition
-                           aria-[pressed=true]:border-primary aria-[pressed=true]:bg-primary aria-[pressed=true]:text-surface">Found</button>
-          </div>
-        </fieldset>
+        <div class="card overflow-hidden">
+          <fieldset class="border-b border-line p-4">
+            <legend class="label mb-3">Side of the board</legend>
+            <div class="flex flex-wrap gap-2" role="group">
+              <button type="button" data-kind="" aria-pressed="true"
+                      class="pill border border-line-strong text-body transition aria-[pressed=true]:border-brand aria-[pressed=true]:bg-brand aria-[pressed=true]:text-white">All</button>
+              <button type="button" data-kind="LOST" aria-pressed="false"
+                      class="pill border border-line-strong text-body transition aria-[pressed=true]:border-lost aria-[pressed=true]:bg-lost aria-[pressed=true]:text-white">Lost</button>
+              <button type="button" data-kind="FOUND" aria-pressed="false"
+                      class="pill border border-line-strong text-body transition aria-[pressed=true]:border-found aria-[pressed=true]:bg-found aria-[pressed=true]:text-white">Found</button>
+            </div>
+          </fieldset>
 
-        <fieldset class="mb-5 border-b border-line pb-5">
-          <legend class="mb-3 u-caps text-muted">Category</legend>
-          <div class="grid gap-1" data-categories>
-            <p class="text-2xs text-muted">Loading…</p>
-          </div>
-        </fieldset>
+          <fieldset class="border-b border-line p-4">
+            <legend class="label mb-3">Category</legend>
+            <div class="grid gap-0.5" data-categories>
+              <p class="text-sm text-faint">Loading…</p>
+            </div>
+          </fieldset>
 
-        <fieldset class="mb-5 border-b border-line pb-5">
-          <legend class="mb-3 u-caps text-muted">Status</legend>
-          <div class="grid gap-1">
-            <label class="flex cursor-pointer items-center gap-2.5 py-1 text-sm">
-              <input type="radio" name="status" value="" checked class="h-4 w-4 accent-[var(--sc-found)]">Any</label>
-            <label class="flex cursor-pointer items-center gap-2.5 py-1 text-sm">
-              <input type="radio" name="status" value="OPEN" class="h-4 w-4 accent-[var(--sc-found)]">Open</label>
-            <label class="flex cursor-pointer items-center gap-2.5 py-1 text-sm">
-              <input type="radio" name="status" value="PENDING" class="h-4 w-4 accent-[var(--sc-found)]">Claim in progress</label>
-            <label class="flex cursor-pointer items-center gap-2.5 py-1 text-sm">
-              <input type="radio" name="status" value="RESOLVED" class="h-4 w-4 accent-[var(--sc-found)]">Resolved</label>
-          </div>
-        </fieldset>
+          <fieldset class="p-4">
+            <legend class="label mb-3">Status</legend>
+            <div class="grid gap-0.5">
+              <label class="flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm text-body transition hover:bg-sunken">
+                <input type="radio" name="status" value="" checked class="h-4 w-4 accent-[var(--sc-brand)]">Any</label>
+              <label class="flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm text-body transition hover:bg-sunken">
+                <input type="radio" name="status" value="OPEN" class="h-4 w-4 accent-[var(--sc-brand)]">Open</label>
+              <label class="flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm text-body transition hover:bg-sunken">
+                <input type="radio" name="status" value="PENDING" class="h-4 w-4 accent-[var(--sc-brand)]">In progress</label>
+              <label class="flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm text-body transition hover:bg-sunken">
+                <input type="radio" name="status" value="RESOLVED" class="h-4 w-4 accent-[var(--sc-brand)]">Resolved</label>
+            </div>
+          </fieldset>
+        </div>
 
-        <button type="button" data-clear
-                class="text-sm underline underline-offset-4 hover:text-found">Clear all filters</button>
+        <button type="button" data-clear class="btn btn-ghost btn-sm mt-3 w-full">Clear all filters</button>
       </form>
     </aside>
 
-    <!-- ---------- results ---------- -->
     <div>
-      <div class="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-line pb-3">
-        <p class="text-2xs text-muted" role="status" data-count>Loading the board…</p>
+      <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <p class="text-sm text-muted" role="status" data-count>Loading the board…</p>
         <div class="flex items-center gap-2">
-          <label for="f-sort" class="u-caps text-muted">Sort</label>
-          <select id="f-sort" name="sort"
-                  class="rounded-xs border border-line-strong bg-surface px-3 py-2 text-sm focus:border-found">
+          <label for="f-sort" class="text-sm text-muted">Sort</label>
+          <select id="f-sort" class="field w-auto py-2 text-sm">
             <option value="recent">Most recent</option>
             <option value="oldest">Oldest first</option>
             <option value="title">Title A–Z</option>
@@ -161,11 +154,24 @@
 </div>
 </main>
 
-<footer class="border-t border-line bg-sunken">
+<footer class="mt-20 border-t border-line bg-surface">
   <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-    <div class="flex flex-wrap items-center justify-between gap-4 text-2xs text-muted">
-      <p>Lost &amp; Found Registry — Team Protein Powder</p>
-      <p>Items are held for 90 days before being archived.</p>
+    <div class="flex flex-wrap items-center justify-between gap-6">
+      <div class="flex items-center gap-2.5">
+        <span class="grid h-8 w-8 place-items-center rounded-lg bg-brand text-white">
+          <svg class="icon h-4 w-4" aria-hidden="true"><use href="/assets/icons.svg#i-pin"></use></svg>
+        </span>
+        <div>
+          <p class="text-sm font-semibold text-heading">Lost &amp; Found</p>
+          <p class="text-xs text-muted">Team Protein Powder</p>
+        </div>
+      </div>
+      <nav class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted" aria-label="Footer">
+        <a href="/browse.html" class="transition hover:text-heading">Browse</a>
+        <a href="/report.html" class="transition hover:text-heading">Post an item</a>
+        <a href="/dashboard.html" class="transition hover:text-heading">My items</a>
+      </nav>
+      <p class="text-xs text-faint">Items are held for 90 days before archiving.</p>
     </div>
   </div>
 </footer>

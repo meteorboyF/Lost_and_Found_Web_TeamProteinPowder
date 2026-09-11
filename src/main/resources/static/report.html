@@ -18,52 +18,54 @@
   })();
 </script>
 
-<link rel="preload" href="/assets/fonts/serif-display-400.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="/assets/fonts/sans-display-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/inter-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/inter-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/css/app.css">
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 </head>
 
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col bg-page">
 
 <a class="skip-link" href="#main">Skip to content</a>
 
-<header class="sticky top-0 z-40 border-b border-line bg-page/90 backdrop-blur-sm">
-  <div class="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
+<header class="sticky top-0 z-40 border-b border-line bg-page/80 backdrop-blur-xl">
+  <div class="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6 lg:px-8">
 
-    <a href="/" class="flex items-baseline gap-2 font-display text-lg tracking-tight whitespace-nowrap">
-      Lost <span class="italic text-found">&amp;</span> Found
-      <span class="hidden border-l border-line-strong pl-2 font-sans u-caps text-muted sm:inline">Registry</span>
+    <a href="/" class="flex items-center gap-2.5 font-bold tracking-tight text-heading">
+      <span class="grid h-9 w-9 place-items-center rounded-xl bg-brand text-white shadow-[var(--shadow-brand)]">
+        <svg class="icon h-5 w-5" aria-hidden="true"><use href="/assets/icons.svg#i-pin"></use></svg>
+      </span>
+      <span class="text-[1.0625rem]">Lost &amp; Found</span>
     </a>
 
     <nav id="primary-nav" aria-label="Primary"
-         class="fixed inset-x-0 top-16 z-30 flex-col gap-0 border-b border-line bg-page px-4 py-2 shadow-lg
-                data-[open=false]:hidden lg:static lg:z-auto lg:flex lg:flex-row lg:gap-1 lg:border-0 lg:bg-transparent
-                lg:px-0 lg:py-0 lg:shadow-none"
+         class="fixed inset-x-0 top-16 z-30 flex-col gap-1 border-b border-line bg-page p-4 shadow-lg
+                data-[open=false]:hidden lg:static lg:ml-4 lg:flex lg:flex-row lg:border-0 lg:bg-transparent
+                lg:p-0 lg:shadow-none"
          data-open="false">
-      <a href="/browse.html"            class="rounded-sm px-3 py-3 text-secondary hover:bg-primary/5 hover:text-primary lg:py-2 aria-[current=page]:font-bold aria-[current=page]:text-primary">Browse</a>
-      <a href="/report.html?kind=lost"    class="rounded-sm px-3 py-3 text-secondary hover:bg-primary/5 hover:text-primary lg:py-2 aria-[current=page]:font-bold aria-[current=page]:text-primary">Report lost</a>
-      <a href="/report.html?kind=found"  class="rounded-sm px-3 py-3 text-secondary hover:bg-primary/5 hover:text-primary lg:py-2 aria-[current=page]:font-bold aria-[current=page]:text-primary">Report found</a>
-      <a href="/dashboard.html"           class="rounded-sm px-3 py-3 text-secondary hover:bg-primary/5 hover:text-primary lg:py-2 aria-[current=page]:font-bold aria-[current=page]:text-primary">My items</a>
+      <a href="/browse.html" class="rounded-lg px-3 py-2.5 text-sm font-medium text-body transition hover:bg-sunken hover:text-heading lg:py-2 aria-[current=page]:bg-brand-soft aria-[current=page]:text-brand-text aria-[current=page]:font-semibold">Browse</a>
+      <a href="/report.html?kind=lost" class="rounded-lg px-3 py-2.5 text-sm font-medium text-body transition hover:bg-sunken hover:text-heading lg:py-2 aria-[current=page]:bg-brand-soft aria-[current=page]:text-brand-text aria-[current=page]:font-semibold">Report lost</a>
+      <a href="/report.html?kind=found" class="rounded-lg px-3 py-2.5 text-sm font-medium text-body transition hover:bg-sunken hover:text-heading lg:py-2 aria-[current=page]:bg-brand-soft aria-[current=page]:text-brand-text aria-[current=page]:font-semibold">Report found</a>
+      <a href="/dashboard.html" class="rounded-lg px-3 py-2.5 text-sm font-medium text-body transition hover:bg-sunken hover:text-heading lg:py-2 aria-[current=page]:bg-brand-soft aria-[current=page]:text-brand-text aria-[current=page]:font-semibold">My items</a>
     </nav>
 
-    <div class="ml-auto flex items-center gap-1">
+    <div class="ml-auto flex items-center gap-2">
       <button type="button" data-theme-toggle
-              class="grid h-10 w-10 place-items-center rounded-sm text-secondary hover:bg-primary/5 hover:text-primary"
+              class="grid h-9 w-9 place-items-center rounded-lg text-muted transition hover:bg-sunken hover:text-heading"
               aria-label="Switch to dark theme" aria-pressed="false">
-        <svg class="icon" aria-hidden="true" data-theme-icon="light"><use href="/assets/icons.svg#i-sun"></use></svg>
-        <svg class="icon" aria-hidden="true" data-theme-icon="dark" hidden><use href="/assets/icons.svg#i-moon"></use></svg>
+        <svg class="icon h-[1.15rem] w-[1.15rem]" aria-hidden="true" data-theme-icon="light"><use href="/assets/icons.svg#i-sun"></use></svg>
+        <svg class="icon h-[1.15rem] w-[1.15rem]" aria-hidden="true" data-theme-icon="dark" hidden><use href="/assets/icons.svg#i-moon"></use></svg>
       </button>
 
-      <a href="/login.html"
-         class="hidden rounded-sm border border-line-strong px-4 py-2 text-sm font-bold hover:border-primary sm:inline-block">
-        Sign in
+      <a href="/report.html" class="btn btn-primary btn-sm hidden sm:inline-flex">
+        <svg class="icon h-4 w-4" aria-hidden="true"><use href="/assets/icons.svg#i-plus"></use></svg>
+        Post an item
       </a>
 
       <button type="button" data-nav-toggle aria-controls="primary-nav" aria-expanded="false"
               aria-label="Open navigation"
-              class="grid h-10 w-10 place-items-center rounded-sm text-secondary hover:bg-primary/5 hover:text-primary lg:hidden">
-        <svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#i-menu"></use></svg>
+              class="grid h-9 w-9 place-items-center rounded-lg text-muted transition hover:bg-sunken hover:text-heading lg:hidden">
+        <svg class="icon h-[1.15rem] w-[1.15rem]" aria-hidden="true"><use href="/assets/icons.svg#i-menu"></use></svg>
       </button>
     </div>
   </div>
@@ -73,169 +75,170 @@
 
 <div class="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
 
-  <div class="mb-8">
-    <p class="u-caps text-muted" data-eyebrow>Report</p>
-    <h1 class="mt-3 text-3xl sm:text-4xl" data-heading>Post an item</h1>
-    <p class="mt-3 text-secondary" data-subheading>
+  <div class="mb-8" data-intro>
+    <h1 class="text-3xl text-heading sm:text-4xl" data-heading>Post an item</h1>
+    <p class="mt-3 text-body" data-subheading>
       The more specific you are, the better the matching works.
     </p>
   </div>
 
-  <!-- Which side of the board -->
-  <fieldset class="mb-8 rounded-sm border border-line bg-surface p-5">
-    <legend class="px-2 u-caps text-muted">What happened</legend>
+  <fieldset class="mb-6" data-kind-block>
+    <legend class="label mb-3">What happened?</legend>
     <div class="grid gap-3 sm:grid-cols-2">
-      <label class="flex cursor-pointer items-start gap-3 rounded-sm border border-line p-4 transition
-                    hover:bg-primary/5 has-[:checked]:border-lost has-[:checked]:bg-lost-wash has-[:checked]:text-on-wash">
-        <input type="radio" name="kind" value="LOST" class="mt-1 h-4 w-4 accent-[var(--sc-lost)]">
-        <span>
-          <span class="block font-bold">I lost something</span>
-          <span class="block text-sm text-muted">We will watch the found side for you.</span>
+      <label class="card cursor-pointer p-4 transition has-[:checked]:border-lost has-[:checked]:bg-lost-soft has-[:checked]:shadow-[var(--shadow-lift)] hover:border-line-strong">
+        <span class="flex items-start gap-3">
+          <input type="radio" name="kind" value="LOST" class="mt-1 h-4 w-4 accent-[var(--sc-lost)]">
+          <span>
+            <span class="flex items-center gap-2 font-semibold text-heading">
+              <svg class="icon h-4 w-4 text-lost" aria-hidden="true"><use href="/assets/icons.svg#i-search"></use></svg>
+              I lost something
+            </span>
+            <span class="mt-1 block text-sm text-muted">We will watch the found side for you.</span>
+          </span>
         </span>
       </label>
-      <label class="flex cursor-pointer items-start gap-3 rounded-sm border border-line p-4 transition
-                    hover:bg-primary/5 has-[:checked]:border-found has-[:checked]:bg-found-wash has-[:checked]:text-on-wash">
-        <input type="radio" name="kind" value="FOUND" class="mt-1 h-4 w-4 accent-[var(--sc-found)]">
-        <span>
-          <span class="block font-bold">I found something</span>
-          <span class="block text-sm text-muted">Post it so the owner can find you.</span>
+      <label class="card cursor-pointer p-4 transition has-[:checked]:border-found has-[:checked]:bg-found-soft has-[:checked]:shadow-[var(--shadow-lift)] hover:border-line-strong">
+        <span class="flex items-start gap-3">
+          <input type="radio" name="kind" value="FOUND" class="mt-1 h-4 w-4 accent-[var(--sc-found)]">
+          <span>
+            <span class="flex items-center gap-2 font-semibold text-heading">
+              <svg class="icon h-4 w-4 text-found" aria-hidden="true"><use href="/assets/icons.svg#i-hand"></use></svg>
+              I found something
+            </span>
+            <span class="mt-1 block text-sm text-muted">Post it so the owner can find you.</span>
+          </span>
         </span>
       </label>
     </div>
-    <p class="mt-2 min-h-5 text-2xs text-lost" data-error="kind"></p>
+    <p class="mt-2 min-h-5 text-sm text-lost" data-error="kind"></p>
   </fieldset>
 
-  <form data-report novalidate class="grid gap-6">
+  <form data-report novalidate class="card divide-y divide-line">
 
-    <div class="grid gap-2">
-      <label for="title" class="flex items-baseline justify-between u-caps text-secondary">
-        Title <span class="font-mono text-2xs font-normal normal-case tracking-normal text-muted"><span data-count-for="title">0</span>/120</span>
-      </label>
-      <input id="title" name="title" maxlength="120" placeholder="Black wireless earbuds"
-             class="w-full rounded-xs border border-line-strong bg-surface p-3 placeholder:text-muted focus:border-found
-                    aria-[invalid=true]:border-lost aria-[invalid=true]:border-2"
-             aria-describedby="title-error">
-      <p class="min-h-5 text-2xs text-lost" id="title-error" data-error="title"></p>
-    </div>
-
-    <div class="grid gap-4 sm:grid-cols-2">
-      <div class="grid gap-2">
-        <label for="category" class="u-caps text-secondary">Category</label>
-        <select id="category" name="category" aria-describedby="category-error"
-                class="w-full rounded-xs border border-line-strong bg-surface p-3 focus:border-found
-                       aria-[invalid=true]:border-lost aria-[invalid=true]:border-2">
-          <option value="">Choose one…</option>
-        </select>
-        <p class="min-h-5 text-2xs text-lost" id="category-error" data-error="category"></p>
+    <div class="grid gap-5 p-5 sm:p-6">
+      <div class="grid gap-1.5">
+        <label for="title" class="label flex items-baseline justify-between">
+          What is it?
+          <span class="font-mono text-xs font-normal text-faint"><span data-count-for="title">0</span>/120</span>
+        </label>
+        <input id="title" name="title" maxlength="120" placeholder="Black wireless earbuds"
+               class="field" aria-describedby="title-error">
+        <p class="min-h-5 text-sm text-lost" id="title-error" data-error="title"></p>
       </div>
 
-      <div class="grid gap-2">
-        <label for="colour" class="u-caps text-secondary">Colour <span class="font-normal normal-case tracking-normal text-muted">optional</span></label>
-        <input id="colour" name="colour" maxlength="40" placeholder="Black"
-               class="w-full rounded-xs border border-line-strong bg-surface p-3 placeholder:text-muted focus:border-found">
-        <p class="min-h-5 text-2xs text-lost" data-error="colour"></p>
-      </div>
-    </div>
-
-    <div class="grid gap-2">
-      <label for="description" class="u-caps text-secondary">Description</label>
-      <textarea id="description" name="description" rows="4" maxlength="2000"
-                placeholder="Anything that would help someone recognise it — brand, marks, what was inside."
-                aria-describedby="description-error"
-                class="w-full resize-y rounded-xs border border-line-strong bg-surface p-3 placeholder:text-muted
-                       focus:border-found aria-[invalid=true]:border-lost aria-[invalid=true]:border-2"></textarea>
-      <p class="min-h-5 text-2xs text-lost" id="description-error" data-error="description"></p>
-    </div>
-
-    <div class="grid gap-4 sm:grid-cols-2">
-      <div class="grid gap-2">
-        <label for="location" class="u-caps text-secondary">Where</label>
-        <input id="location" name="location" maxlength="160" placeholder="Central Library, level 2"
-               aria-describedby="location-error"
-               class="w-full rounded-xs border border-line-strong bg-surface p-3 placeholder:text-muted
-                      focus:border-found aria-[invalid=true]:border-lost aria-[invalid=true]:border-2">
-        <p class="min-h-5 text-2xs text-lost" id="location-error" data-error="location"></p>
-      </div>
-
-      <div class="grid gap-2">
-        <label for="happenedOn" class="u-caps text-secondary">When <span class="font-normal normal-case tracking-normal text-muted">optional</span></label>
-        <input id="happenedOn" name="happenedOn" type="date" aria-describedby="happenedOn-error"
-               class="w-full rounded-xs border border-line-strong bg-surface p-3 focus:border-found
-                      aria-[invalid=true]:border-lost aria-[invalid=true]:border-2">
-        <p class="min-h-5 text-2xs text-lost" id="happenedOn-error" data-error="happenedOn"></p>
-      </div>
-    </div>
-
-    <!-- photo -->
-    <div class="grid gap-2">
-      <span class="u-caps text-secondary">Photograph <span class="font-normal normal-case tracking-normal text-muted">optional</span></span>
-      <label class="grid cursor-pointer justify-items-center gap-2 rounded-sm border-2 border-dashed border-line-strong
-                    bg-sunken px-6 py-10 text-center transition hover:border-found hover:bg-found-wash hover:text-on-wash
-                    has-[:focus-visible]:border-found" data-dropzone>
-        <svg class="icon h-8 w-8 text-muted" aria-hidden="true"><use href="/assets/icons.svg#i-upload"></use></svg>
-        <span class="font-bold">Add a photo</span>
-        <span class="text-2xs text-muted">JPEG, PNG, WebP, or GIF · up to 5 MB</span>
-        <input type="file" name="photo" accept="image/jpeg,image/png,image/webp,image/gif" class="sr-only">
-      </label>
-      <div class="hidden" data-preview>
-        <div class="flex items-center gap-4 rounded-sm border border-line bg-surface p-3">
-          <img alt="" class="h-20 w-20 rounded-xs object-cover" data-preview-img>
-          <div class="min-w-0 flex-1">
-            <p class="truncate text-sm font-bold" data-preview-name></p>
-            <p class="font-mono text-2xs text-muted" data-preview-size></p>
-          </div>
-          <button type="button" data-preview-remove
-                  class="rounded-xs border border-line-strong px-3 py-1.5 text-2xs font-bold hover:border-lost hover:text-lost">
-            Remove</button>
+      <div class="grid gap-5 sm:grid-cols-2">
+        <div class="grid gap-1.5">
+          <label for="category" class="label">Category</label>
+          <select id="category" name="category" class="field" aria-describedby="category-error">
+            <option value="">Choose one…</option>
+          </select>
+          <p class="min-h-5 text-sm text-lost" id="category-error" data-error="category"></p>
+        </div>
+        <div class="grid gap-1.5">
+          <label for="colour" class="label">Colour <span class="font-normal text-faint">optional</span></label>
+          <input id="colour" name="colour" maxlength="40" placeholder="Black" class="field">
+          <p class="min-h-5 text-sm text-lost" data-error="colour"></p>
         </div>
       </div>
-      <p class="min-h-5 text-2xs text-lost" data-error="photo"></p>
+
+      <div class="grid gap-1.5">
+        <label for="description" class="label">Describe it</label>
+        <textarea id="description" name="description" rows="4" maxlength="2000"
+                  placeholder="Anything that would help someone recognise it — brand, marks, what was inside."
+                  class="field resize-y" aria-describedby="description-error"></textarea>
+        <p class="min-h-5 text-sm text-lost" id="description-error" data-error="description"></p>
+      </div>
+
+      <div class="grid gap-5 sm:grid-cols-2">
+        <div class="grid gap-1.5">
+          <label for="location" class="label">Where?</label>
+          <input id="location" name="location" maxlength="160" placeholder="Central Library, level 2"
+                 class="field" aria-describedby="location-error">
+          <p class="min-h-5 text-sm text-lost" id="location-error" data-error="location"></p>
+        </div>
+        <div class="grid gap-1.5">
+          <label for="happenedOn" class="label">When? <span class="font-normal text-faint">optional</span></label>
+          <input id="happenedOn" name="happenedOn" type="date" class="field" aria-describedby="happenedOn-error">
+          <p class="min-h-5 text-sm text-lost" id="happenedOn-error" data-error="happenedOn"></p>
+        </div>
+      </div>
     </div>
 
-    <!-- contact -->
-    <fieldset class="grid gap-4 rounded-sm border border-line bg-surface p-5 sm:grid-cols-2">
-      <legend class="px-2 u-caps text-muted">How we reach you</legend>
-      <div class="grid gap-2">
-        <label for="reporterName" class="u-caps text-secondary">Your name</label>
-        <input id="reporterName" name="reporterName" maxlength="80" placeholder="Fardin Jahangir"
-               aria-describedby="reporterName-error"
-               class="w-full rounded-xs border border-line-strong bg-surface p-3 placeholder:text-muted
-                      focus:border-found aria-[invalid=true]:border-lost aria-[invalid=true]:border-2">
-        <p class="min-h-5 text-2xs text-lost" id="reporterName-error" data-error="reporterName"></p>
-      </div>
-      <div class="grid gap-2">
-        <label for="reporterEmail" class="u-caps text-secondary">Email</label>
-        <input id="reporterEmail" name="reporterEmail" type="email" maxlength="160"
-               placeholder="you@university.edu" aria-describedby="reporterEmail-error"
-               class="w-full rounded-xs border border-line-strong bg-surface p-3 placeholder:text-muted
-                      focus:border-found aria-[invalid=true]:border-lost aria-[invalid=true]:border-2">
-        <p class="min-h-5 text-2xs text-lost" id="reporterEmail-error" data-error="reporterEmail"></p>
-      </div>
-      <p class="text-2xs text-muted sm:col-span-2">
-        Your email is never shown on the board. It is only used to notify you about matches and claims.
-      </p>
-    </fieldset>
+    <div class="p-5 sm:p-6">
+      <span class="label">Photograph <span class="font-normal text-faint">optional, but it helps a lot</span></span>
+      <label class="mt-3 flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-line-strong
+                    bg-sunken px-6 py-10 text-center transition hover:border-brand hover:bg-brand-soft
+                    has-[:focus-visible]:border-brand" data-dropzone>
+        <span class="grid h-11 w-11 place-items-center rounded-xl bg-surface text-brand shadow-[var(--shadow-card)]">
+          <svg class="icon h-5 w-5" aria-hidden="true"><use href="/assets/icons.svg#i-upload"></use></svg>
+        </span>
+        <span class="mt-1 font-semibold text-heading">Add a photo</span>
+        <span class="text-xs text-muted">JPEG, PNG, WebP or GIF · up to 5 MB</span>
+        <input type="file" name="photo" accept="image/jpeg,image/png,image/webp,image/gif" class="sr-only">
+      </label>
 
-    <div class="flex flex-wrap items-center gap-3 border-t border-line pt-6">
-      <button type="submit" data-submit
-              class="inline-flex items-center gap-2 rounded-sm bg-primary px-6 py-3.5 font-bold text-surface
-                     transition hover:bg-found hover:text-white disabled:opacity-50">
-        Post to the board
-      </button>
-      <a href="/browse.html" class="rounded-sm px-4 py-3.5 font-bold text-secondary hover:text-primary">Cancel</a>
+      <div class="mt-3 hidden" data-preview>
+        <div class="flex items-center gap-4 rounded-xl border border-line bg-sunken p-3">
+          <img alt="" class="h-16 w-16 rounded-lg object-cover" data-preview-img>
+          <div class="min-w-0 flex-1">
+            <p class="truncate text-sm font-semibold text-heading" data-preview-name></p>
+            <p class="font-mono text-xs text-muted" data-preview-size></p>
+          </div>
+          <button type="button" data-preview-remove class="btn btn-ghost btn-sm text-lost">Remove</button>
+        </div>
+      </div>
+      <p class="min-h-5 text-sm text-lost" data-error="photo"></p>
+    </div>
+
+    <div class="grid gap-5 p-5 sm:grid-cols-2 sm:p-6">
+      <div class="sm:col-span-2">
+        <span class="label">How we reach you</span>
+        <p class="mt-1 text-sm text-muted">
+          Your email is never shown on the board — only used for matches and claims.
+        </p>
+      </div>
+      <div class="grid gap-1.5">
+        <label for="reporterName" class="label">Your name</label>
+        <input id="reporterName" name="reporterName" maxlength="80" placeholder="Fardin Jahangir"
+               class="field" aria-describedby="reporterName-error">
+        <p class="min-h-5 text-sm text-lost" id="reporterName-error" data-error="reporterName"></p>
+      </div>
+      <div class="grid gap-1.5">
+        <label for="reporterEmail" class="label">Email</label>
+        <input id="reporterEmail" name="reporterEmail" type="email" maxlength="160"
+               placeholder="you@university.edu" class="field" aria-describedby="reporterEmail-error">
+        <p class="min-h-5 text-sm text-lost" id="reporterEmail-error" data-error="reporterEmail"></p>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-3 bg-sunken p-5 sm:p-6">
+      <button type="submit" data-submit class="btn btn-primary btn-lg">Post to the board</button>
+      <a href="/browse.html" class="btn btn-ghost">Cancel</a>
     </div>
   </form>
 
-  <!-- success panel, swapped in after a successful post -->
   <div class="hidden" data-success></div>
 </div>
 </main>
 
-<footer class="border-t border-line bg-sunken">
+<footer class="mt-20 border-t border-line bg-surface">
   <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-    <div class="flex flex-wrap items-center justify-between gap-4 text-2xs text-muted">
-      <p>Lost &amp; Found Registry — Team Protein Powder</p>
-      <p>Items are held for 90 days before being archived.</p>
+    <div class="flex flex-wrap items-center justify-between gap-6">
+      <div class="flex items-center gap-2.5">
+        <span class="grid h-8 w-8 place-items-center rounded-lg bg-brand text-white">
+          <svg class="icon h-4 w-4" aria-hidden="true"><use href="/assets/icons.svg#i-pin"></use></svg>
+        </span>
+        <div>
+          <p class="text-sm font-semibold text-heading">Lost &amp; Found</p>
+          <p class="text-xs text-muted">Team Protein Powder</p>
+        </div>
+      </div>
+      <nav class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted" aria-label="Footer">
+        <a href="/browse.html" class="transition hover:text-heading">Browse</a>
+        <a href="/report.html" class="transition hover:text-heading">Post an item</a>
+        <a href="/dashboard.html" class="transition hover:text-heading">My items</a>
+      </nav>
+      <p class="text-xs text-faint">Items are held for 90 days before archiving.</p>
     </div>
   </div>
 </footer>

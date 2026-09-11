@@ -161,7 +161,7 @@
   var TOAST_ACCENT = {
     success: 'border-l-found',
     error: 'border-l-lost',
-    info: 'border-l-primary'
+    info: 'border-l-brand'
   };
 
   function toast(message, opts) {
@@ -174,25 +174,25 @@
 
     var el = document.createElement('div');
     el.className =
-      'pointer-events-auto flex items-start gap-3 rounded-sm border border-line border-l-[3px] ' +
+      'pointer-events-auto flex items-start gap-3 rounded-xl border border-line border-l-4 ' +
       TOAST_ACCENT[kind] +
-      ' bg-surface p-3 shadow-[var(--shadow-raised)] transition duration-200 translate-x-2 opacity-0';
+      ' bg-surface p-3.5 shadow-[var(--shadow-pop)] transition duration-200 translate-x-2 opacity-0';
 
     el.innerHTML =
       '<svg class="icon mt-0.5 ' +
-      (kind === 'error' ? 'text-lost' : kind === 'success' ? 'text-found' : 'text-muted') +
+      (kind === 'error' ? 'text-lost' : kind === 'success' ? 'text-found' : 'text-brand') +
       '" aria-hidden="true"><use href="/assets/icons.svg#' +
       (TOAST_ICON[kind] || TOAST_ICON.info) +
       '"></use></svg>' +
       '<div class="min-w-0 flex-1">' +
-      (opts.title ? '<p class="font-bold">' + escapeHtml(opts.title) + '</p>' : '') +
-      '<p class="' + (opts.title ? 'text-sm text-muted' : 'font-bold') + '">' +
+      (opts.title ? '<p class="text-sm font-semibold text-heading">' + escapeHtml(opts.title) + '</p>' : '') +
+      '<p class="' + (opts.title ? 'text-sm text-muted' : 'text-sm font-semibold text-heading') + '">' +
       escapeHtml(message) +
       '</p></div>';
 
     var close = document.createElement('button');
     close.type = 'button';
-    close.className = 'grid h-6 w-6 place-items-center rounded-xs text-muted hover:text-primary';
+    close.className = 'grid h-6 w-6 place-items-center rounded-lg text-faint transition hover:bg-sunken hover:text-heading';
     close.setAttribute('aria-label', 'Dismiss notification');
     close.innerHTML = '<svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#i-close"></use></svg>';
     close.addEventListener('click', function () {

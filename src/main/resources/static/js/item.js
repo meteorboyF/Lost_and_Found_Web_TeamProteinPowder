@@ -11,12 +11,39 @@
   function skeleton() {
     return (
       '<div class="grid gap-8 lg:grid-cols-2">' +
-      '<div class="aspect-[4/3] animate-pulse rounded-sm bg-sunken"></div>' +
-      '<div class="space-y-4">' +
-      '<div class="h-4 w-24 animate-pulse rounded-xs bg-sunken"></div>' +
-      '<div class="h-10 w-3/4 animate-pulse rounded-xs bg-sunken"></div>' +
-      '<div class="h-4 w-full animate-pulse rounded-xs bg-sunken"></div>' +
-      '<div class="h-4 w-5/6 animate-pulse rounded-xs bg-sunken"></div>' +
+      '<div class="aspect-[4/3] animate-pulse rounded-2xl bg-sunken"></div>' +
+      '<div class="space-y-4 py-2">' +
+      '<div class="h-6 w-28 animate-pulse rounded-full bg-sunken"></div>' +
+      '<div class="h-9 w-3/4 animate-pulse rounded-lg bg-sunken"></div>' +
+      '<div class="h-4 w-full animate-pulse rounded bg-sunken"></div>' +
+      '<div class="h-4 w-5/6 animate-pulse rounded bg-sunken"></div>' +
+      '</div></div>'
+    );
+  }
+
+  function media(item) {
+    var cat = LF.category(item.category);
+    if (item.photoUrl) {
+      return '<img src="' + e(item.photoUrl) + '" alt="Photograph of ' + e(item.title) + '" ' +
+        'class="h-full w-full object-cover">';
+    }
+    return (
+      '<div class="flex h-full w-full flex-col items-center justify-center gap-3 bg-gradient-to-br ' +
+      cat.grad + '">' +
+      '<svg class="icon h-16 w-16 ' + cat.solid + ' opacity-70" aria-hidden="true">' +
+      '<use href="/assets/icons.svg#' + cat.icon + '"></use></svg>' +
+      '<span class="text-sm text-muted">No photograph provided</span></div>'
+    );
+  }
+
+  function row(label, value, icon) {
+    return (
+      '<div class="flex items-start gap-3 py-3">' +
+      '<svg class="icon mt-0.5 h-[1.15rem] w-[1.15rem] text-faint" aria-hidden="true">' +
+      '<use href="/assets/icons.svg#' + icon + '"></use></svg>' +
+      '<div class="min-w-0">' +
+      '<p class="text-xs text-faint">' + e(label) + '</p>' +
+      '<p class="text-sm font-medium text-heading">' + e(value) + '</p>' +
       '</div></div>'
     );
   }
@@ -26,73 +53,65 @@
     var crumb = document.querySelector('[data-crumb]');
     if (crumb) crumb.textContent = item.reference;
 
-    var media = item.photoUrl
-      ? '<img src="' + e(item.photoUrl) + '" alt="Photograph of ' + e(item.title) + '" ' +
-        'class="h-full w-full object-cover">'
-      : '<div class="grid h-full w-full place-items-center gap-2 bg-sunken text-muted">' +
-        '<svg class="icon h-10 w-10" aria-hidden="true"><use href="/assets/icons.svg#i-image"></use></svg>' +
-        '<span class="text-2xs">No photograph was provided</span></div>';
+    var resolved = item.status === 'RESOLVED';
 
     host.innerHTML =
-      '<div class="grid gap-8 lg:grid-cols-2 lg:gap-12">' +
-
-        '<div class="overflow-hidden rounded-sm border border-line bg-sunken">' +
-          '<div class="aspect-[4/3]">' + media + '</div>' +
-        '</div>' +
+      '<div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-10">' +
 
         '<div>' +
-          '<div class="flex flex-wrap items-center gap-3">' +
-            LF.kindTag(item.kind) + LF.statusChip(item.status, 'lg') +
+          '<div class="overflow-hidden rounded-2xl border border-line bg-surface shadow-[var(--shadow-card)]">' +
+            '<div class="aspect-[4/3]">' + media(item) + '</div>' +
           '</div>' +
 
-          '<h1 class="mt-4 text-3xl sm:text-4xl">' + e(item.title) + '</h1>' +
-
-          '<p class="mt-3 font-mono text-2xs text-muted">' + e(item.reference) + '</p>' +
-
-          '<p class="mt-6 whitespace-pre-line leading-relaxed text-secondary">' +
-            e(item.description) + '</p>' +
-
-          '<dl class="mt-8 grid grid-cols-[7rem_1fr] gap-x-6 gap-y-3 border-t border-line pt-6 text-sm">' +
-            row('Category', item.categoryLabel) +
-            (item.colour ? row('Colour', item.colour) : '') +
-            row('Where', item.location) +
-            (item.happenedOn ? row('When', LF.formatDate(item.happenedOn)) : '') +
-            row('Posted', LF.timeAgo(item.createdAt)) +
-            row('Posted by', item.reporterName) +
-          '</dl>' +
-
-          '<div class="mt-8 flex flex-wrap gap-3 border-t border-line pt-6">' +
-            (item.status === 'RESOLVED'
-              ? '<p class="text-sm text-muted">This item is back with its owner. Nothing more to do here.</p>'
-              : '<button type="button" data-claim ' +
-                'class="inline-flex items-center gap-2 rounded-sm bg-primary px-6 py-3.5 font-bold text-surface ' +
-                'transition hover:bg-found hover:text-white">' +
-                (item.kind === 'FOUND' ? 'This is mine' : 'I think I found this') +
-                '</button>') +
-            '<a href="/browse.html" class="rounded-sm border border-line-strong px-6 py-3.5 font-bold hover:border-primary">' +
-              'Back to the board</a>' +
+          '<div class="mt-6 flex flex-wrap items-center gap-2">' +
+            LF.kindPill(item.kind, true) +
+            LF.statusPill(item.status, true) +
+            LF.categoryPill(item) +
           '</div>' +
 
-          '<p class="mt-4 text-2xs text-muted">' +
-            'Contact details are never shown on the board. Claiming opens a conversation through the registry.' +
-          '</p>' +
+          '<h1 class="mt-4 text-3xl text-heading sm:text-4xl">' + e(item.title) + '</h1>' +
+
+          '<p class="mt-5 whitespace-pre-line leading-relaxed text-body">' + e(item.description) + '</p>' +
         '</div>' +
+
+        '<aside class="lg:pt-2">' +
+          '<div class="card divide-y divide-line">' +
+            '<div class="px-5 py-2">' +
+              row('Where', item.location, 'i-pin') +
+              (item.happenedOn ? row('When', LF.formatDate(item.happenedOn), 'i-calendar') : '') +
+              (item.colour ? row('Colour', item.colour, 'i-tag') : '') +
+              row('Posted', LF.timeAgo(item.createdAt), 'i-clock') +
+              row('Posted by', item.reporterName, 'i-user') +
+              row('Reference', item.reference, 'i-qr') +
+            '</div>' +
+
+            '<div class="p-5">' +
+              (resolved
+                ? '<div class="rounded-xl bg-found-soft p-4 text-center">' +
+                  '<svg class="icon mx-auto h-6 w-6 text-found" aria-hidden="true"><use href="/assets/icons.svg#i-check"></use></svg>' +
+                  '<p class="mt-2 text-sm font-semibold text-found-text">Back with its owner</p>' +
+                  '<p class="mt-1 text-xs text-found-text/80">Nothing more to do here.</p></div>'
+                : '<button type="button" data-claim class="btn btn-primary w-full">' +
+                  '<svg class="icon h-[1.15rem] w-[1.15rem]" aria-hidden="true"><use href="/assets/icons.svg#i-hand"></use></svg>' +
+                  (item.kind === 'FOUND' ? 'This is mine' : 'I think I found this') +
+                  '</button>') +
+              '<a href="/browse.html" class="btn btn-secondary mt-2 w-full">Back to the board</a>' +
+              '<p class="mt-4 text-xs leading-relaxed text-faint">' +
+                'Contact details are never shown on the board. Claiming opens a conversation through the registry.' +
+              '</p>' +
+            '</div>' +
+          '</div>' +
+        '</aside>' +
       '</div>';
 
     var claim = host.querySelector('[data-claim]');
     if (claim) {
       claim.addEventListener('click', function () {
-        /* The claim conversation is the next feature. Saying so is better than
-           a dead button that silently does nothing. */
-        LF.toast.info('Claims open in the next release. For now, note the reference ' + item.reference + '.', {
+        LF.toast.info('Claims arrive in the next release. For now, note the reference ' + item.reference + '.', {
           title: 'Not wired up yet'
         });
       });
     }
-  }
-
-  function row(label, value) {
-    return '<dt class="u-caps text-muted">' + e(label) + '</dt><dd>' + e(value) + '</dd>';
   }
 
   function notFound(reference) {

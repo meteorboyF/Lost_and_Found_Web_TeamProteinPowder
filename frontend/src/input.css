@@ -1,174 +1,162 @@
 @import "tailwindcss";
 
-/* Scan the served frontend for class usage. Paths are relative to this file. */
 @source "../../src/main/resources/static/**/*.html";
 @source "../../src/main/resources/static/**/*.js";
 
-/* Dark mode is driven by an explicit attribute on <html>, set before first
-   paint by an inline script and persisted to localStorage. Using an attribute
-   rather than a class keeps it independent of Tailwind's own class handling. */
+/* Dark mode is an explicit attribute on <html>, set before first paint by an
+   inline script and persisted to localStorage. */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 /* ==========================================================================
-   Typefaces — self-hosted WOFF2 subsets. Bengali faces carry a unicode-range
-   so their outlines are only fetched when Bengali glyphs actually render.
+   Inter, self-hosted. Subset to Latin + typographic punctuation.
    ========================================================================== */
 
+@font-face { font-family: Inter; src: url("/assets/fonts/inter-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: Inter; src: url("/assets/fonts/inter-500.woff2") format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: Inter; src: url("/assets/fonts/inter-600.woff2") format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: Inter; src: url("/assets/fonts/inter-700.woff2") format("woff2"); font-weight: 700; font-display: swap; }
+@font-face { font-family: Inter; src: url("/assets/fonts/inter-800.woff2") format("woff2"); font-weight: 800; font-display: swap; }
+
+/* Bengali, only fetched when Bengali glyphs are actually on the page. */
 @font-face {
-  font-family: "Serif Display";
-  src: url("/assets/fonts/serif-display-400.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Serif Display";
-  src: url("/assets/fonts/serif-display-700.woff2") format("woff2");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Serif Display";
-  src: url("/assets/fonts/serif-display-400i.woff2") format("woff2");
-  font-weight: 400;
-  font-style: italic;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Sans Display";
-  src: url("/assets/fonts/sans-display-400.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Sans Display";
-  src: url("/assets/fonts/sans-display-700.woff2") format("woff2");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Registry Mono";
-  src: url("/assets/fonts/mono-400.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Sans Display";
+  font-family: Inter;
   src: url("/assets/fonts/bn-sans-400.woff2") format("woff2");
   font-weight: 400;
   font-display: swap;
   unicode-range: U+0980-09FF, U+200C-200D, U+0964-0965;
 }
-@font-face {
-  font-family: "Serif Display";
-  src: url("/assets/fonts/bn-serif-400.woff2") format("woff2");
-  font-weight: 400;
-  font-display: swap;
-  unicode-range: U+0980-09FF, U+200C-200D, U+0964-0965;
-}
+
+@font-face { font-family: "Registry Mono"; src: url("/assets/fonts/mono-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
 
 /* ==========================================================================
-   Theme. Semantic tokens point at plain CSS variables that are re-bound per
-   theme below, so every generated utility (bg-surface, text-muted, …) flips
-   automatically without Tailwind needing to emit a second set of classes.
+   Theme
    ========================================================================== */
 
 @theme {
-  /* Raw palette — two hues only: ochre for found, crimson for lost. */
-  --color-ink: #0f1115;
-  --color-paper: #f7f5f1;
-  --color-bone: #efece6;
-
-  /* Semantic surfaces and text */
   --color-page: var(--sc-page);
   --color-surface: var(--sc-surface);
+  --color-raised: var(--sc-raised);
   --color-sunken: var(--sc-sunken);
-  --color-primary: var(--sc-primary);
-  --color-secondary: var(--sc-secondary);
+
+  --color-heading: var(--sc-heading);
+  --color-body: var(--sc-body);
   --color-muted: var(--sc-muted);
   --color-faint: var(--sc-faint);
+
   --color-line: var(--sc-line);
   --color-line-strong: var(--sc-line-strong);
 
-  /* Signal accents */
-  --color-found: var(--sc-found);
-  --color-found-wash: var(--sc-found-wash);
-  --color-lost: var(--sc-lost);
-  --color-lost-wash: var(--sc-lost-wash);
-  --color-on-wash: var(--sc-on-wash);
+  /* Brand */
+  --color-brand: var(--sc-brand);
+  --color-brand-hover: var(--sc-brand-hover);
+  --color-brand-soft: var(--sc-brand-soft);
+  --color-brand-text: var(--sc-brand-text);
 
-  /* Type */
-  --font-display: "Serif Display", Georgia, "Times New Roman", serif;
-  --font-sans: "Sans Display", system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* The two sides of the board. Rose reads as "missing", emerald as "safe". */
+  --color-lost: var(--sc-lost);
+  --color-lost-soft: var(--sc-lost-soft);
+  --color-lost-text: var(--sc-lost-text);
+  --color-found: var(--sc-found);
+  --color-found-soft: var(--sc-found-soft);
+  --color-found-text: var(--sc-found-text);
+
+  --color-amber: var(--sc-amber);
+  --color-amber-soft: var(--sc-amber-soft);
+  --color-amber-text: var(--sc-amber-text);
+
+  --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "Registry Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  /* Modular scale, ratio 1.25 from 16px */
-  --text-2xs: 0.8rem;
-  --text-xs: 0.875rem;
-  --text-sm: 0.9375rem;
-  --text-base: 1rem;
-  --text-lg: 1.25rem;
-  --text-xl: 1.5625rem;
-  --text-2xl: 1.953rem;
-  --text-3xl: 2.441rem;
-  --text-4xl: 3.052rem;
-  --text-5xl: 3.815rem;
-  --text-6xl: 4.768rem;
+  /* Rounded, but not cartoonish. */
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+  --radius-3xl: 1.75rem;
 
-  /* Architectural radii — no pills except removable filter tokens */
-  --radius-xs: 2px;
-  --radius-sm: 4px;
-  --radius-md: 8px;
+  /* Soft, layered depth — two stacked shadows so the falloff looks natural. */
+  --shadow-card: 0 1px 2px rgb(16 24 40 / 0.04), 0 1px 3px rgb(16 24 40 / 0.06);
+  --shadow-lift: 0 4px 8px -2px rgb(16 24 40 / 0.08), 0 12px 24px -6px rgb(16 24 40 / 0.10);
+  --shadow-pop: 0 8px 16px -4px rgb(16 24 40 / 0.08), 0 24px 48px -12px rgb(16 24 40 / 0.18);
+  --shadow-brand: 0 6px 16px -4px var(--sc-brand-glow);
 
-  /* Motion */
   --ease-brand: cubic-bezier(0.2, 0, 0, 1);
-
-  /* Depth through contrast, not blur */
-  --shadow-hairline: inset 0 0 0 1px var(--sc-line);
-  --shadow-raised: 0 8px 24px -12px rgb(15 17 21 / 0.28);
-  --shadow-float: 0 12px 32px -16px rgb(0 0 0 / 0.45);
 }
 
-/* -- Light (default) ------------------------------------------------------ */
+/* -- Light (the default) -------------------------------------------------- */
 :root {
-  --sc-page: #f7f5f1;
-  --sc-surface: #fffdf9;
-  --sc-sunken: #efece6;
-  --sc-primary: #0f1115;
-  --sc-secondary: #3b3e46;
-  --sc-muted: #676a73;
-  --sc-faint: #9a9ca3;
-  --sc-line: #dcd8d0;
-  --sc-line-strong: #9a9ca3;
-  --sc-found: #8a5606;
-  --sc-found-wash: #f2e3c4;
-  --sc-lost: #9e2b25;
-  --sc-lost-wash: #f6dcda;
-  --sc-on-wash: #0f1115;
+  --sc-page: #fafafb;
+  --sc-surface: #ffffff;
+  --sc-raised: #ffffff;
+  --sc-sunken: #f4f4f6;
+
+  --sc-heading: #14151a;
+  --sc-body: #43454d;
+  --sc-muted: #6b6e78;
+  --sc-faint: #9ca0aa;
+
+  --sc-line: #e7e8ec;
+  --sc-line-strong: #d3d5db;
+
+  --sc-brand: #4f46e5;
+  --sc-brand-hover: #4338ca;
+  --sc-brand-soft: #eef2ff;
+  --sc-brand-text: #3730a3;
+  --sc-brand-glow: rgb(79 70 229 / 0.28);
+
+  --sc-lost: #e11d48;
+  --sc-lost-soft: #fff1f3;
+  --sc-lost-text: #a5133a;
+
+  --sc-found: #047857;
+  --sc-found-soft: #ecfdf5;
+  --sc-found-text: #045f45;
+
+  --sc-amber: #d97706;
+  --sc-amber-soft: #fffbeb;
+  --sc-amber-text: #92500e;
+
   color-scheme: light;
 }
 
-/* -- Dark: authored, not inverted. Surfaces get lighter with elevation and
-      accents desaturate so they do not glow. ------------------------------ */
+/* -- Dark: authored, not inverted. Surfaces lift as they elevate, soft tints
+      get darkened rather than lightened, and text colours are re-picked so
+      every pair still clears AA. ------------------------------------------ */
 [data-theme="dark"] {
-  --sc-page: #14161b;
-  --sc-surface: #1c1f26;
-  --sc-sunken: #0e1014;
-  --sc-primary: #ede9e1;
-  --sc-secondary: #c2bfb8;
-  --sc-muted: #9aa0a8;
-  --sc-faint: #6a6d75;
-  --sc-line: #30343c;
-  --sc-line-strong: #6a6d75;
-  --sc-found: #e0a64b;
-  --sc-found-wash: #3a2c11;
-  --sc-lost: #e8736b;
-  --sc-lost-wash: #3b1c1a;
-  --sc-on-wash: #ede9e1;
+  --sc-page: #0e0f13;
+  --sc-surface: #17191f;
+  --sc-raised: #1e212a;
+  --sc-sunken: #121419;
+
+  --sc-heading: #f3f4f6;
+  --sc-body: #c8cbd3;
+  --sc-muted: #9498a3;
+  --sc-faint: #6b6f7a;
+
+  --sc-line: #262931;
+  --sc-line-strong: #343843;
+
+  --sc-brand: #818cf8;
+  --sc-brand-hover: #a5b4fc;
+  --sc-brand-soft: #1e1b4b;
+  --sc-brand-text: #c7d2fe;
+  --sc-brand-glow: rgb(129 140 248 / 0.22);
+
+  --sc-lost: #fb7185;
+  --sc-lost-soft: #3f1220;
+  --sc-lost-text: #fecdd3;
+
+  --sc-found: #34d399;
+  --sc-found-soft: #052e26;
+  --sc-found-text: #a7f3d0;
+
+  --sc-amber: #fbbf24;
+  --sc-amber-soft: #3a2a08;
+  --sc-amber-text: #fde68a;
+
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-lift: 0 4px 12px -2px rgb(0 0 0 / 0.5);
+  --shadow-pop: 0 16px 48px -12px rgb(0 0 0 / 0.7);
+
   color-scheme: dark;
 }
 
@@ -183,51 +171,44 @@
 
   body {
     background-color: var(--color-page);
-    color: var(--color-primary);
+    color: var(--color-body);
     font-family: var(--font-sans);
+    font-feature-settings: "cv11", "ss01";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    transition:
-      background-color 200ms var(--ease-brand),
-      color 200ms var(--ease-brand);
   }
 
-  h1,
-  h2,
-  h3,
-  h4 {
-    font-family: var(--font-display);
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--color-heading);
+    font-weight: 700;
     letter-spacing: -0.02em;
-    line-height: 1.1;
+    line-height: 1.15;
     text-wrap: balance;
   }
 
-  p,
-  li {
-    text-wrap: pretty;
+  /* Display sizes get tighter tracking — Inter needs it as it scales up. */
+  .display {
+    letter-spacing: -0.035em;
+    line-height: 1.02;
+    font-weight: 800;
   }
 
-  /* One focus treatment everywhere. Never removed, only restyled. */
+  p, li { text-wrap: pretty; }
+
   :focus-visible {
-    outline: 2px solid var(--color-found);
+    outline: 2px solid var(--color-brand);
     outline-offset: 2px;
-    border-radius: var(--radius-xs);
+    border-radius: 0.5rem;
   }
 
-  :focus:not(:focus-visible) {
-    outline: none;
-  }
+  :focus:not(:focus-visible) { outline: none; }
 
   ::selection {
-    background-color: var(--color-found-wash);
-    color: var(--color-on-wash);
+    background-color: var(--color-brand);
+    color: #fff;
   }
 
-  /* Machine-readable strings should look machine-readable. */
-  code,
-  kbd,
-  samp,
-  pre {
+  code, kbd, samp, pre {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
   }
@@ -239,8 +220,7 @@
 }
 
 /* ==========================================================================
-   Components — only patterns repeated across many pages earn a class here.
-   Everything else stays as utilities in the markup.
+   Components
    ========================================================================== */
 
 @layer components {
@@ -249,44 +229,156 @@
     height: 1.25em;
     fill: none;
     stroke: currentColor;
-    stroke-width: 1.5;
+    stroke-width: 1.75;
     stroke-linecap: round;
     stroke-linejoin: round;
     flex-shrink: 0;
   }
 
-  .u-caps {
-    font-size: var(--text-2xs);
-    font-weight: 700;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
+  /* -- Buttons ---------------------------------------------------------- */
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: var(--radius-lg);
+    padding: 0.75rem 1.25rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.25rem;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 160ms var(--ease-brand);
   }
 
-  /* Skip link: visually hidden until focused. */
+  .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+  .btn-primary {
+    background-color: var(--color-brand);
+    color: #fff;
+    box-shadow: var(--shadow-brand);
+  }
+  .btn-primary:hover:not(:disabled) {
+    background-color: var(--color-brand-hover);
+    transform: translateY(-1px);
+  }
+  .btn-primary:active:not(:disabled) { transform: translateY(0); }
+
+  [data-theme="dark"] .btn-primary { color: #11121a; }
+
+  .btn-secondary {
+    background-color: var(--color-surface);
+    color: var(--color-heading);
+    border: 1px solid var(--color-line-strong);
+    box-shadow: var(--shadow-card);
+  }
+  .btn-secondary:hover:not(:disabled) {
+    background-color: var(--color-sunken);
+    transform: translateY(-1px);
+  }
+
+  .btn-ghost { color: var(--color-body); }
+  .btn-ghost:hover:not(:disabled) {
+    background-color: var(--color-sunken);
+    color: var(--color-heading);
+  }
+
+  .btn-lost {
+    background-color: var(--color-lost);
+    color: #fff;
+    box-shadow: 0 6px 16px -4px rgb(225 29 72 / 0.3);
+  }
+  .btn-lost:hover:not(:disabled) { filter: brightness(0.94); transform: translateY(-1px); }
+  [data-theme="dark"] .btn-lost { color: #2a0713; }
+
+  .btn-lg { padding: 0.9375rem 1.75rem; font-size: 1rem; border-radius: var(--radius-xl); }
+  .btn-sm { padding: 0.5rem 0.875rem; font-size: 0.8125rem; }
+
+  /* -- Card ------------------------------------------------------------- */
+
+  .card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-card);
+    transition: box-shadow 200ms var(--ease-brand), transform 200ms var(--ease-brand),
+                border-color 200ms var(--ease-brand);
+  }
+
+  .card-interactive:hover {
+    box-shadow: var(--shadow-lift);
+    transform: translateY(-3px);
+    border-color: var(--color-line-strong);
+  }
+
+  /* -- Pill / chip ------------------------------------------------------ */
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    border-radius: 9999px;
+    padding: 0.25rem 0.625rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1rem;
+    white-space: nowrap;
+  }
+
+  .pill-lg { padding: 0.375rem 0.875rem; font-size: 0.8125rem; }
+
+  /* -- Field ------------------------------------------------------------ */
+
+  .field {
+    width: 100%;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-line-strong);
+    background-color: var(--color-surface);
+    padding: 0.75rem 0.875rem;
+    font-size: 0.9375rem;
+    color: var(--color-heading);
+    transition: border-color 140ms var(--ease-brand), box-shadow 140ms var(--ease-brand);
+  }
+
+  .field::placeholder { color: var(--color-faint); }
+
+  .field:focus {
+    outline: none;
+    border-color: var(--color-brand);
+    box-shadow: 0 0 0 3px var(--sc-brand-glow);
+  }
+
+  .field[aria-invalid="true"] {
+    border-color: var(--color-lost);
+  }
+  .field[aria-invalid="true"]:focus {
+    box-shadow: 0 0 0 3px rgb(225 29 72 / 0.2);
+  }
+
+  .label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-heading);
+  }
+
   .skip-link {
     position: absolute;
-    left: 0.5rem;
+    left: 1rem;
     top: -100%;
     z-index: 100;
-    padding: 0.5rem 1rem;
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-lg);
     background-color: var(--color-surface);
-    box-shadow: var(--shadow-hairline), var(--shadow-raised);
-    font-weight: 700;
-    transition: top 150ms var(--ease-brand);
+    padding: 0.75rem 1.25rem;
+    font-weight: 600;
+    box-shadow: var(--shadow-pop);
+    transition: top 160ms var(--ease-brand);
   }
-
-  .skip-link:focus {
-    top: 0.5rem;
-  }
+  .skip-link:focus { top: 1rem; }
 }
 
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-
-  /* Screen-reader only, but focusable when it needs to be. */
   .sr-only-focusable:not(:focus):not(:active) {
     position: absolute;
     width: 1px;
@@ -296,13 +388,18 @@
     clip-path: inset(50%);
     white-space: nowrap;
   }
+
+  /* Soft coloured wash behind the hero. Two offset radial tints rather than a
+     linear gradient, so it reads as light rather than as a banner. */
+  .hero-wash {
+    background-image:
+      radial-gradient(ellipse 80% 60% at 15% 0%, var(--sc-brand-soft) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 90% 10%, var(--sc-found-soft) 0%, transparent 55%);
+  }
 }
 
-/* Every transition and animation in the app collapses here, in one place. */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

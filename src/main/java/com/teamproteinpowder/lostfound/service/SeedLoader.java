@@ -84,7 +84,11 @@ public class SeedLoader implements ApplicationRunner {
         item.setDescription(text(node, "description", ""));
         item.setColour(text(node, "colour", null));
         item.setLocation(buildLocation(node));
-        item.setPhotoUrl(normalisePhoto(text(node, "image", null)));
+        /* Seed rows deliberately carry no photograph. A missing photo renders
+           as a tinted panel with the category glyph, which reads as a designed
+           placeholder; the prototype's faint line-art SVGs read as a broken
+           image on a light card. Real uploads still show real photographs. */
+        item.setPhotoUrl(null);
         item.setReporterName("Registry desk");
         item.setReporterEmail("registry@example.edu");
 
@@ -145,14 +149,6 @@ public class SeedLoader implements ApplicationRunner {
             return building;
         }
         return spot == null ? "Campus" : spot;
-    }
-
-    /** Seed rows point at bundled artwork under /assets, not at /uploads. */
-    private static String normalisePhoto(String raw) {
-        if (raw == null || raw.isBlank()) {
-            return null;
-        }
-        return raw.startsWith("/") ? raw : "/" + raw;
     }
 
     private static Instant parseInstant(String raw, int index) {

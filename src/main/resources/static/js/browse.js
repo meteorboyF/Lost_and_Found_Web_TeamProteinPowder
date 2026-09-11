@@ -106,7 +106,7 @@
         }
 
         countEl.innerHTML =
-          '<strong class="font-mono text-primary">' + page.totalElements + '</strong> ' +
+          '<strong class="font-semibold text-heading">' + page.totalElements + '</strong> ' +
           (page.totalElements === 1 ? 'item' : 'items') +
           (hasFilters() ? ' match your filters' : ' on the board');
 
@@ -158,15 +158,15 @@
   function initCategories() {
     return LF.api.get('/api/items/categories').then(function (categories) {
       var html =
-        '<label class="flex cursor-pointer items-center gap-2.5 py-1 text-sm">' +
-        '<input type="radio" name="category" value="" class="h-4 w-4 accent-[var(--sc-found)]">Any</label>';
+        '<label class="flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm text-body transition hover:bg-sunken">' +
+        '<input type="radio" name="category" value="" class="h-4 w-4 accent-[var(--sc-brand)]">Any</label>';
 
       html += categories
         .map(function (c) {
           return (
-            '<label class="flex cursor-pointer items-center gap-2.5 py-1 text-sm">' +
+            '<label class="flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm text-body transition hover:bg-sunken">' +
             '<input type="radio" name="category" value="' + LF.escapeHtml(c.value) +
-            '" class="h-4 w-4 accent-[var(--sc-found)]">' + LF.escapeHtml(c.label) + '</label>'
+            '" class="h-4 w-4 accent-[var(--sc-brand)]">' + LF.escapeHtml(c.label) + '</label>'
           );
         })
         .join('');

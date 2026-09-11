@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lost &amp; Found — Campus Registry</title>
-<meta name="description" content="A shared board for posting lost and found items across campus. Report what you lost, hand in what you found, and get matched automatically.">
+<meta name="description" content="Post what you lost, hand in what you found, and get matched automatically.">
 
 <!-- Applied before first paint so a dark-theme visitor never sees a light flash. -->
 <script>
@@ -18,53 +18,54 @@
   })();
 </script>
 
-<link rel="preload" href="/assets/fonts/serif-display-400.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="/assets/fonts/sans-display-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/inter-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/inter-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/css/app.css">
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 </head>
 
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col bg-page">
 
 <a class="skip-link" href="#main">Skip to content</a>
 
-<!-- ========================= masthead ========================= -->
-<header class="sticky top-0 z-40 border-b border-line bg-page/90 backdrop-blur-sm">
-  <div class="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
+<header class="sticky top-0 z-40 border-b border-line bg-page/80 backdrop-blur-xl">
+  <div class="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6 lg:px-8">
 
-    <a href="/" class="flex items-baseline gap-2 font-display text-lg tracking-tight whitespace-nowrap">
-      Lost <span class="italic text-found">&amp;</span> Found
-      <span class="hidden border-l border-line-strong pl-2 font-sans u-caps text-muted sm:inline">Registry</span>
+    <a href="/" class="flex items-center gap-2.5 font-bold tracking-tight text-heading">
+      <span class="grid h-9 w-9 place-items-center rounded-xl bg-brand text-white shadow-[var(--shadow-brand)]">
+        <svg class="icon h-5 w-5" aria-hidden="true"><use href="/assets/icons.svg#i-pin"></use></svg>
+      </span>
+      <span class="text-[1.0625rem]">Lost &amp; Found</span>
     </a>
 
     <nav id="primary-nav" aria-label="Primary"
-         class="fixed inset-x-0 top-16 z-30 flex-col gap-0 border-b border-line bg-page px-4 py-2 shadow-lg
-                data-[open=false]:hidden lg:static lg:z-auto lg:flex lg:flex-row lg:gap-1 lg:border-0 lg:bg-transparent
-                lg:px-0 lg:py-0 lg:shadow-none"
+         class="fixed inset-x-0 top-16 z-30 flex-col gap-1 border-b border-line bg-page p-4 shadow-lg
+                data-[open=false]:hidden lg:static lg:ml-4 lg:flex lg:flex-row lg:border-0 lg:bg-transparent
+                lg:p-0 lg:shadow-none"
          data-open="false">
-      <a href="/browse.html"        class="rounded-sm px-3 py-3 text-secondary hover:bg-primary/5 hover:text-primary lg:py-2">Browse</a>
-      <a href="/report.html?kind=lost"  class="rounded-sm px-3 py-3 text-secondary hover:bg-primary/5 hover:text-primary lg:py-2">Report lost</a>
-      <a href="/report.html?kind=found" class="rounded-sm px-3 py-3 text-secondary hover:bg-primary/5 hover:text-primary lg:py-2">Report found</a>
-      <a href="/dashboard.html"     class="rounded-sm px-3 py-3 text-secondary hover:bg-primary/5 hover:text-primary lg:py-2">My items</a>
+      <a href="/browse.html" class="rounded-lg px-3 py-2.5 text-sm font-medium text-body transition hover:bg-sunken hover:text-heading lg:py-2 aria-[current=page]:bg-brand-soft aria-[current=page]:text-brand-text aria-[current=page]:font-semibold">Browse</a>
+      <a href="/report.html?kind=lost" class="rounded-lg px-3 py-2.5 text-sm font-medium text-body transition hover:bg-sunken hover:text-heading lg:py-2 aria-[current=page]:bg-brand-soft aria-[current=page]:text-brand-text aria-[current=page]:font-semibold">Report lost</a>
+      <a href="/report.html?kind=found" class="rounded-lg px-3 py-2.5 text-sm font-medium text-body transition hover:bg-sunken hover:text-heading lg:py-2 aria-[current=page]:bg-brand-soft aria-[current=page]:text-brand-text aria-[current=page]:font-semibold">Report found</a>
+      <a href="/dashboard.html" class="rounded-lg px-3 py-2.5 text-sm font-medium text-body transition hover:bg-sunken hover:text-heading lg:py-2 aria-[current=page]:bg-brand-soft aria-[current=page]:text-brand-text aria-[current=page]:font-semibold">My items</a>
     </nav>
 
-    <div class="ml-auto flex items-center gap-1">
+    <div class="ml-auto flex items-center gap-2">
       <button type="button" data-theme-toggle
-              class="grid h-10 w-10 place-items-center rounded-sm text-secondary hover:bg-primary/5 hover:text-primary"
+              class="grid h-9 w-9 place-items-center rounded-lg text-muted transition hover:bg-sunken hover:text-heading"
               aria-label="Switch to dark theme" aria-pressed="false">
-        <svg class="icon" aria-hidden="true" data-theme-icon="light"><use href="/assets/icons.svg#i-sun"></use></svg>
-        <svg class="icon" aria-hidden="true" data-theme-icon="dark" hidden><use href="/assets/icons.svg#i-moon"></use></svg>
+        <svg class="icon h-[1.15rem] w-[1.15rem]" aria-hidden="true" data-theme-icon="light"><use href="/assets/icons.svg#i-sun"></use></svg>
+        <svg class="icon h-[1.15rem] w-[1.15rem]" aria-hidden="true" data-theme-icon="dark" hidden><use href="/assets/icons.svg#i-moon"></use></svg>
       </button>
 
-      <a href="/login.html"
-         class="hidden rounded-sm border border-line-strong px-4 py-2 text-sm font-bold hover:border-primary sm:inline-block">
-        Sign in
+      <a href="/report.html" class="btn btn-primary btn-sm hidden sm:inline-flex">
+        <svg class="icon h-4 w-4" aria-hidden="true"><use href="/assets/icons.svg#i-plus"></use></svg>
+        Post an item
       </a>
 
       <button type="button" data-nav-toggle aria-controls="primary-nav" aria-expanded="false"
               aria-label="Open navigation"
-              class="grid h-10 w-10 place-items-center rounded-sm text-secondary hover:bg-primary/5 hover:text-primary lg:hidden">
-        <svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#i-menu"></use></svg>
+              class="grid h-9 w-9 place-items-center rounded-lg text-muted transition hover:bg-sunken hover:text-heading lg:hidden">
+        <svg class="icon h-[1.15rem] w-[1.15rem]" aria-hidden="true"><use href="/assets/icons.svg#i-menu"></use></svg>
       </button>
     </div>
   </div>
@@ -72,124 +73,148 @@
 
 <main id="main" class="flex-1">
 
-  <!-- ========================= hero ========================= -->
-  <section class="border-b border-line">
-    <div class="mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-6 lg:grid-cols-12 lg:gap-8 lg:px-8 lg:py-24">
+<!-- hero -->
+<section class="hero-wash relative overflow-hidden border-b border-line">
+  <div class="mx-auto max-w-7xl px-4 pb-16 pt-16 sm:px-6 lg:px-8 lg:pb-24 lg:pt-24">
+    <div class="grid items-center gap-12 lg:grid-cols-2">
 
-      <div class="lg:col-span-7">
-        <p class="u-caps text-muted">Campus Lost &amp; Found</p>
-        <h1 class="mt-4 text-4xl leading-[1.02] sm:text-5xl lg:text-6xl">
+      <div>
+        <span class="pill pill-lg bg-surface text-brand-text shadow-[var(--shadow-card)]">
+          <svg class="icon h-4 w-4" aria-hidden="true"><use href="/assets/icons.svg#i-sparkle"></use></svg>
+          Smart matching, automatically
+        </span>
+
+        <h1 class="display mt-6 text-[2.75rem] text-heading sm:text-6xl lg:text-[4rem]">
           Someone already<br>found it.
         </h1>
-        <p class="mt-6 max-w-xl text-lg leading-relaxed text-secondary">
-          Post what you lost. We scan every item handed in across campus and tell you
-          when something matches — usually before you think to check again.
+
+        <p class="mt-6 max-w-lg text-lg leading-relaxed text-body">
+          Post what you lost and we scan every item handed in across campus —
+          then tell you the moment something lines up.
         </p>
 
         <div class="mt-8 flex flex-wrap gap-3">
-          <a href="/report.html?kind=lost"
-             class="inline-flex items-center gap-2 rounded-sm bg-lost px-6 py-3.5 font-bold text-white
-                    transition hover:brightness-90 dark:text-[#14161b]">
+          <a href="/report.html?kind=lost" class="btn btn-lost btn-lg">
             I lost something
-            <svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#i-arrow-right"></use></svg>
+            <svg class="icon h-[1.15rem] w-[1.15rem]" aria-hidden="true"><use href="/assets/icons.svg#i-arrow-right"></use></svg>
           </a>
-          <a href="/report.html?kind=found"
-             class="inline-flex items-center gap-2 rounded-sm border border-line-strong px-6 py-3.5 font-bold
-                    transition hover:border-primary hover:bg-primary/5">
-            I found something
-          </a>
+          <a href="/report.html?kind=found" class="btn btn-secondary btn-lg">I found something</a>
+        </div>
+
+        <div class="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
+          <div>
+            <p class="text-3xl font-extrabold tabular-nums text-heading" data-stat="resolved">—</p>
+            <p class="text-sm text-muted">Reunited with owners</p>
+          </div>
+          <div class="h-10 w-px bg-line"></div>
+          <div>
+            <p class="text-3xl font-extrabold tabular-nums text-heading" data-stat="open">—</p>
+            <p class="text-sm text-muted">Waiting to be claimed</p>
+          </div>
         </div>
       </div>
 
-      <!-- Live counts. Rendered from the API so the number on the landing page
-           is the real one, not a marketing figure. -->
-      <div class="lg:col-span-5 lg:pl-8">
-        <dl class="grid grid-cols-2 gap-px overflow-hidden rounded-sm border border-line bg-line"
-            data-stats>
-          <div class="bg-surface p-5">
-            <dd class="font-display text-4xl tabular-nums" data-stat="open">—</dd>
-            <dt class="mt-1 u-caps text-muted">Open items</dt>
-          </div>
-          <div class="bg-surface p-5">
-            <dd class="font-display text-4xl tabular-nums" data-stat="resolved">—</dd>
-            <dt class="mt-1 u-caps text-muted">Reunited</dt>
-          </div>
-          <div class="bg-surface p-5">
-            <dd class="font-display text-4xl tabular-nums" data-stat="found">—</dd>
-            <dt class="mt-1 u-caps text-muted">Found posts</dt>
-          </div>
-          <div class="bg-surface p-5">
-            <dd class="font-display text-4xl tabular-nums" data-stat="lost">—</dd>
-            <dt class="mt-1 u-caps text-muted">Lost posts</dt>
-          </div>
-        </dl>
-
-        <p class="mt-4 flex items-center gap-2 text-2xs text-muted" data-api-status role="status">
-          <span class="inline-block h-2 w-2 rounded-full bg-faint" data-api-dot></span>
-          <span data-api-label>Checking the registry…</span>
-        </p>
+      <!-- Preview cards. Real recent items, angled into a small stack so the
+           hero shows the product rather than describing it. -->
+      <div class="relative hidden lg:block" data-hero-cards>
+        <div class="h-[26rem]"></div>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- ========================= how it works ========================= -->
-  <section class="border-b border-line bg-sunken">
-    <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-      <h2 class="text-2xl">How it works</h2>
+<!-- how it works -->
+<section class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
+  <div class="mx-auto max-w-2xl text-center">
+    <h2 class="text-3xl text-heading sm:text-4xl">Three steps, no paperwork</h2>
+    <p class="mt-4 text-body">The whole thing takes less than a minute.</p>
+  </div>
 
-      <ol class="mt-8 grid gap-px overflow-hidden rounded-sm border border-line bg-line sm:grid-cols-3">
-        <li class="bg-surface p-6">
-          <span class="font-mono text-2xs text-muted">01</span>
-          <h3 class="mt-3 text-xl">Post it</h3>
-          <p class="mt-2 text-sm leading-relaxed text-secondary">
-            A photo, a short description, and roughly where it happened. Thirty seconds.
-          </p>
-        </li>
-        <li class="bg-surface p-6">
-          <span class="font-mono text-2xs text-muted">02</span>
-          <h3 class="mt-3 text-xl">We match it</h3>
-          <p class="mt-2 text-sm leading-relaxed text-secondary">
-            Every new post is scanned against the other side of the board. Strong
-            overlaps surface as a suggested match.
-          </p>
-        </li>
-        <li class="bg-surface p-6">
-          <span class="font-mono text-2xs text-muted">03</span>
-          <h3 class="mt-3 text-xl">Claim it</h3>
-          <p class="mt-2 text-sm leading-relaxed text-secondary">
-            Recognise something? Start a conversation with whoever has it and arrange
-            the handover.
-          </p>
-        </li>
-      </ol>
-    </div>
-  </section>
-
-  <!-- ========================= recent ========================= -->
-  <section>
-    <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-      <div class="flex flex-wrap items-end justify-between gap-4 border-b border-line pb-4">
-        <h2 class="text-2xl">Recently posted</h2>
-        <a href="/browse.html" class="inline-flex items-center gap-2 text-sm font-bold hover:text-found">
-          Browse everything
-          <svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#i-arrow-right"></use></svg>
-        </a>
+  <ol class="mt-12 grid gap-6 md:grid-cols-3">
+    <li class="card p-6">
+      <div class="grid h-11 w-11 place-items-center rounded-xl bg-brand-soft text-brand">
+        <svg class="icon h-5 w-5" aria-hidden="true"><use href="/assets/icons.svg#i-camera"></use></svg>
       </div>
+      <h3 class="mt-5 text-lg text-heading">Post it</h3>
+      <p class="mt-2 text-sm leading-relaxed text-muted">
+        A photo, a short description, and roughly where it happened.
+      </p>
+    </li>
+    <li class="card p-6">
+      <div class="grid h-11 w-11 place-items-center rounded-xl bg-found-soft text-found">
+        <svg class="icon h-5 w-5" aria-hidden="true"><use href="/assets/icons.svg#i-sparkle"></use></svg>
+      </div>
+      <h3 class="mt-5 text-lg text-heading">We match it</h3>
+      <p class="mt-2 text-sm leading-relaxed text-muted">
+        Every post is scanned against the other side of the board. Strong overlaps
+        surface as a suggested match.
+      </p>
+    </li>
+    <li class="card p-6">
+      <div class="grid h-11 w-11 place-items-center rounded-xl bg-amber-soft text-amber">
+        <svg class="icon h-5 w-5" aria-hidden="true"><use href="/assets/icons.svg#i-message"></use></svg>
+      </div>
+      <h3 class="mt-5 text-lg text-heading">Claim it</h3>
+      <p class="mt-2 text-sm leading-relaxed text-muted">
+        Recognise something? Start a conversation and arrange the handover.
+      </p>
+    </li>
+  </ol>
+</section>
 
-      <div class="mt-8" data-recent
-           data-empty-message="Nothing has been posted yet. The board fills up fast once term starts.">
-        <!-- Populated by /js/home.js -->
+<!-- categories -->
+<section class="border-y border-line bg-surface">
+  <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <h2 class="text-2xl text-heading sm:text-3xl">Browse by category</h2>
+        <p class="mt-2 text-body">Jump straight to the kind of thing you are missing.</p>
       </div>
     </div>
-  </section>
+    <div class="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4" data-category-tiles></div>
+  </div>
+</section>
+
+<!-- recent -->
+<section class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+  <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <h2 class="text-2xl text-heading sm:text-3xl">Just posted</h2>
+      <p class="mt-2 text-body">The newest items on the board.</p>
+    </div>
+    <a href="/browse.html" class="btn btn-secondary btn-sm">
+      See everything
+      <svg class="icon h-4 w-4" aria-hidden="true"><use href="/assets/icons.svg#i-arrow-right"></use></svg>
+    </a>
+  </div>
+
+  <div data-recent data-empty-message="Nothing has been posted yet. The board fills up fast once term starts."></div>
+
+  <p class="mt-8 flex items-center justify-center gap-2 text-xs text-faint" role="status">
+    <span class="inline-block h-1.5 w-1.5 rounded-full bg-faint" data-api-dot></span>
+    <span data-api-label>Checking the registry…</span>
+  </p>
+</section>
 </main>
 
-<!-- ========================= footer ========================= -->
-<footer class="border-t border-line bg-sunken">
+<footer class="mt-20 border-t border-line bg-surface">
   <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-    <div class="flex flex-wrap items-center justify-between gap-4 text-2xs text-muted">
-      <p>Lost &amp; Found Registry — Team Protein Powder</p>
-      <p>Items are held for 90 days before being archived.</p>
+    <div class="flex flex-wrap items-center justify-between gap-6">
+      <div class="flex items-center gap-2.5">
+        <span class="grid h-8 w-8 place-items-center rounded-lg bg-brand text-white">
+          <svg class="icon h-4 w-4" aria-hidden="true"><use href="/assets/icons.svg#i-pin"></use></svg>
+        </span>
+        <div>
+          <p class="text-sm font-semibold text-heading">Lost &amp; Found</p>
+          <p class="text-xs text-muted">Team Protein Powder</p>
+        </div>
+      </div>
+      <nav class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted" aria-label="Footer">
+        <a href="/browse.html" class="transition hover:text-heading">Browse</a>
+        <a href="/report.html" class="transition hover:text-heading">Post an item</a>
+        <a href="/dashboard.html" class="transition hover:text-heading">My items</a>
+      </nav>
+      <p class="text-xs text-faint">Items are held for 90 days before archiving.</p>
     </div>
   </div>
 </footer>
