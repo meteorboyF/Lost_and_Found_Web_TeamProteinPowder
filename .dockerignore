@@ -1,0 +1,14 @@
+.git
+.gitignore
+.github
+.claude
+CLAUDE.md
+README.md
+target
+db
+uploads
+frontend/node_modules
+*.log
+*.jpeg
+*.jpg
+*.md
