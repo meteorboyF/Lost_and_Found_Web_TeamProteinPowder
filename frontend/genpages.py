@@ -626,6 +626,65 @@ MAP_BODY = """
 </div>
 """
 
+
+# ============================== admin ==============================
+
+ADMIN_BODY = """
+<div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+
+  <!-- gate -->
+  <div data-admin-gate hidden>
+    <div class="mx-auto max-w-md">
+      <div class="card p-6">
+        <span class="grid h-11 w-11 place-items-center rounded-xl bg-brand-soft text-brand">
+          <svg class="icon h-5 w-5" aria-hidden="true"><use href="/assets/icons.svg#i-lock"></use></svg>
+        </span>
+        <h1 class="mt-4 text-2xl text-heading">Moderation</h1>
+        <p class="mt-2 text-sm text-body">
+          Enter the moderation key to manage posts and comments.
+        </p>
+        <form class="mt-5 grid gap-1.5" data-admin-form novalidate>
+          <label for="adminKey" class="label">Moderation key</label>
+          <input id="adminKey" name="adminKey" type="password" class="field" autocomplete="current-password">
+          <p class="min-h-5 text-sm text-lost" data-admin-error></p>
+          <button type="submit" class="btn btn-primary mt-1">Open workspace</button>
+        </form>
+      </div>
+      <p class="mt-4 text-center text-xs text-faint">
+        A shared key is a coursework stopgap, not real authorisation. It is checked on
+        the server for every request, not just used to hide this screen.
+      </p>
+    </div>
+  </div>
+
+  <!-- workspace -->
+  <div data-admin-app hidden>
+    <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <h1 class="text-3xl text-heading sm:text-4xl">Moderation</h1>
+        <p class="mt-2 text-body">Board health, posts, and the comment queue.</p>
+      </div>
+      <button type="button" data-admin-signout class="btn btn-ghost btn-sm">Sign out</button>
+    </div>
+
+    <div class="mb-6 border-b border-line">
+      <div class="flex gap-1 overflow-x-auto" role="tablist" aria-label="Moderation sections">
+        <button role="tab" type="button" data-tab="overview" aria-selected="true"
+                class="-mb-px whitespace-nowrap border-b-2 border-transparent px-4 py-3 text-sm font-medium text-muted transition hover:text-heading aria-[selected=true]:border-brand aria-[selected=true]:font-semibold aria-[selected=true]:text-brand">Overview</button>
+        <button role="tab" type="button" data-tab="items" aria-selected="false"
+                class="-mb-px whitespace-nowrap border-b-2 border-transparent px-4 py-3 text-sm font-medium text-muted transition hover:text-heading aria-[selected=true]:border-brand aria-[selected=true]:font-semibold aria-[selected=true]:text-brand">
+          Posts <span class="ml-1 font-mono text-xs text-faint" data-admin-count="items">0</span></button>
+        <button role="tab" type="button" data-tab="comments" aria-selected="false"
+                class="-mb-px whitespace-nowrap border-b-2 border-transparent px-4 py-3 text-sm font-medium text-muted transition hover:text-heading aria-[selected=true]:border-brand aria-[selected=true]:font-semibold aria-[selected=true]:text-brand">
+          Comments <span class="ml-1 font-mono text-xs text-faint" data-admin-count="comments">0</span></button>
+      </div>
+    </div>
+
+    <div data-admin-panel></div>
+  </div>
+</div>
+"""
+
 page("index.html", "Lost &amp; Found — Campus Registry",
      "Post what you lost, hand in what you found, and get matched automatically.",
      HOME_BODY, '<script src="/js/home.js"></script>')
@@ -657,3 +716,7 @@ page("gallery.html", "Reunions — Lost &amp; Found",
 page("map.html", "Campus map — Lost &amp; Found",
      "Where items are lost and found across campus.",
      MAP_BODY, '<script src="/js/map.js"></script>')
+
+page("admin.html", "Moderation — Lost &amp; Found",
+     "Moderation tools for the campus Lost and Found board.",
+     ADMIN_BODY, '<script src="/js/admin.js"></script>')
