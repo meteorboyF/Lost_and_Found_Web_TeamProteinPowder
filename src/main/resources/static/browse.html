@@ -96,8 +96,16 @@
 
   <div class="lg:grid lg:grid-cols-[17rem_minmax(0,1fr)] lg:gap-10">
 
-    <aside class="mb-8 lg:mb-0">
-      <form data-filters class="lg:sticky lg:top-24">
+    <aside class="mb-6 lg:mb-0">
+      <!-- On a phone the full filter stack would push every result below the
+           fold, so it collapses behind this toggle. Desktop shows it always. -->
+      <button type="button" data-filter-toggle aria-expanded="false" aria-controls="filter-panel"
+              class="btn btn-secondary mb-4 w-full lg:hidden">
+        <svg class="icon h-[1.15rem] w-[1.15rem]" aria-hidden="true"><use href="/assets/icons.svg#i-filter"></use></svg>
+        Filters
+        <span class="pill bg-brand text-white dark:text-[#11121a]" data-filter-count hidden>0</span>
+      </button>
+      <form data-filters id="filter-panel" class="hidden lg:block lg:sticky lg:top-24">
 
         <div class="relative mb-5 flex items-center">
           <label for="f-q" class="sr-only">Search items</label>

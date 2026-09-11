@@ -378,6 +378,79 @@
   .skip-link:focus { top: 1rem; }
 }
 
+/* ==========================================================================
+   Hero stage — the floating lost objects.
+
+   Depth is layered: a perspective container, a tilt plane driven by the
+   pointer (JS sets --tilt-x/--tilt-y; touch and reduced-motion never do),
+   and per-object float loops offset in time so the scene never syncs up.
+   Each object owns a grounded shadow that shrinks and fades as it rises,
+   which is what actually sells the height.
+   ========================================================================== */
+
+@layer components {
+  .hero-stage {
+    perspective: 1100px;
+  }
+
+  .hero-tilt {
+    transform-style: preserve-3d;
+    transform: rotateY(var(--tilt-x, 0deg)) rotateX(var(--tilt-y, 0deg));
+    transition: transform 300ms var(--ease-brand);
+    will-change: transform;
+  }
+
+  .float-obj {
+    position: absolute;
+    display: grid;
+    justify-items: center;
+    /* JS shifts each object by its depth for parallax. */
+    translate: var(--px, 0px) var(--py, 0px);
+    transition: translate 300ms var(--ease-brand);
+  }
+
+  .float-obj > svg {
+    animation: obj-float var(--dur, 6s) ease-in-out var(--delay, 0s) infinite;
+    filter: drop-shadow(0 10px 14px rgb(16 24 40 / 0.18));
+    transition: scale 250ms var(--ease-brand);
+  }
+
+  .float-obj:hover > svg {
+    scale: 1.09;
+  }
+
+  .float-obj::after {
+    content: "";
+    width: 62%;
+    height: 12px;
+    margin-top: -4px;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgb(16 24 40 / 0.28), transparent);
+    animation: obj-shadow var(--dur, 6s) ease-in-out var(--delay, 0s) infinite;
+  }
+
+  [data-theme="dark"] .float-obj::after {
+    background: radial-gradient(closest-side, rgb(0 0 0 / 0.55), transparent);
+  }
+
+  @keyframes obj-float {
+    0%, 100% { transform: translateY(0) rotate(var(--rot, 0deg)); }
+    50% { transform: translateY(-14px) rotate(calc(var(--rot, 0deg) + var(--sway, 2deg))); }
+  }
+
+  @keyframes obj-shadow {
+    0%, 100% { scale: 1; opacity: 1; }
+    50% { scale: 0.78 1; opacity: 0.55; }
+  }
+
+  /* Faint dot grid behind the hero, fading out downward. */
+  .hero-dots {
+    background-image: radial-gradient(circle, var(--sc-line-strong) 1px, transparent 1px);
+    background-size: 26px 26px;
+    mask-image: linear-gradient(to bottom, rgb(0 0 0 / 0.5), transparent 85%);
+  }
+}
+
 @layer utilities {
   .sr-only-focusable:not(:focus):not(:active) {
     position: absolute;

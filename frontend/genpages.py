@@ -10,6 +10,13 @@ import pathlib
 
 STATIC = pathlib.Path(__file__).resolve().parent.parent / "src/main/resources/static"
 
+# The hero objects are inlined rather than referenced externally: Chrome does
+# not resolve gradient url(#...) fills inside a cross-document <use>, so an
+# external sprite would render the art unfilled. The SVG on disk stays the
+# source of truth; it is embedded at generation time.
+THINGS = (STATIC / "assets/img/things.svg").read_text(encoding="utf-8")
+THINGS = THINGS[THINGS.index("<svg"):]  # strip xml prolog + comment header
+
 HEAD = """<!doctype html>
 <html lang="en">
 <head>
@@ -152,7 +159,8 @@ def page(filename, title, description, body, scripts, active=None):
 HOME_BODY = """
 <!-- hero -->
 <section class="hero-wash relative overflow-hidden border-b border-line">
-  <div class="mx-auto max-w-7xl px-4 pb-16 pt-16 sm:px-6 lg:px-8 lg:pb-24 lg:pt-24">
+  <div class="hero-dots pointer-events-none absolute inset-0" aria-hidden="true"></div>
+  <div class="relative mx-auto max-w-7xl px-4 pb-16 pt-16 sm:px-6 lg:px-8 lg:pb-24 lg:pt-24">
     <div class="grid items-center gap-12 lg:grid-cols-2">
 
       <div>
@@ -191,10 +199,44 @@ HOME_BODY = """
         </div>
       </div>
 
-      <!-- Preview cards. Real recent items, angled into a small stack so the
-           hero shows the product rather than describing it. -->
-      <div class="relative hidden lg:block" data-hero-cards>
-        <div class="h-[26rem]"></div>
+      <!-- The lost & found still life: common lost objects floating in a
+           3D stage. Pointer tilt is added by home.js; decorative only. -->
+      <div class="hero-stage relative mx-auto h-64 w-full max-w-md sm:h-80 lg:h-[26rem] lg:max-w-none"
+           data-hero-stage aria-hidden="true">
+{things}
+        <div class="hero-tilt relative h-full w-full" data-hero-tilt>
+
+          <div class="float-obj left-[38%] top-[26%] w-36 lg:w-44" data-depth="30"
+               style="--dur:5.5s; --delay:.6s; --rot:3deg; --sway:3deg">
+            <svg viewBox="0 0 120 120" class="w-full"><use href="#o-keys"></use></svg>
+          </div>
+
+          <div class="float-obj right-[4%] top-[2%] w-32 lg:w-40" data-depth="22"
+               style="--dur:7s; --rot:-4deg; --sway:-3deg">
+            <svg viewBox="0 0 120 120" class="w-full"><use href="#o-bag"></use></svg>
+          </div>
+
+          <div class="float-obj hidden left-[2%] top-[4%] w-24 sm:grid lg:w-28" data-depth="14"
+               style="--dur:6.5s; --delay:.3s; --rot:6deg; --sway:2deg">
+            <svg viewBox="0 0 120 120" class="w-full"><use href="#o-bottle"></use></svg>
+          </div>
+
+          <div class="float-obj left-[8%] top-[52%] w-24 lg:w-32" data-depth="18"
+               style="--dur:6s; --delay:1.1s; --rot:-7deg; --sway:-2deg">
+            <svg viewBox="0 0 120 120" class="w-full"><use href="#o-phone"></use></svg>
+          </div>
+
+          <div class="float-obj right-[8%] top-[54%] w-28 lg:w-36" data-depth="26"
+               style="--dur:7.5s; --delay:.9s; --rot:5deg; --sway:3deg">
+            <svg viewBox="0 0 120 120" class="w-full"><use href="#o-headphones"></use></svg>
+          </div>
+
+          <div class="float-obj hidden left-[35%] top-[68%] w-28 md:grid lg:w-36" data-depth="12"
+               style="--dur:8s; --delay:1.5s; --rot:-3deg; --sway:2deg">
+            <svg viewBox="0 0 120 120" class="w-full"><use href="#o-card"></use></svg>
+          </div>
+
+        </div>
       </div>
     </div>
   </div>
@@ -288,8 +330,16 @@ BROWSE_BODY = """
 
   <div class="lg:grid lg:grid-cols-[17rem_minmax(0,1fr)] lg:gap-10">
 
-    <aside class="mb-8 lg:mb-0">
-      <form data-filters class="lg:sticky lg:top-24">
+    <aside class="mb-6 lg:mb-0">
+      <!-- On a phone the full filter stack would push every result below the
+           fold, so it collapses behind this toggle. Desktop shows it always. -->
+      <button type="button" data-filter-toggle aria-expanded="false" aria-controls="filter-panel"
+              class="btn btn-secondary mb-4 w-full lg:hidden">
+        <svg class="icon h-[1.15rem] w-[1.15rem]" aria-hidden="true"><use href="/assets/icons.svg#i-filter"></use></svg>
+        Filters
+        <span class="pill bg-brand text-white dark:text-[#11121a]" data-filter-count hidden>0</span>
+      </button>
+      <form data-filters id="filter-panel" class="hidden lg:block lg:sticky lg:top-24">
 
         <div class="relative mb-5 flex items-center">
           <label for="f-q" class="sr-only">Search items</label>
@@ -697,6 +747,8 @@ ADMIN_BODY = """
   </div>
 </div>
 """
+
+HOME_BODY = HOME_BODY.replace("{things}", THINGS)
 
 page("index.html", "Lost &amp; Found — Campus Registry",
      "Post what you lost, hand in what you found, and get matched automatically.",

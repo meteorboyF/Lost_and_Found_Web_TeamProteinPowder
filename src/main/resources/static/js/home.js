@@ -1,6 +1,6 @@
 /**
- * home.js — landing page: live counts, category tiles, the hero card stack,
- * and the newest posts.
+ * home.js — landing page: live counts, category tiles, the floating hero
+ * stage, and the newest posts.
  */
 (function () {
   'use strict';
@@ -70,48 +70,6 @@
   }
 
   /* ------------------------------------------------------------------
-     Hero card stack. Three real items, offset and slightly rotated, so the
-     hero shows the product instead of describing it.
-     ------------------------------------------------------------------ */
-
-  function renderHeroCards(items) {
-    var host = document.querySelector('[data-hero-cards]');
-    if (!host || !items.length) return;
-
-    var layout = [
-      { cls: 'left-0 top-4 w-[17rem] -rotate-[5deg] z-10' },
-      { cls: 'left-24 top-28 w-[17rem] rotate-[3deg] z-20' },
-      { cls: 'left-2 top-56 w-[17rem] -rotate-[2deg] z-30' }
-    ];
-
-    host.innerHTML =
-      '<div class="relative h-[26rem]" aria-hidden="true">' +
-      items.slice(0, 3).map(function (item, i) {
-        var cat = LF.category(item.category);
-        var thumb = item.photoUrl
-          ? '<img src="' + e(item.photoUrl) + '" alt="" class="h-12 w-12 rounded-lg object-cover">'
-          : '<span class="grid h-12 w-12 place-items-center rounded-lg bg-gradient-to-br ' + cat.grad + '">' +
-            '<svg class="icon h-6 w-6 ' + cat.solid + '" aria-hidden="true"><use href="/assets/icons.svg#' +
-            cat.icon + '"></use></svg></span>';
-
-        return (
-          '<div class="absolute ' + layout[i].cls +
-          ' rounded-2xl border border-line bg-surface p-4 shadow-[var(--shadow-pop)] transition duration-500 hover:rotate-0">' +
-          '<div class="flex items-center gap-3">' + thumb +
-          '<div class="min-w-0 flex-1">' +
-          '<p class="truncate text-sm font-semibold text-heading">' + e(item.title) + '</p>' +
-          '<p class="truncate text-xs text-muted">' + e(item.location) + '</p>' +
-          '</div></div>' +
-          '<div class="mt-3 flex items-center justify-between">' +
-          LF.kindPill(item.kind) +
-          '<span class="text-xs text-faint">' + e(LF.timeAgo(item.createdAt)) + '</span>' +
-          '</div></div>'
-        );
-      }).join('') +
-      '</div>';
-  }
-
-  /* ------------------------------------------------------------------
      Recent
      ------------------------------------------------------------------ */
 
@@ -132,7 +90,46 @@
         return;
       }
       host.innerHTML = LF.itemGrid(page.content);
-      renderHeroCards(page.content);
+    });
+  }
+
+  /* ------------------------------------------------------------------
+     Hero tilt. The stage leans toward the pointer and each object shifts
+     by its own depth, which is what turns flat art into a diorama.
+     Touch gets the float animation only; reduced motion gets stillness.
+     ------------------------------------------------------------------ */
+
+  function initHeroTilt() {
+    var stage = document.querySelector('[data-hero-stage]');
+    var tilt = document.querySelector('[data-hero-tilt]');
+    if (!stage || !tilt || !window.matchMedia) return;
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (matchMedia('(pointer: coarse)').matches) return;
+
+    var objects = Array.prototype.slice.call(stage.querySelectorAll('[data-depth]'));
+
+    stage.addEventListener('pointermove', function (ev) {
+      var rect = stage.getBoundingClientRect();
+      var nx = ((ev.clientX - rect.left) / rect.width) * 2 - 1;
+      var ny = ((ev.clientY - rect.top) / rect.height) * 2 - 1;
+
+      tilt.style.setProperty('--tilt-x', (nx * 7).toFixed(2) + 'deg');
+      tilt.style.setProperty('--tilt-y', (-ny * 7).toFixed(2) + 'deg');
+
+      objects.forEach(function (el) {
+        var depth = Number(el.dataset.depth) || 0;
+        el.style.setProperty('--px', (nx * depth * 0.6).toFixed(1) + 'px');
+        el.style.setProperty('--py', (ny * depth * 0.6).toFixed(1) + 'px');
+      });
+    });
+
+    stage.addEventListener('pointerleave', function () {
+      tilt.style.setProperty('--tilt-x', '0deg');
+      tilt.style.setProperty('--tilt-y', '0deg');
+      objects.forEach(function (el) {
+        el.style.setProperty('--px', '0px');
+        el.style.setProperty('--py', '0px');
+      });
     });
   }
 
@@ -157,5 +154,8 @@
       });
   }
 
-  document.addEventListener('lf:ready', load);
+  document.addEventListener('lf:ready', function () {
+    initHeroTilt();
+    load();
+  });
 })();

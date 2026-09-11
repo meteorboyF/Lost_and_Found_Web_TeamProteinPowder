@@ -49,6 +49,7 @@
   }
 
   function syncControls() {
+    paintFilterCount();
     if (searchInput) searchInput.value = state.q;
     if (sortSelect) sortSelect.value = state.sort;
 
@@ -182,6 +183,24 @@
     });
   }
 
+  function initFilterToggle() {
+    var btn = document.querySelector('[data-filter-toggle]');
+    var panel = document.getElementById('filter-panel');
+    if (!btn || !panel) return;
+    btn.addEventListener('click', function () {
+      var open = panel.classList.toggle('hidden') === false;
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+  }
+
+  function paintFilterCount() {
+    var badge = document.querySelector('[data-filter-count]');
+    if (!badge) return;
+    var n = [state.q, state.kind, state.category, state.status].filter(Boolean).length;
+    badge.textContent = n;
+    badge.hidden = n === 0;
+  }
+
   function initFilters() {
     /* Debounced so typing does not fire a request per keystroke. */
     var timer = null;
@@ -230,6 +249,7 @@
 
   document.addEventListener('lf:ready', function () {
     readUrl();
+    initFilterToggle();
     syncControls();
     initFilters();
     initCategories();
