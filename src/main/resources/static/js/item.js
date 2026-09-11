@@ -112,6 +112,97 @@
     if (LF.mine.hasItem(item.reference)) loadClaimsForOwner(item);
 
     if (item.status !== 'RESOLVED') loadMatches(item);
+    loadComments(item);
+  }
+
+  /* ------------------------------------------------------------------
+     Public comments — anyone can help identify something.
+     ------------------------------------------------------------------ */
+
+  function loadComments(item) {
+    var section = document.createElement('section');
+    section.className = 'mt-12 border-t border-line pt-8';
+    section.innerHTML =
+      '<h2 class="text-xl text-heading">Can anyone help?</h2>' +
+      '<p class="mt-2 text-sm text-muted">' +
+        'Seen this around, or know something that might narrow it down? Say so here. ' +
+        'This thread is public — to claim the item, use the button above instead.' +
+      '</p>' +
+      '<div class="mt-5" data-comments></div>' +
+      '<form class="mt-5 card p-4" data-comment-form novalidate>' +
+        '<label for="comment-body" class="label">Add a comment</label>' +
+        '<textarea id="comment-body" name="body" rows="3" maxlength="1000" class="field mt-2 resize-y" ' +
+          'placeholder="I think I saw one like this near the sports hall on Tuesday."></textarea>' +
+        '<p class="min-h-5 text-sm text-lost" data-error="body"></p>' +
+        '<div class="mt-2 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">' +
+          '<div class="grid gap-1.5">' +
+            '<label for="comment-name" class="label">Your name</label>' +
+            '<input id="comment-name" name="authorName" maxlength="80" class="field" value="' +
+              e(LF.mine.all().name) + '">' +
+            '<p class="min-h-5 text-sm text-lost" data-error="authorName"></p>' +
+          '</div>' +
+          '<button type="submit" class="btn btn-primary mb-5" data-comment-submit>Post comment</button>' +
+        '</div>' +
+      '</form>';
+
+    host.parentElement.appendChild(section);
+
+    var list = section.querySelector('[data-comments]');
+    var form = section.querySelector('[data-comment-form]');
+
+    function paint(comments) {
+      if (!comments.length) {
+        list.innerHTML =
+          '<p class="rounded-xl border border-dashed border-line-strong px-4 py-8 text-center text-sm text-muted">' +
+          'No comments yet. Be the first to help.</p>';
+        return;
+      }
+      list.innerHTML = '<ul class="grid gap-3">' + comments.map(function (c) {
+        return (
+          '<li class="card p-4">' +
+            '<div class="flex items-center gap-2.5">' +
+              '<span class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-soft text-xs font-semibold text-brand-text">' +
+                e(c.authorName.charAt(0).toUpperCase()) + '</span>' +
+              '<span class="text-sm font-semibold text-heading">' + e(c.authorName) + '</span>' +
+              '<span class="text-xs text-faint">' + e(LF.timeAgo(c.createdAt)) + '</span>' +
+            '</div>' +
+            '<p class="mt-2.5 whitespace-pre-line text-sm leading-relaxed text-body">' + e(c.body) + '</p>' +
+          '</li>'
+        );
+      }).join('') + '</ul>';
+    }
+
+    LF.api
+      .get('/api/items/' + encodeURIComponent(item.reference) + '/comments')
+      .then(paint)
+      .catch(function () {
+        list.innerHTML = '<p class="text-sm text-muted">Comments could not be loaded.</p>';
+      });
+
+    form.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+
+      var body = form.elements.body.value.trim();
+      var name = form.elements.authorName.value.trim();
+      form.querySelector('[data-error="body"]').textContent = body ? '' : 'Write something first';
+      form.querySelector('[data-error="authorName"]').textContent = name ? '' : 'Tell us your name';
+      if (!body || !name) return;
+
+      var submit = form.querySelector('[data-comment-submit]');
+      submit.disabled = true;
+
+      LF.api
+        .post('/api/items/' + encodeURIComponent(item.reference) + '/comments',
+              { body: body, authorName: name, authorEmail: LF.mine.all().email || null })
+        .then(function () {
+          LF.mine.remember(name, null);
+          form.elements.body.value = '';
+          return LF.api.get('/api/items/' + encodeURIComponent(item.reference) + '/comments');
+        })
+        .then(paint)
+        .catch(function (err) { LF.toast.error(err.message); })
+        .finally(function () { submit.disabled = false; });
+    });
   }
 
   /* ------------------------------------------------------------------
