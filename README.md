@@ -1,92 +1,156 @@
-# Lost & Found
+# Lost &amp; Found — Campus Registry
 
-Lost & Found is a privacy-aware university property registry built by TeamProteinPowder. It gives students one place to report missing property, record found items, verify ownership, arrange collection, and follow an item through the campus custody process.
+A shared board for posting lost and found items across campus. Post what you
+lost, hand in what you found, and the application quietly scans the other side
+of the board for likely matches.
 
-The application is a static prototype: raw HTML, CSS, and JavaScript with no framework, package manager, CDN, or build step. JSON fixtures supply demonstration records and browser storage preserves user actions between reloads.
+Built by **Team Protein Powder**.
 
-## Features
+---
 
-### Student registry
+## Stack
 
-- Editorial landing page with live registry totals
-- Searchable, sortable, faceted browse grid
-- Public item records with privacy masking and custody history
-- Three-step lost and found reporting flows
-- Duplicate detection against existing found records
-- Ownership challenge, student-ID fallback, and pickup scheduling
-- Printable pickup reference with QR-style token
-- Personal dashboard, saved searches, alerts, and notification settings
-- Anonymized registry messaging
-- Campus cluster map and loss heatmap
-- Good Samaritan recognition board
-- Campus-email authentication screen
-- Persistent light/dark theme and EN/বাংলা interface labels
+| Layer     | Choice |
+|-----------|--------|
+| Backend   | Spring Boot 4.1 (Java 21), Spring MVC, Spring Data JPA, Bean Validation |
+| Database  | H2, file-backed — no external database to install |
+| Frontend  | Static HTML + vanilla JavaScript (ES2017), served by Spring Boot |
+| Styling   | Tailwind CSS v4, compiled with the Tailwind CLI |
 
-### Registry administration
+The frontend and backend share a single origin: Spring Boot serves the pages
+out of `src/main/resources/static/`, and the pages call the REST API on the
+same host. There is no CORS configuration because there is no cross-origin
+request.
 
-- Fast and bulk intake with image-obscuring controls and bin assignment
-- Responsive inventory table with bulk actions and item details
-- Side-by-side claim review and confidence scoring
-- Weighted match suggestions
-- Student-ID OCR routing queue
-- Dispute adjudication
-- Disposal and donation batches with printable certificates
-- Public-content moderation queue
-- Animated inline-SVG analytics
-- Full-screen rotating kiosk display
+---
 
-## Run locally
+## Running it locally
 
-No installation or build is required. From the repository root, start any static server:
+You need a **JDK 21 or newer**. Node is only required if you intend to change
+the styling — the compiled stylesheet is committed.
 
-```sh
-python3 -m http.server 8145
+```bash
+./run.sh
 ```
 
-Open <http://localhost:8145/>. The component reference is at <http://localhost:8145/pages/styleguide.html>, and the admin workspace begins at <http://localhost:8145/pages/admin/intake.html>.
+Then open <http://localhost:8080>.
 
-Opening `index.html` directly still renders the interface, theme, and navigation. Browsers block JSON `fetch()` calls over `file://`, so fixture-backed lists show their supported error state until the project is served over HTTP.
+`run.sh` picks a real JDK, recompiles the stylesheet if `frontend/node_modules`
+is present, and starts the application. To run the pieces by hand instead:
 
-## Folder structure
-
-```text
-assets/          Self-hosted WOFF2 fonts, SVG sprite, item illustrations
-css/             Reset, tokens, base, layout, components, and page styles
-data/            Items, users, claims, buildings, notifications, translations
-js/              Shared API/store/runtime, components, and page controllers
-pages/           Student routes and the component style guide
-pages/admin/     Registry operations routes
-index.html       Public landing page
+```bash
+./mvnw spring-boot:run
 ```
+
+### Changing the styling
+
+Tailwind scans the HTML and JS under `src/main/resources/static/` and writes a
+single stylesheet to `src/main/resources/static/css/app.css`.
+
+```bash
+cd frontend
+npm install
+npm run watch
+```
+
+`npm run build` produces the minified production stylesheet. Commit the result
+— it is checked in deliberately so a teammate with only a JDK can clone and run
+the project without installing Node.
+
+### Inspecting the database
+
+The H2 console is enabled in development at <http://localhost:8080/h2-console>.
+
+- **JDBC URL** — `jdbc:h2:file:./db/lostfound;AUTO_SERVER=TRUE`
+- **User** — `sa`, no password
+
+The database file lives in `db/` and is gitignored, so every clone starts clean
+and reseeds itself.
+
+---
+
+## Project layout
+
+```
+pom.xml                     Maven build
+run.sh                      One-command local start
+frontend/                   Tailwind source and toolchain (not shipped)
+  src/input.css             Theme tokens, base layer, shared component classes
+src/main/java/…/lostfound/
+  web/                      REST controllers
+src/main/resources/
+  application.properties    Datasource, uploads, server config
+  seed/                     JSON seed data loaded on first run
+  static/                   Everything the browser receives
+    index.html              Landing page
+    css/app.css             Compiled Tailwind output (generated, committed)
+    js/                     Page scripts, no bundler
+    assets/                 Icon sprite, self-hosted fonts, images
+```
+
+---
 
 ## Design decisions
 
-The visual system uses warm paper and near-black ink with two restrained signals: ochre for found/positive actions and crimson for lost/urgent states. High-contrast serif display type gives the registry an archival voice, while a self-hosted grotesque handles interface text. Hairline borders, compact radii, and a twelve-column grid keep the system institutional rather than template-like. Both light and dark themes have independently authored surface and text values.
+### The palette is two colours
 
-Found-item photos deliberately obscure a distinguishing area. The corresponding identifying mark is kept out of public cards and item pages and is used only as an ownership challenge. A claimant gets three attempts before the flow routes them to staff-reviewed ID verification. Public descriptions should never contain names, student numbers, serial numbers, or the concealed answer.
+Amber/ochre marks the **found** side of the board, crimson marks the **lost**
+side. Everything else is a warm neutral ramp between near-black ink and warm
+paper. Accent colour appears only on status, primary actions, and focus rings —
+nothing else is coloured, so when something *is* coloured it means something.
 
-## Accessibility and resilience
+Both themes are authored independently rather than one being an inversion of
+the other: in dark mode surfaces get *lighter* with elevation, hairlines carry
+more of the structure, and the accents lose saturation so they do not glow.
+Every text-on-surface pair clears WCAG AA in both themes.
 
-- Semantic page landmarks and heading structure
-- Keyboard-operable controls, dialogs, tabs, and navigation
-- Visible focus indicators and trapped modal focus
-- Live result, notification, and validation feedback
-- Text-plus-shape lifecycle status treatments
-- Responsive layouts tested at 360, 768, 1024, and 1440 CSS pixels
-- Tables collapse to labelled cards below the desktop breakpoint
-- Reduced-motion and reduced-data preferences respected
-- Dedicated print layouts for pickup slips and donation certificates
-- Fixture failures and `file://` restrictions render explicit error states
+Semantic tokens (`--sc-surface`, `--sc-muted`, …) are re-bound per theme and
+consumed through Tailwind's `@theme`, so utilities like `bg-surface` and
+`text-muted` flip automatically without a second set of generated classes.
 
-Current versions of Chrome, Firefox, Safari, and Edge are supported. The layout uses progressive enhancements such as `:has()`, `backdrop-filter`, and `IntersectionObserver`; essential content and actions remain available when those enhancements are absent.
+### Type is self-hosted
+
+Noto Serif Display for headings, Noto Sans Display for UI, Noto Sans Mono for
+anything machine-readable — reference codes, timestamps, counts. All subset to
+WOFF2 and served from `assets/fonts/`, with no CDN request. The Bengali faces
+carry a `unicode-range` so their outlines are only downloaded when Bengali text
+actually appears on the page.
+
+### Icons are hand-drawn
+
+`assets/icons.svg` is a hand-authored sprite on a 24×24 grid, referenced with
+`<use href="…#id">` and stroked with `currentColor`. No icon font, no icon
+library.
+
+### Four states, always
+
+Every list view ships a default, a loading skeleton, an empty state, and an
+error state. A failed request and an empty board are different things and are
+never rendered the same way — the landing page shows a live registry-status
+indicator for exactly this reason.
+
+---
 
 ## Team
 
-- Team member — role
-- Team member — role
-- Team member — role
-- Team member — role
+| Name | Role | Contact |
+|------|------|---------|
+| _TBD_ | _TBD_ | _TBD_ |
+| _TBD_ | _TBD_ | _TBD_ |
+| _TBD_ | _TBD_ | _TBD_ |
+| _TBD_ | _TBD_ | _TBD_ |
 
-## Development notes
+---
 
-Keep CSS files below 400 lines, avoid external runtime dependencies, and reference icons from `assets/icons.svg`. User-facing changes should preserve the verification-privacy boundary and be checked in both themes at mobile and desktop widths.
+## Browser support
+
+Current Chrome, Firefox, Safari, and Edge. The application uses CSS custom
+properties, `fetch`, CSS grid, and `:has()`.
+
+---
+
+## History
+
+An earlier build of this project was a static, framework-free prototype using
+hand-written CSS. It is preserved on the
+[`v1-static`](../../tree/v1-static) branch.

@@ -1,25 +1,54 @@
-# Editor / tooling
+# --- Build output ---------------------------------------------------------
+target/
+!**/src/main/**/target/
+!**/src/test/**/target/
+.mvn/wrapper/maven-wrapper.jar
+
+# --- Frontend toolchain ---------------------------------------------------
+node_modules/
+frontend/.cache/
+npm-debug.log*
+
+# The compiled stylesheet IS committed: it is a build artefact, but keeping it
+# in the repo means the app renders correctly on a clone with only a JDK, no
+# Node install required. Rebuild it with `npm run build` in ./frontend.
+
+# --- Runtime data ---------------------------------------------------------
+db/
+*.mv.db
+*.trace.db
+uploads/
+
+# --- Agent / editor -------------------------------------------------------
 .claude/
 CLAUDE.md
 .vscode/
 .idea/
-*.swp
-*.swo
+*.iws
+*.iml
+*.ipr
+.settings/
+.project
+.classpath
+.factorypath
+.apt_generated
+.springBeans
+.sts4-cache
+nbproject/private/
 
-# OS
+# --- OS -------------------------------------------------------------------
 .DS_Store
 Thumbs.db
 desktop.ini
 
-# Scratch / local notes
-scratch/
-tmp/
-*.local.*
-notes.local.md
-
-# Logs
+# --- Scratch --------------------------------------------------------------
 *.log
-npm-debug.log*
+scratch/
+notes.local.md
+*.local.*
 
-# Local server artifacts
-.cache/
+# Reference screenshots dropped into the repo root while working
+*.jpeg
+*.jpg
+*.png
+!src/main/resources/static/assets/**/*.png

@@ -1,0 +1,311 @@
+@import "tailwindcss";
+
+/* Scan the served frontend for class usage. Paths are relative to this file. */
+@source "../../src/main/resources/static/**/*.html";
+@source "../../src/main/resources/static/**/*.js";
+
+/* Dark mode is driven by an explicit attribute on <html>, set before first
+   paint by an inline script and persisted to localStorage. Using an attribute
+   rather than a class keeps it independent of Tailwind's own class handling. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* ==========================================================================
+   Typefaces — self-hosted WOFF2 subsets. Bengali faces carry a unicode-range
+   so their outlines are only fetched when Bengali glyphs actually render.
+   ========================================================================== */
+
+@font-face {
+  font-family: "Serif Display";
+  src: url("/assets/fonts/serif-display-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Serif Display";
+  src: url("/assets/fonts/serif-display-700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Serif Display";
+  src: url("/assets/fonts/serif-display-400i.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Sans Display";
+  src: url("/assets/fonts/sans-display-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Sans Display";
+  src: url("/assets/fonts/sans-display-700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Registry Mono";
+  src: url("/assets/fonts/mono-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Sans Display";
+  src: url("/assets/fonts/bn-sans-400.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+  unicode-range: U+0980-09FF, U+200C-200D, U+0964-0965;
+}
+@font-face {
+  font-family: "Serif Display";
+  src: url("/assets/fonts/bn-serif-400.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+  unicode-range: U+0980-09FF, U+200C-200D, U+0964-0965;
+}
+
+/* ==========================================================================
+   Theme. Semantic tokens point at plain CSS variables that are re-bound per
+   theme below, so every generated utility (bg-surface, text-muted, …) flips
+   automatically without Tailwind needing to emit a second set of classes.
+   ========================================================================== */
+
+@theme {
+  /* Raw palette — two hues only: ochre for found, crimson for lost. */
+  --color-ink: #0f1115;
+  --color-paper: #f7f5f1;
+  --color-bone: #efece6;
+
+  /* Semantic surfaces and text */
+  --color-page: var(--sc-page);
+  --color-surface: var(--sc-surface);
+  --color-sunken: var(--sc-sunken);
+  --color-primary: var(--sc-primary);
+  --color-secondary: var(--sc-secondary);
+  --color-muted: var(--sc-muted);
+  --color-faint: var(--sc-faint);
+  --color-line: var(--sc-line);
+  --color-line-strong: var(--sc-line-strong);
+
+  /* Signal accents */
+  --color-found: var(--sc-found);
+  --color-found-wash: var(--sc-found-wash);
+  --color-lost: var(--sc-lost);
+  --color-lost-wash: var(--sc-lost-wash);
+  --color-on-wash: var(--sc-on-wash);
+
+  /* Type */
+  --font-display: "Serif Display", Georgia, "Times New Roman", serif;
+  --font-sans: "Sans Display", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Registry Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Modular scale, ratio 1.25 from 16px */
+  --text-2xs: 0.8rem;
+  --text-xs: 0.875rem;
+  --text-sm: 0.9375rem;
+  --text-base: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5625rem;
+  --text-2xl: 1.953rem;
+  --text-3xl: 2.441rem;
+  --text-4xl: 3.052rem;
+  --text-5xl: 3.815rem;
+  --text-6xl: 4.768rem;
+
+  /* Architectural radii — no pills except removable filter tokens */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+
+  /* Motion */
+  --ease-brand: cubic-bezier(0.2, 0, 0, 1);
+
+  /* Depth through contrast, not blur */
+  --shadow-hairline: inset 0 0 0 1px var(--sc-line);
+  --shadow-raised: 0 8px 24px -12px rgb(15 17 21 / 0.28);
+  --shadow-float: 0 12px 32px -16px rgb(0 0 0 / 0.45);
+}
+
+/* -- Light (default) ------------------------------------------------------ */
+:root {
+  --sc-page: #f7f5f1;
+  --sc-surface: #fffdf9;
+  --sc-sunken: #efece6;
+  --sc-primary: #0f1115;
+  --sc-secondary: #3b3e46;
+  --sc-muted: #676a73;
+  --sc-faint: #9a9ca3;
+  --sc-line: #dcd8d0;
+  --sc-line-strong: #9a9ca3;
+  --sc-found: #8a5606;
+  --sc-found-wash: #f2e3c4;
+  --sc-lost: #9e2b25;
+  --sc-lost-wash: #f6dcda;
+  --sc-on-wash: #0f1115;
+  color-scheme: light;
+}
+
+/* -- Dark: authored, not inverted. Surfaces get lighter with elevation and
+      accents desaturate so they do not glow. ------------------------------ */
+[data-theme="dark"] {
+  --sc-page: #14161b;
+  --sc-surface: #1c1f26;
+  --sc-sunken: #0e1014;
+  --sc-primary: #ede9e1;
+  --sc-secondary: #c2bfb8;
+  --sc-muted: #9aa0a8;
+  --sc-faint: #6a6d75;
+  --sc-line: #30343c;
+  --sc-line-strong: #6a6d75;
+  --sc-found: #e0a64b;
+  --sc-found-wash: #3a2c11;
+  --sc-lost: #e8736b;
+  --sc-lost-wash: #3b1c1a;
+  --sc-on-wash: #ede9e1;
+  color-scheme: dark;
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-page);
+    color: var(--color-primary);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition:
+      background-color 200ms var(--ease-brand),
+      color 200ms var(--ease-brand);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    text-wrap: balance;
+  }
+
+  p,
+  li {
+    text-wrap: pretty;
+  }
+
+  /* One focus treatment everywhere. Never removed, only restyled. */
+  :focus-visible {
+    outline: 2px solid var(--color-found);
+    outline-offset: 2px;
+    border-radius: var(--radius-xs);
+  }
+
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  ::selection {
+    background-color: var(--color-found-wash);
+    color: var(--color-on-wash);
+  }
+
+  /* Machine-readable strings should look machine-readable. */
+  code,
+  kbd,
+  samp,
+  pre {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line-strong) transparent;
+  }
+}
+
+/* ==========================================================================
+   Components — only patterns repeated across many pages earn a class here.
+   Everything else stays as utilities in the markup.
+   ========================================================================== */
+
+@layer components {
+  .icon {
+    width: 1.25em;
+    height: 1.25em;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex-shrink: 0;
+  }
+
+  .u-caps {
+    font-size: var(--text-2xs);
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+
+  /* Skip link: visually hidden until focused. */
+  .skip-link {
+    position: absolute;
+    left: 0.5rem;
+    top: -100%;
+    z-index: 100;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-sm);
+    background-color: var(--color-surface);
+    box-shadow: var(--shadow-hairline), var(--shadow-raised);
+    font-weight: 700;
+    transition: top 150ms var(--ease-brand);
+  }
+
+  .skip-link:focus {
+    top: 0.5rem;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Screen-reader only, but focusable when it needs to be. */
+  .sr-only-focusable:not(:focus):not(:active) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+/* Every transition and animation in the app collapses here, in one place. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

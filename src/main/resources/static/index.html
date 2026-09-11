@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lost &amp; Found — Campus Registry</title>
+<meta name="description" content="A shared board for posting lost and found items across campus. Report what you lost, hand in what you found, and get matched automatically.">
+
+<!-- Applied before first paint so a dark-theme visitor never sees a light flash. -->
+<script>
+  (function () {
+    try {
+      var t = localStorage.getItem('lf.theme');
+      if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    } catch (e) {}
+  })();
+</script>
+
+<link rel="preload" href="/assets/fonts/serif-display-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/sans-display-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/css/app.css">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+</head>
+
+<body class="min-h-screen flex flex-col">
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<!-- ========================= masthead ========================= -->
+<header class="sticky top-0 z-40 border-b border-line bg-page/90 backdrop-blur-sm">
+  <div class="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
+
+    <a href="/" class="flex items-baseline gap-2 font-display text-lg tracking-tight whitespace-nowrap">
+      Lost <span class="italic text-found">&amp;</span> Found
+      <span class="hidden border-l border-line-strong pl-2 font-sans u-caps text-muted sm:inline">Registry</span>
+    </a>
+
+    <nav id="primary-nav" aria-label="Primary"
+         class="fixed inset-x-0 top-16 z-30 flex-col gap-0 border-b border-line bg-page px-4 py-2 shadow-lg
+                data-[open=false]:hidden lg:static lg:z-auto lg:flex lg:flex-row lg:gap-1 lg:border-0 lg:bg-transparent
+                lg:px-0 lg:py-0 lg:shadow-none"
+         data-open="false">
+      <a href="/browse.html"        class="rounded-sm px-3 py-3 text-secondary hover:bg-primary/5 hover:text-primary lg:py-2">Browse</a>
+      <a href="/report.html?kind=lost"  class="rounded-sm px-3 py-3 text-secondary hover:bg-primary/5 hover:text-primary lg:py-2">Report lost</a>
+      <a href="/report.html?kind=found" class="rounded-sm px-3 py-3 text-secondary hover:bg-primary/5 hover:text-primary lg:py-2">Report found</a>
+      <a href="/dashboard.html"     class="rounded-sm px-3 py-3 text-secondary hover:bg-primary/5 hover:text-primary lg:py-2">My items</a>
+    </nav>
+
+    <div class="ml-auto flex items-center gap-1">
+      <button type="button" data-theme-toggle
+              class="grid h-10 w-10 place-items-center rounded-sm text-secondary hover:bg-primary/5 hover:text-primary"
+              aria-label="Switch to dark theme" aria-pressed="false">
+        <svg class="icon" aria-hidden="true" data-theme-icon="light"><use href="/assets/icons.svg#i-sun"></use></svg>
+        <svg class="icon" aria-hidden="true" data-theme-icon="dark" hidden><use href="/assets/icons.svg#i-moon"></use></svg>
+      </button>
+
+      <a href="/login.html"
+         class="hidden rounded-sm border border-line-strong px-4 py-2 text-sm font-bold hover:border-primary sm:inline-block">
+        Sign in
+      </a>
+
+      <button type="button" data-nav-toggle aria-controls="primary-nav" aria-expanded="false"
+              aria-label="Open navigation"
+              class="grid h-10 w-10 place-items-center rounded-sm text-secondary hover:bg-primary/5 hover:text-primary lg:hidden">
+        <svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#i-menu"></use></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="flex-1">
+
+  <!-- ========================= hero ========================= -->
+  <section class="border-b border-line">
+    <div class="mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-6 lg:grid-cols-12 lg:gap-8 lg:px-8 lg:py-24">
+
+      <div class="lg:col-span-7">
+        <p class="u-caps text-muted">Campus Lost &amp; Found</p>
+        <h1 class="mt-4 text-4xl leading-[1.02] sm:text-5xl lg:text-6xl">
+          Someone already<br>found it.
+        </h1>
+        <p class="mt-6 max-w-xl text-lg leading-relaxed text-secondary">
+          Post what you lost. We scan every item handed in across campus and tell you
+          when something matches — usually before you think to check again.
+        </p>
+
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a href="/report.html?kind=lost"
+             class="inline-flex items-center gap-2 rounded-sm bg-lost px-6 py-3.5 font-bold text-white
+                    transition hover:brightness-90 dark:text-[#14161b]">
+            I lost something
+            <svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#i-arrow-right"></use></svg>
+          </a>
+          <a href="/report.html?kind=found"
+             class="inline-flex items-center gap-2 rounded-sm border border-line-strong px-6 py-3.5 font-bold
+                    transition hover:border-primary hover:bg-primary/5">
+            I found something
+          </a>
+        </div>
+      </div>
+
+      <!-- Live counts. Rendered from the API so the number on the landing page
+           is the real one, not a marketing figure. -->
+      <div class="lg:col-span-5 lg:pl-8">
+        <dl class="grid grid-cols-2 gap-px overflow-hidden rounded-sm border border-line bg-line"
+            data-stats>
+          <div class="bg-surface p-5">
+            <dd class="font-display text-4xl tabular-nums" data-stat="open">—</dd>
+            <dt class="mt-1 u-caps text-muted">Open items</dt>
+          </div>
+          <div class="bg-surface p-5">
+            <dd class="font-display text-4xl tabular-nums" data-stat="resolved">—</dd>
+            <dt class="mt-1 u-caps text-muted">Reunited</dt>
+          </div>
+          <div class="bg-surface p-5">
+            <dd class="font-display text-4xl tabular-nums" data-stat="found">—</dd>
+            <dt class="mt-1 u-caps text-muted">Found posts</dt>
+          </div>
+          <div class="bg-surface p-5">
+            <dd class="font-display text-4xl tabular-nums" data-stat="lost">—</dd>
+            <dt class="mt-1 u-caps text-muted">Lost posts</dt>
+          </div>
+        </dl>
+
+        <p class="mt-4 flex items-center gap-2 text-2xs text-muted" data-api-status role="status">
+          <span class="inline-block h-2 w-2 rounded-full bg-faint" data-api-dot></span>
+          <span data-api-label>Checking the registry…</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================= how it works ========================= -->
+  <section class="border-b border-line bg-sunken">
+    <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+      <h2 class="text-2xl">How it works</h2>
+
+      <ol class="mt-8 grid gap-px overflow-hidden rounded-sm border border-line bg-line sm:grid-cols-3">
+        <li class="bg-surface p-6">
+          <span class="font-mono text-2xs text-muted">01</span>
+          <h3 class="mt-3 text-xl">Post it</h3>
+          <p class="mt-2 text-sm leading-relaxed text-secondary">
+            A photo, a short description, and roughly where it happened. Thirty seconds.
+          </p>
+        </li>
+        <li class="bg-surface p-6">
+          <span class="font-mono text-2xs text-muted">02</span>
+          <h3 class="mt-3 text-xl">We match it</h3>
+          <p class="mt-2 text-sm leading-relaxed text-secondary">
+            Every new post is scanned against the other side of the board. Strong
+            overlaps surface as a suggested match.
+          </p>
+        </li>
+        <li class="bg-surface p-6">
+          <span class="font-mono text-2xs text-muted">03</span>
+          <h3 class="mt-3 text-xl">Claim it</h3>
+          <p class="mt-2 text-sm leading-relaxed text-secondary">
+            Recognise something? Start a conversation with whoever has it and arrange
+            the handover.
+          </p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ========================= recent ========================= -->
+  <section>
+    <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+      <div class="flex flex-wrap items-end justify-between gap-4 border-b border-line pb-4">
+        <h2 class="text-2xl">Recently posted</h2>
+        <a href="/browse.html" class="inline-flex items-center gap-2 text-sm font-bold hover:text-found">
+          Browse everything
+          <svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#i-arrow-right"></use></svg>
+        </a>
+      </div>
+
+      <div class="mt-8" data-recent
+           data-empty-message="Nothing has been posted yet. The board fills up fast once term starts.">
+        <!-- Populated by /js/home.js -->
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ========================= footer ========================= -->
+<footer class="border-t border-line bg-sunken">
+  <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+    <div class="flex flex-wrap items-center justify-between gap-4 text-2xs text-muted">
+      <p>Lost &amp; Found Registry — Team Protein Powder</p>
+      <p>Items are held for 90 days before being archived.</p>
+    </div>
+  </div>
+</footer>
+
+<div class="pointer-events-none fixed bottom-4 right-4 z-50 flex w-[min(24rem,calc(100vw-2rem))] flex-col-reverse gap-2"
+     data-toast-region role="status" aria-live="polite"></div>
+
+<script src="/js/app.js"></script>
+<script src="/js/home.js"></script>
+</body>
+</html>
