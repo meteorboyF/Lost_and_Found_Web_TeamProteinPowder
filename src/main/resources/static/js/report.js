@@ -231,7 +231,13 @@
           return payload;
         });
       })
-      .then(showSuccess)
+      .then(function (item) {
+        /* Remember it, so the dashboard can show it and so the item page
+           knows to show incoming claims rather than a claim button. */
+        LF.mine.addItem(item.reference);
+        LF.mine.remember(payload.reporterName, payload.reporterEmail);
+        showSuccess(item);
+      })
       .catch(function (problem) {
         submitBtn.disabled = false;
         submitBtn.textContent = originalLabel;

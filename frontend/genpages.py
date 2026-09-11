@@ -510,6 +510,21 @@ ITEM_BODY = """
 </div>
 """
 
+
+# ============================== claim ==============================
+
+CLAIM_BODY = """
+<div class="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
+  <nav aria-label="Breadcrumb" class="mb-6 flex flex-wrap items-center gap-2 text-sm text-muted">
+    <a href="/dashboard.html" class="transition hover:text-heading">My items</a>
+    <svg class="icon h-3.5 w-3.5 text-faint" aria-hidden="true"><use href="/assets/icons.svg#i-chevron-right"></use></svg>
+    <span data-crumb class="font-mono text-xs">…</span>
+  </nav>
+
+  <div data-claim></div>
+</div>
+"""
+
 page("index.html", "Lost &amp; Found — Campus Registry",
      "Post what you lost, hand in what you found, and get matched automatically.",
      HOME_BODY, '<script src="/js/home.js"></script>')
@@ -525,3 +540,7 @@ page("report.html", "Post an item — Lost &amp; Found",
 page("item.html", "Item — Lost &amp; Found",
      "Details for one item on the Lost and Found board.",
      ITEM_BODY, '<script src="/js/item.js"></script>')
+
+page("claim.html", "Claim — Lost &amp; Found",
+     "A conversation about one claimed item.",
+     CLAIM_BODY, '<script src="/js/claim.js"></script>')

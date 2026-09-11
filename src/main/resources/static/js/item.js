@@ -104,14 +104,205 @@
         '</aside>' +
       '</div>';
 
-    var claim = host.querySelector('[data-claim]');
-    if (claim) {
-      claim.addEventListener('click', function () {
-        LF.toast.info('Claims arrive in the next release. For now, note the reference ' + item.reference + '.', {
-          title: 'Not wired up yet'
-        });
-      });
+    var claimBtn = host.querySelector('[data-claim]');
+    if (claimBtn) claimBtn.addEventListener('click', function () { openClaimDialog(item); });
+
+    /* If this browser posted the item, show who is asking about it rather
+       than offering to claim your own thing. */
+    if (LF.mine.hasItem(item.reference)) loadClaimsForOwner(item);
+  }
+
+  /* ------------------------------------------------------------------
+     Claim dialog. A native <dialog>, so the browser supplies the top layer,
+     the backdrop, Escape, and inertness for everything behind it.
+     ------------------------------------------------------------------ */
+
+  function openClaimDialog(item) {
+    var known = LF.mine.all();
+    var asking = item.kind === 'FOUND'
+      ? 'Describe something about it that is not in the photo or the description — a mark, what was inside, where exactly you lost it.'
+      : 'Describe what you found, and where. The person who lost it will recognise the details.';
+
+    var dialog = document.createElement('dialog');
+    dialog.className =
+      'w-[min(34rem,calc(100vw-2rem))] rounded-2xl border border-line bg-surface p-0 text-body ' +
+      'shadow-[var(--shadow-pop)] backdrop:bg-black/50 backdrop:backdrop-blur-sm';
+
+    dialog.innerHTML =
+      '<form method="dialog" class="flex items-start justify-between gap-4 border-b border-line p-5">' +
+        '<div>' +
+          '<h2 class="text-xl text-heading" id="claim-title">' +
+            (item.kind === 'FOUND' ? 'Is this yours?' : 'Did you find this?') + '</h2>' +
+          '<p class="mt-1 text-sm text-muted">' + e(item.title) + '</p>' +
+        '</div>' +
+        '<button class="grid h-9 w-9 shrink-0 place-items-center rounded-lg text-faint transition hover:bg-sunken hover:text-heading" ' +
+                'aria-label="Close" value="cancel">' +
+          '<svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#i-close"></use></svg>' +
+        '</button>' +
+      '</form>' +
+
+      '<form data-claim-form class="grid gap-4 p-5" novalidate>' +
+        '<div class="rounded-xl bg-brand-soft p-3.5 text-sm leading-relaxed text-brand-text">' +
+          '<svg class="icon mb-1 h-[1.15rem] w-[1.15rem]" aria-hidden="true"><use href="/assets/icons.svg#i-shield"></use></svg>' +
+          '<p>' + asking + '</p>' +
+        '</div>' +
+
+        '<div class="grid gap-1.5">' +
+          '<label for="claim-proof" class="label">What only you would know</label>' +
+          '<textarea id="claim-proof" name="proof" rows="4" maxlength="2000" class="field resize-y" ' +
+            'placeholder="There is a faded band sticker on the inside flap, and a maths notebook in the front pocket."></textarea>' +
+          '<p class="min-h-5 text-sm text-lost" data-error="proof"></p>' +
+        '</div>' +
+
+        '<div class="grid gap-4 sm:grid-cols-2">' +
+          '<div class="grid gap-1.5">' +
+            '<label for="claim-name" class="label">Your name</label>' +
+            '<input id="claim-name" name="claimantName" maxlength="80" class="field" value="' +
+              e(known.name) + '">' +
+            '<p class="min-h-5 text-sm text-lost" data-error="claimantName"></p>' +
+          '</div>' +
+          '<div class="grid gap-1.5">' +
+            '<label for="claim-email" class="label">Email</label>' +
+            '<input id="claim-email" name="claimantEmail" type="email" maxlength="160" class="field" value="' +
+              e(known.email) + '" placeholder="you@university.edu">' +
+            '<p class="min-h-5 text-sm text-lost" data-error="claimantEmail"></p>' +
+          '</div>' +
+        '</div>' +
+
+        '<p class="text-xs leading-relaxed text-faint">' +
+          'Your email is never shown to the other person. You will get a reference code for the conversation.' +
+        '</p>' +
+
+        '<div class="mt-1 flex flex-wrap gap-3">' +
+          '<button type="submit" class="btn btn-primary" data-claim-submit>Send this claim</button>' +
+          '<button type="button" class="btn btn-ghost" data-claim-cancel>Cancel</button>' +
+        '</div>' +
+      '</form>';
+
+    dialog.setAttribute('aria-labelledby', 'claim-title');
+    document.body.appendChild(dialog);
+    dialog.showModal();
+    dialog.querySelector('#claim-proof').focus();
+
+    dialog.addEventListener('close', function () { dialog.remove(); });
+    dialog.querySelector('[data-claim-cancel]').addEventListener('click', function () {
+      dialog.close('cancel');
+    });
+
+    dialog.querySelector('[data-claim-form]').addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      submitClaim(item, dialog);
+    });
+  }
+
+  function submitClaim(item, dialog) {
+    var form = dialog.querySelector('[data-claim-form]');
+    var setErr = function (field, message) {
+      var slot = dialog.querySelector('[data-error="' + field + '"]');
+      if (slot) slot.textContent = message || '';
+      var input = form.elements[field];
+      if (input) {
+        if (message) input.setAttribute('aria-invalid', 'true');
+        else input.removeAttribute('aria-invalid');
+      }
+    };
+
+    var payload = {
+      proof: form.elements.proof.value.trim(),
+      claimantName: form.elements.claimantName.value.trim(),
+      claimantEmail: form.elements.claimantEmail.value.trim()
+    };
+
+    /* Mirrors the Bean Validation rules on ClaimRequest; the server stays
+       the authority, this just saves a round trip. */
+    var errors = {};
+    if (payload.proof.length < 20) {
+      errors.proof = 'Give at least 20 characters — enough that only the owner could have written it';
     }
+    if (!payload.claimantName) errors.claimantName = 'Tell us your name';
+    if (!payload.claimantEmail) errors.claimantEmail = 'We need an email address to reach you';
+    else if (!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(payload.claimantEmail)) {
+      errors.claimantEmail = 'That does not look like a valid email address';
+    }
+
+    ['proof', 'claimantName', 'claimantEmail'].forEach(function (f) { setErr(f, errors[f]); });
+    if (Object.keys(errors).length) {
+      var first = dialog.querySelector('[aria-invalid="true"]');
+      if (first) first.focus();
+      return;
+    }
+
+    var submit = dialog.querySelector('[data-claim-submit]');
+    submit.disabled = true;
+    submit.textContent = 'Sending…';
+
+    LF.api
+      .post('/api/items/' + encodeURIComponent(item.reference) + '/claims', payload)
+      .then(function (claim) {
+        LF.mine.addClaim(claim.reference);
+        LF.mine.remember(payload.claimantName, payload.claimantEmail);
+        dialog.close('sent');
+        window.location.href = '/claim.html?ref=' + encodeURIComponent(claim.reference);
+      })
+      .catch(function (err) {
+        submit.disabled = false;
+        submit.textContent = 'Send this claim';
+        if (err.fields) {
+          Object.keys(err.fields).forEach(function (f) { setErr(f, err.fields[f]); });
+        }
+        LF.toast.error(err.message);
+      });
+  }
+
+  /* ------------------------------------------------------------------
+     Owner view: who is asking about this item
+     ------------------------------------------------------------------ */
+
+  function loadClaimsForOwner(item) {
+    LF.api
+      .get('/api/items/' + encodeURIComponent(item.reference) + '/claims')
+      .then(function (claims) {
+        if (!claims.length) return;
+
+        var open = claims.filter(function (c) { return c.status === 'OPEN'; });
+        var list = claims.map(function (c) {
+          return (
+            '<a href="/claim.html?ref=' + encodeURIComponent(c.reference) + '" ' +
+               'class="flex items-center gap-3 rounded-xl border border-line p-3 transition hover:border-line-strong hover:bg-sunken">' +
+              '<span class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-soft text-sm font-semibold text-brand-text">' +
+                e(c.claimantName.charAt(0).toUpperCase()) + '</span>' +
+              '<span class="min-w-0 flex-1">' +
+                '<span class="block truncate text-sm font-medium text-heading">' + e(c.claimantName) + '</span>' +
+                '<span class="block text-xs text-muted">' + e(LF.timeAgo(c.createdAt)) + '</span>' +
+              '</span>' +
+              '<span class="pill ' +
+                (c.status === 'OPEN' ? 'bg-amber-soft text-amber-text' :
+                 c.status === 'ACCEPTED' ? 'bg-found-soft text-found-text' :
+                 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300') +
+              '">' + e(c.status.charAt(0) + c.status.slice(1).toLowerCase()) + '</span>' +
+            '</a>'
+          );
+        }).join('');
+
+        var panel = document.createElement('div');
+        panel.className = 'card mt-4 p-4';
+        panel.innerHTML =
+          '<div class="flex items-center justify-between gap-3">' +
+            '<p class="text-sm font-semibold text-heading">' +
+              claims.length + (claims.length === 1 ? ' person has' : ' people have') + ' claimed this</p>' +
+            (open.length
+              ? '<span class="pill bg-amber-soft text-amber-text">' + open.length + ' waiting</span>'
+              : '') +
+          '</div>' +
+          '<div class="mt-3 grid gap-2">' + list + '</div>';
+
+        var aside = host.querySelector('aside');
+        if (aside) aside.appendChild(panel);
+      })
+      .catch(function () {
+        /* The claim list is supplementary; failing to load it must not take
+           the item page down with it. */
+      });
   }
 
   function notFound(reference) {

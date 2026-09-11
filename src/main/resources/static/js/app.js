@@ -239,6 +239,79 @@
   LF.toast = toast;
 
   /* =====================================================================
+     "Mine" — what this browser has done.
+
+     There is no sign-in yet, so the browser is the identity. We remember the
+     references of items posted here and claims opened here, which is what
+     lets the dashboard show your things and lets a conversation work out
+     which side of it you are on.
+
+     This is deliberately a stopgap: it does not survive a different device,
+     and it is not a security boundary. Real accounts replace it.
+     ===================================================================== */
+
+  var MINE_KEY = 'lf.mine';
+
+  function readMine() {
+    try {
+      var raw = JSON.parse(localStorage.getItem(MINE_KEY));
+      return {
+        items: Array.isArray(raw && raw.items) ? raw.items : [],
+        claims: Array.isArray(raw && raw.claims) ? raw.claims : [],
+        email: (raw && raw.email) || '',
+        name: (raw && raw.name) || ''
+      };
+    } catch (e) {
+      return { items: [], claims: [], email: '', name: '' };
+    }
+  }
+
+  function writeMine(value) {
+    try {
+      localStorage.setItem(MINE_KEY, JSON.stringify(value));
+    } catch (e) {}
+    return value;
+  }
+
+  LF.mine = {
+    all: readMine,
+
+    addItem: function (reference) {
+      var mine = readMine();
+      if (mine.items.indexOf(reference) === -1) mine.items.push(reference);
+      return writeMine(mine);
+    },
+
+    addClaim: function (reference) {
+      var mine = readMine();
+      if (mine.claims.indexOf(reference) === -1) mine.claims.push(reference);
+      return writeMine(mine);
+    },
+
+    hasItem: function (reference) {
+      return readMine().items.indexOf(reference) !== -1;
+    },
+
+    hasClaim: function (reference) {
+      return readMine().claims.indexOf(reference) !== -1;
+    },
+
+    /* Remembering the contact details saves retyping them on every form. */
+    remember: function (name, email) {
+      var mine = readMine();
+      if (name) mine.name = name;
+      if (email) mine.email = email;
+      return writeMine(mine);
+    },
+
+    clear: function () {
+      try {
+        localStorage.removeItem(MINE_KEY);
+      } catch (e) {}
+    }
+  };
+
+  /* =====================================================================
      Small shared helpers
      ===================================================================== */
 
