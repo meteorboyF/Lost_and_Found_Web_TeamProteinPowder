@@ -62,6 +62,18 @@ HEAD = """<!doctype html>
     </nav>
 
     <div class="ml-auto flex items-center gap-2">
+      <span class="relative" data-alerts>
+        <button type="button" data-alerts-toggle aria-expanded="false" aria-haspopup="true"
+                aria-controls="alerts-panel" aria-label="Notifications" hidden
+                class="grid h-9 w-9 place-items-center rounded-lg text-muted transition hover:bg-sunken hover:text-heading">
+          <svg class="icon h-[1.15rem] w-[1.15rem]" aria-hidden="true"><use href="/assets/icons.svg#i-bell"></use></svg>
+          <span class="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-lost px-1 text-[0.625rem] font-bold text-white dark:text-[#11121a]"
+                data-alerts-badge hidden>0</span>
+        </button>
+        <span id="alerts-panel" data-alerts-panel hidden
+              class="absolute right-0 top-full z-50 mt-2 block w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-line bg-surface shadow-[var(--shadow-pop)]"></span>
+      </span>
+
       <button type="button" data-theme-toggle
               class="grid h-9 w-9 place-items-center rounded-lg text-muted transition hover:bg-sunken hover:text-heading"
               aria-label="Switch to dark theme" aria-pressed="false">
@@ -117,6 +129,7 @@ FOOT = """</main>
 
 <script src="/js/app.js"></script>
 <script src="/js/ui.js"></script>
+<script src="/js/alerts.js"></script>
 {scripts}
 </body>
 </html>
