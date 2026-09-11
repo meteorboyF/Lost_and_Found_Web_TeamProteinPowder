@@ -146,6 +146,51 @@
     );
   };
 
+
+  /* =====================================================================
+     Suggested match.
+
+     The reasons matter more than the percentage: a bare number is not
+     actionable, "both are keys, same area, within 2 days" is.
+     ===================================================================== */
+
+  LF.matchCard = function (match) {
+    var item = match.item;
+    var cat = LF.category(item.category);
+    var strong = match.percent >= 65;
+
+    var thumb = item.photoUrl
+      ? '<img src="' + e(item.photoUrl) + '" alt="" class="h-16 w-16 rounded-xl object-cover">'
+      : '<span class="grid h-16 w-16 shrink-0 place-items-center rounded-xl bg-gradient-to-br ' + cat.grad + '">' +
+        '<svg class="icon h-7 w-7 ' + cat.solid + '" aria-hidden="true"><use href="/assets/icons.svg#' +
+        cat.icon + '"></use></svg></span>';
+
+    var reasons = (match.reasons || []).map(function (r) {
+      return '<span class="pill bg-sunken text-muted">' + e(r) + '</span>';
+    }).join('');
+
+    return (
+      '<a href="/item.html?ref=' + encodeURIComponent(item.reference) + '" ' +
+         'class="card card-interactive block p-4">' +
+        '<div class="flex items-start gap-3">' +
+          thumb +
+          '<div class="min-w-0 flex-1">' +
+            '<div class="flex items-start justify-between gap-3">' +
+              '<p class="truncate text-sm font-semibold text-heading">' + e(item.title) + '</p>' +
+              '<span class="pill shrink-0 ' +
+                (strong ? 'bg-found text-white dark:text-[#11121a]' : 'bg-brand-soft text-brand-text') + '">' +
+                match.percent + '% match</span>' +
+            '</div>' +
+            '<p class="mt-0.5 flex items-center gap-1 truncate text-xs text-muted">' +
+              '<svg class="icon h-3.5 w-3.5" aria-hidden="true"><use href="/assets/icons.svg#i-pin"></use></svg>' +
+              e(item.location) + '</p>' +
+            '<div class="mt-2 flex flex-wrap gap-1.5">' + reasons + '</div>' +
+          '</div>' +
+        '</div>' +
+      '</a>'
+    );
+  };
+
   /* =====================================================================
      States
      ===================================================================== */

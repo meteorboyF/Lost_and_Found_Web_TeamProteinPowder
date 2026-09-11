@@ -24,9 +24,11 @@ import com.teamproteinpowder.lostfound.domain.Item;
 import com.teamproteinpowder.lostfound.domain.ItemKind;
 import com.teamproteinpowder.lostfound.domain.ItemStatus;
 import com.teamproteinpowder.lostfound.service.ItemService;
+import com.teamproteinpowder.lostfound.service.MatchService;
 import com.teamproteinpowder.lostfound.service.StorageService;
 import com.teamproteinpowder.lostfound.web.dto.ItemRequest;
 import com.teamproteinpowder.lostfound.web.dto.ItemResponse;
+import com.teamproteinpowder.lostfound.web.dto.MatchResponse;
 import com.teamproteinpowder.lostfound.web.dto.PageResponse;
 
 import jakarta.validation.Valid;
@@ -37,10 +39,12 @@ public class ItemController {
 
     private final ItemService items;
     private final StorageService storage;
+    private final MatchService matches;
 
-    public ItemController(ItemService items, StorageService storage) {
+    public ItemController(ItemService items, StorageService storage, MatchService matches) {
         this.items = items;
         this.storage = storage;
+        this.matches = matches;
     }
 
     /** Browse and search. Every filter is optional. */
@@ -83,6 +87,13 @@ public class ItemController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ItemResponse.from(saved));
+    }
+
+    /** Likely matches on the opposite side of the board. */
+    @GetMapping("/{reference}/matches")
+    public List<MatchResponse> matches(@PathVariable String reference) {
+        return matches.findMatches(items.getByReference(reference))
+                .stream().map(MatchResponse::from).toList();
     }
 
     /** Board-wide counts for the landing page. */

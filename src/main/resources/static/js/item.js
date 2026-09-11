@@ -110,6 +110,43 @@
     /* If this browser posted the item, show who is asking about it rather
        than offering to claim your own thing. */
     if (LF.mine.hasItem(item.reference)) loadClaimsForOwner(item);
+
+    if (item.status !== 'RESOLVED') loadMatches(item);
+  }
+
+  /* ------------------------------------------------------------------
+     Suggested matches from the other side of the board
+     ------------------------------------------------------------------ */
+
+  function loadMatches(item) {
+    LF.api
+      .get('/api/items/' + encodeURIComponent(item.reference) + '/matches')
+      .then(function (matches) {
+        if (!matches.length) return;
+
+        var section = document.createElement('section');
+        section.className = 'mt-12 border-t border-line pt-8';
+        section.innerHTML =
+          '<div class="flex items-center gap-2">' +
+            '<span class="grid h-8 w-8 place-items-center rounded-lg bg-brand-soft text-brand">' +
+              '<svg class="icon h-4 w-4" aria-hidden="true"><use href="/assets/icons.svg#i-sparkle"></use></svg></span>' +
+            '<h2 class="text-xl text-heading">' +
+              (matches.length === 1 ? 'One possible match' : matches.length + ' possible matches') +
+            '</h2>' +
+          '</div>' +
+          '<p class="mt-2 text-sm text-muted">' +
+            'Found by comparing this against every ' +
+            (item.kind === 'LOST' ? 'found' : 'lost') + ' post on the board.' +
+          '</p>' +
+          '<div class="mt-5 grid gap-3 sm:grid-cols-2">' +
+            matches.map(LF.matchCard).join('') +
+          '</div>';
+
+        host.parentElement.appendChild(section);
+      })
+      .catch(function () {
+        /* Suggestions are a bonus; never let them take the page down. */
+      });
   }
 
   /* ------------------------------------------------------------------

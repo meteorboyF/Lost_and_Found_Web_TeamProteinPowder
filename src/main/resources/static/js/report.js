@@ -294,6 +294,40 @@
     successHost.setAttribute('tabindex', '-1');
     successHost.focus();
     window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    showMatches(item);
+  }
+
+  /**
+   * The strongest moment for a suggestion is right after posting — the person
+   * is still here and still thinking about the object.
+   */
+  function showMatches(item) {
+    LF.api
+      .get('/api/items/' + encodeURIComponent(item.reference) + '/matches')
+      .then(function (matches) {
+        if (!matches.length) return;
+
+        var section = document.createElement('section');
+        section.className = 'mt-8';
+        section.innerHTML =
+          '<div class="flex items-center gap-2">' +
+            '<span class="grid h-8 w-8 place-items-center rounded-lg bg-brand-soft text-brand">' +
+              '<svg class="icon h-4 w-4" aria-hidden="true"><use href="/assets/icons.svg#i-sparkle"></use></svg></span>' +
+            '<h2 class="text-xl text-heading">We may have found it already</h2>' +
+          '</div>' +
+          '<p class="mt-2 text-sm text-muted">' +
+            (matches.length === 1
+              ? 'One post on the other side of the board looks like a match.'
+              : matches.length + ' posts on the other side of the board look like matches.') +
+          '</p>' +
+          '<div class="mt-5 grid gap-3 sm:grid-cols-2">' + matches.map(LF.matchCard).join('') + '</div>';
+
+        successHost.appendChild(section);
+      })
+      .catch(function () {
+        /* Suggestions are a bonus, never a blocker on a successful post. */
+      });
   }
 
   /* ------------------------------------------------------------------
