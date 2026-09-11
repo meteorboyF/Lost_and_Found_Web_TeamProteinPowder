@@ -525,6 +525,54 @@ CLAIM_BODY = """
 </div>
 """
 
+
+# ============================== dashboard ==============================
+
+DASH_BODY = """
+<div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+
+  <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <h1 class="text-3xl text-heading sm:text-4xl" data-greeting>My items</h1>
+      <p class="mt-3 max-w-2xl text-body">
+        Everything you have posted or claimed from this browser.
+      </p>
+    </div>
+    <button type="button" data-forget class="btn btn-ghost btn-sm text-lost">Forget this device</button>
+  </div>
+
+  <div class="mb-6 rounded-xl border border-line bg-brand-soft p-4 text-sm leading-relaxed text-brand-text">
+    <svg class="icon mb-1 h-[1.15rem] w-[1.15rem]" aria-hidden="true"><use href="/assets/icons.svg#i-info"></use></svg>
+    <p>
+      There are no accounts yet, so this list is stored on this device. Keep your
+      reference codes — they are how you get back to a post or a conversation from
+      anywhere else.
+    </p>
+  </div>
+
+  <div class="mb-6 border-b border-line">
+    <div class="flex gap-1 overflow-x-auto" role="tablist" aria-label="My activity">
+      <button role="tab" type="button" data-tab="posts" aria-selected="true"
+              class="relative -mb-px whitespace-nowrap border-b-2 border-transparent px-4 py-3 text-sm font-medium text-muted transition hover:text-heading aria-[selected=true]:border-brand aria-[selected=true]:font-semibold aria-[selected=true]:text-brand">
+        My posts <span class="ml-1 font-mono text-xs text-faint" data-count="posts">0</span>
+      </button>
+      <button role="tab" type="button" data-tab="claims" aria-selected="false"
+              class="relative -mb-px whitespace-nowrap border-b-2 border-transparent px-4 py-3 text-sm font-medium text-muted transition hover:text-heading aria-[selected=true]:border-brand aria-[selected=true]:font-semibold aria-[selected=true]:text-brand">
+        My claims <span class="ml-1 font-mono text-xs text-faint" data-count="claims">0</span>
+      </button>
+      <button role="tab" type="button" data-tab="incoming" aria-selected="false"
+              class="relative -mb-px flex items-center gap-2 whitespace-nowrap border-b-2 border-transparent px-4 py-3 text-sm font-medium text-muted transition hover:text-heading aria-[selected=true]:border-brand aria-[selected=true]:font-semibold aria-[selected=true]:text-brand">
+        Claims on my posts <span class="font-mono text-xs text-faint" data-count="incoming">0</span>
+        <span class="grid h-5 min-w-5 place-items-center rounded-full bg-lost px-1.5 text-xs font-bold text-white dark:text-[#11121a]"
+              data-incoming-badge hidden>0</span>
+      </button>
+    </div>
+  </div>
+
+  <div data-dash></div>
+</div>
+"""
+
 page("index.html", "Lost &amp; Found — Campus Registry",
      "Post what you lost, hand in what you found, and get matched automatically.",
      HOME_BODY, '<script src="/js/home.js"></script>')
@@ -544,3 +592,7 @@ page("item.html", "Item — Lost &amp; Found",
 page("claim.html", "Claim — Lost &amp; Found",
      "A conversation about one claimed item.",
      CLAIM_BODY, '<script src="/js/claim.js"></script>')
+
+page("dashboard.html", "My items — Lost &amp; Found",
+     "Everything you have posted or claimed.",
+     DASH_BODY, '<script src="/js/dashboard.js"></script>', active="nav_dash")
