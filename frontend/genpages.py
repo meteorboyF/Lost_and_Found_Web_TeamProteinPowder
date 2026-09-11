@@ -113,11 +113,11 @@ FOOT = """</main>
         </div>
       </div>
       <nav class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted" aria-label="Footer">
-        <a href="/browse.html" class="transition hover:text-heading">Browse</a>
-        <a href="/report.html" class="transition hover:text-heading">Post an item</a>
-        <a href="/dashboard.html" class="transition hover:text-heading">My items</a>
-        <a href="/map.html" class="transition hover:text-heading">Campus map</a>
-        <a href="/gallery.html" class="transition hover:text-heading">Reunions</a>
+        <a href="/browse.html" class="inline-block py-1 transition hover:text-heading">Browse</a>
+        <a href="/report.html" class="inline-block py-1 transition hover:text-heading">Post an item</a>
+        <a href="/dashboard.html" class="inline-block py-1 transition hover:text-heading">My items</a>
+        <a href="/map.html" class="inline-block py-1 transition hover:text-heading">Campus map</a>
+        <a href="/gallery.html" class="inline-block py-1 transition hover:text-heading">Reunions</a>
       </nav>
       <p class="text-xs text-faint">Items are held for 90 days before archiving.</p>
     </div>
@@ -514,9 +514,9 @@ REPORT_BODY = """
 ITEM_BODY = """
 <div class="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
   <nav aria-label="Breadcrumb" class="mb-6 flex flex-wrap items-center gap-2 text-sm text-muted">
-    <a href="/" class="transition hover:text-heading">Home</a>
+    <a href="/" class="inline-block py-1 transition hover:text-heading">Home</a>
     <svg class="icon h-3.5 w-3.5 text-faint" aria-hidden="true"><use href="/assets/icons.svg#i-chevron-right"></use></svg>
-    <a href="/browse.html" class="transition hover:text-heading">Browse</a>
+    <a href="/browse.html" class="inline-block py-1 transition hover:text-heading">Browse</a>
     <svg class="icon h-3.5 w-3.5 text-faint" aria-hidden="true"><use href="/assets/icons.svg#i-chevron-right"></use></svg>
     <span data-crumb class="font-mono text-xs">…</span>
   </nav>
@@ -531,7 +531,7 @@ ITEM_BODY = """
 CLAIM_BODY = """
 <div class="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
   <nav aria-label="Breadcrumb" class="mb-6 flex flex-wrap items-center gap-2 text-sm text-muted">
-    <a href="/dashboard.html" class="transition hover:text-heading">My items</a>
+    <a href="/dashboard.html" class="inline-block py-1 transition hover:text-heading">My items</a>
     <svg class="icon h-3.5 w-3.5 text-faint" aria-hidden="true"><use href="/assets/icons.svg#i-chevron-right"></use></svg>
     <span data-crumb class="font-mono text-xs">…</span>
   </nav>

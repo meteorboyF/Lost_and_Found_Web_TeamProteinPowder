@@ -24,6 +24,39 @@ request.
 
 ---
 
+## Features
+
+**For students**
+
+| | |
+|---|---|
+| **Post an item** | Lost or found, with a photo, description, category, location and date. |
+| **Browse the board** | Keyword search across title, description, location and colour, plus filters for side of the board, category and status. Sort and paging. Filter state lives in the URL, so a filtered board is a shareable link. |
+| **Claim an item** | Describe something only the owner would know, then talk it through in a private thread with whoever has it. |
+| **Comment publicly** | An open thread on every listing, so several people can help identify something. |
+| **Smart matching** | Every post is scored against the opposite side of the board and strong overlaps surface as suggestions — with the reasons why. |
+| **Match alerts** | A bell that tells you when something resembling your post turns up, without repeating itself. |
+| **My items** | Everything you have posted or claimed, plus claims other people have made on your posts. |
+| **Campus map** | A schematic of campus that tints darker where more is reported. |
+| **Reunions** | A wall of items that made it home. |
+| **Dark mode** | Authored independently of light, not an inversion. Follows the system by default, and remembers your choice. |
+
+**For moderators** — `/admin.html`
+
+Board health at a glance, every post with its reporter, and a comment queue
+where a comment can be hidden and restored rather than destroyed.
+
+### Status lifecycle
+
+```
+OPEN ──first claim──> PENDING ──accepted──> RESOLVED
+  ^                      │
+  └──all claims closed───┘
+```
+
+An item returns to `OPEN` only when nothing is outstanding, so a single
+declined claim cannot strand it at `PENDING`.
+
 ## Running it locally
 
 You need a **JDK 21 or newer**. Node is only required if you intend to change
@@ -76,19 +109,54 @@ pom.xml                     Maven build
 run.sh                      One-command local start
 frontend/                   Tailwind source and toolchain (not shipped)
   src/input.css             Theme tokens, base layer, shared component classes
+  genpages.py               Generates every page from one chrome template
 src/main/java/…/lostfound/
-  web/                      REST controllers
+  domain/                   Item, Claim, ClaimMessage, Comment + enums
+  repo/                     Spring Data repositories
+  service/                  ItemService, ClaimService, MatchService,
+                            StorageService, SeedLoader
+  web/                      REST controllers, DTOs, exception handling
+  config/                   Static resource handling for uploads
 src/main/resources/
   application.properties    Datasource, uploads, server config
   seed/                     JSON seed data loaded on first run
   static/                   Everything the browser receives
     index.html              Landing page
     css/app.css             Compiled Tailwind output (generated, committed)
-    js/                     Page scripts, no bundler
+    js/                     app.js (chrome, API, toasts), ui.js (shared
+                            rendering), one script per page. No bundler.
     assets/                 Icon sprite, self-hosted fonts, images
 ```
 
 ---
+
+## API
+
+All JSON, all on the same origin as the pages.
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/api/health` | Liveness, used to tell "API down" from "board empty" |
+| `GET` | `/api/items` | Browse. `kind` `status` `category` `q` `sort` `page` `size` |
+| `GET` | `/api/items/{ref}` | One item |
+| `POST` | `/api/items` | Create (multipart: `item` JSON part + optional `photo`) |
+| `GET` | `/api/items/{ref}/matches` | Scored matches from the other side of the board |
+| `GET` | `/api/items/stats` | Board-wide counts |
+| `GET` | `/api/items/categories` | Category list, so the frontend never hard-codes the enum |
+| `GET` `POST` | `/api/items/{ref}/comments` | Public comment thread |
+| `POST` | `/api/items/{ref}/claims` | Open a claim |
+| `GET` | `/api/claims/{ref}` | One conversation |
+| `POST` | `/api/claims/{ref}/messages` | Reply |
+| `POST` | `/api/claims/{ref}/accept` · `/decline` · `/withdraw` | Resolve a claim |
+| `GET` | `/api/admin/*` | Moderation. Requires `X-Admin-Key` |
+
+Validation failures return a `fields` map of input name to message, so a form
+can put each message beside the input that caused it.
+
+### Moderation key
+
+`app.admin.key`, default `campus-admin-2026`, override with the `APP_ADMIN_KEY`
+environment variable. It is checked on the server for every admin endpoint.
 
 ## Design decisions
 
@@ -144,6 +212,24 @@ never rendered the same way.
 There is no server-side templating engine, so `frontend/genpages.py` generates
 every page from a single shared chrome template. Edit the template and re-run
 it — never edit the masthead in four files by hand.
+
+### What is deliberately unfinished
+
+Three things are stopgaps, marked as such in the code, and all three are the
+same underlying gap — **there are no user accounts yet**:
+
+1. **The browser is the identity.** `localStorage` remembers which posts and
+   claims belong to you. It does not follow you to another device, and it is
+   not a security boundary.
+2. **A claim's reference code is its access key.** Whoever holds the code can
+   read and reply to that thread. Codes are four characters from a 32-symbol
+   alphabet, so they are not guessable in bulk, but that is obscurity, not
+   authorisation.
+3. **Moderation is a shared key.** Fine for a demo; it is not a role system.
+
+Adding sign-in replaces all three at once. Alerts are also browser-side
+re-checks rather than email, because there is no mail server — the UI never
+promises a notification it cannot send.
 
 ## Team
 
