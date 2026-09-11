@@ -104,6 +104,8 @@ FOOT = """</main>
         <a href="/browse.html" class="transition hover:text-heading">Browse</a>
         <a href="/report.html" class="transition hover:text-heading">Post an item</a>
         <a href="/dashboard.html" class="transition hover:text-heading">My items</a>
+        <a href="/map.html" class="transition hover:text-heading">Campus map</a>
+        <a href="/gallery.html" class="transition hover:text-heading">Reunions</a>
       </nav>
       <p class="text-xs text-faint">Items are held for 90 days before archiving.</p>
     </div>
@@ -573,6 +575,57 @@ DASH_BODY = """
 </div>
 """
 
+
+# ============================== gallery ==============================
+
+GALLERY_BODY = """
+<div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+  <div class="mb-8 text-center">
+    <span class="pill pill-lg bg-found-soft text-found-text">
+      <svg class="icon h-4 w-4" aria-hidden="true"><use href="/assets/icons.svg#i-award"></use></svg>
+      Reunions
+    </span>
+    <h1 class="mt-4 text-3xl text-heading sm:text-4xl">Back where they belong</h1>
+    <p class="mx-auto mt-3 max-w-xl text-body">
+      Every item here made it home. <strong class="font-semibold text-heading" data-gallery-count>—</strong>
+      so far, <strong class="font-semibold text-heading" data-gallery-rate>—</strong> of everything posted.
+    </p>
+  </div>
+
+  <div data-gallery></div>
+</div>
+"""
+
+# ============================== map ==============================
+
+MAP_BODY = """
+<div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+  <div class="mb-8">
+    <h1 class="text-3xl text-heading sm:text-4xl">Where things go missing</h1>
+    <p class="mt-3 max-w-2xl text-body">
+      Every report placed on campus. Darker buildings lose more. Select one to see what
+      has been reported there.
+    </p>
+  </div>
+
+  <div class="mb-6 flex flex-wrap gap-2" role="group" aria-label="Filter the map">
+    <button type="button" data-map-kind="" aria-pressed="true"
+            class="pill pill-lg border border-line-strong text-body transition aria-[pressed=true]:border-brand aria-[pressed=true]:bg-brand aria-[pressed=true]:text-white">All reports</button>
+    <button type="button" data-map-kind="LOST" aria-pressed="false"
+            class="pill pill-lg border border-line-strong text-body transition aria-[pressed=true]:border-lost aria-[pressed=true]:bg-lost aria-[pressed=true]:text-white">Lost here</button>
+    <button type="button" data-map-kind="FOUND" aria-pressed="false"
+            class="pill pill-lg border border-line-strong text-body transition aria-[pressed=true]:border-found aria-[pressed=true]:bg-found aria-[pressed=true]:text-white">Found here</button>
+  </div>
+
+  <div data-map></div>
+
+  <div class="mt-10">
+    <h2 class="text-xl text-heading" data-map-heading>All locations</h2>
+    <div class="mt-5" data-map-list></div>
+  </div>
+</div>
+"""
+
 page("index.html", "Lost &amp; Found — Campus Registry",
      "Post what you lost, hand in what you found, and get matched automatically.",
      HOME_BODY, '<script src="/js/home.js"></script>')
@@ -596,3 +649,11 @@ page("claim.html", "Claim — Lost &amp; Found",
 page("dashboard.html", "My items — Lost &amp; Found",
      "Everything you have posted or claimed.",
      DASH_BODY, '<script src="/js/dashboard.js"></script>', active="nav_dash")
+
+page("gallery.html", "Reunions — Lost &amp; Found",
+     "Items that made it back to their owners.",
+     GALLERY_BODY, '<script src="/js/gallery.js"></script>')
+
+page("map.html", "Campus map — Lost &amp; Found",
+     "Where items are lost and found across campus.",
+     MAP_BODY, '<script src="/js/map.js"></script>')

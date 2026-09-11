@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Claim — Lost &amp; Found</title>
-<meta name="description" content="A conversation about one claimed item.">
+<title>Campus map — Lost &amp; Found</title>
+<meta name="description" content="Where items are lost and found across campus.">
 
 <!-- Applied before first paint so a dark-theme visitor never sees a light flash. -->
 <script>
@@ -73,14 +73,30 @@
 
 <main id="main" class="flex-1">
 
-<div class="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-  <nav aria-label="Breadcrumb" class="mb-6 flex flex-wrap items-center gap-2 text-sm text-muted">
-    <a href="/dashboard.html" class="transition hover:text-heading">My items</a>
-    <svg class="icon h-3.5 w-3.5 text-faint" aria-hidden="true"><use href="/assets/icons.svg#i-chevron-right"></use></svg>
-    <span data-crumb class="font-mono text-xs">…</span>
-  </nav>
+<div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+  <div class="mb-8">
+    <h1 class="text-3xl text-heading sm:text-4xl">Where things go missing</h1>
+    <p class="mt-3 max-w-2xl text-body">
+      Every report placed on campus. Darker buildings lose more. Select one to see what
+      has been reported there.
+    </p>
+  </div>
 
-  <div data-claim></div>
+  <div class="mb-6 flex flex-wrap gap-2" role="group" aria-label="Filter the map">
+    <button type="button" data-map-kind="" aria-pressed="true"
+            class="pill pill-lg border border-line-strong text-body transition aria-[pressed=true]:border-brand aria-[pressed=true]:bg-brand aria-[pressed=true]:text-white">All reports</button>
+    <button type="button" data-map-kind="LOST" aria-pressed="false"
+            class="pill pill-lg border border-line-strong text-body transition aria-[pressed=true]:border-lost aria-[pressed=true]:bg-lost aria-[pressed=true]:text-white">Lost here</button>
+    <button type="button" data-map-kind="FOUND" aria-pressed="false"
+            class="pill pill-lg border border-line-strong text-body transition aria-[pressed=true]:border-found aria-[pressed=true]:bg-found aria-[pressed=true]:text-white">Found here</button>
+  </div>
+
+  <div data-map></div>
+
+  <div class="mt-10">
+    <h2 class="text-xl text-heading" data-map-heading>All locations</h2>
+    <div class="mt-5" data-map-list></div>
+  </div>
 </div>
 </main>
 
@@ -113,6 +129,6 @@
 
 <script src="/js/app.js"></script>
 <script src="/js/ui.js"></script>
-<script src="/js/claim.js"></script>
+<script src="/js/map.js"></script>
 </body>
 </html>

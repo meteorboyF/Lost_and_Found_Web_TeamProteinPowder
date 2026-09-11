@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Claim — Lost &amp; Found</title>
-<meta name="description" content="A conversation about one claimed item.">
+<title>Reunions — Lost &amp; Found</title>
+<meta name="description" content="Items that made it back to their owners.">
 
 <!-- Applied before first paint so a dark-theme visitor never sees a light flash. -->
 <script>
@@ -73,14 +73,20 @@
 
 <main id="main" class="flex-1">
 
-<div class="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-  <nav aria-label="Breadcrumb" class="mb-6 flex flex-wrap items-center gap-2 text-sm text-muted">
-    <a href="/dashboard.html" class="transition hover:text-heading">My items</a>
-    <svg class="icon h-3.5 w-3.5 text-faint" aria-hidden="true"><use href="/assets/icons.svg#i-chevron-right"></use></svg>
-    <span data-crumb class="font-mono text-xs">…</span>
-  </nav>
+<div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+  <div class="mb-8 text-center">
+    <span class="pill pill-lg bg-found-soft text-found-text">
+      <svg class="icon h-4 w-4" aria-hidden="true"><use href="/assets/icons.svg#i-award"></use></svg>
+      Reunions
+    </span>
+    <h1 class="mt-4 text-3xl text-heading sm:text-4xl">Back where they belong</h1>
+    <p class="mx-auto mt-3 max-w-xl text-body">
+      Every item here made it home. <strong class="font-semibold text-heading" data-gallery-count>—</strong>
+      so far, <strong class="font-semibold text-heading" data-gallery-rate>—</strong> of everything posted.
+    </p>
+  </div>
 
-  <div data-claim></div>
+  <div data-gallery></div>
 </div>
 </main>
 
@@ -113,6 +119,6 @@
 
 <script src="/js/app.js"></script>
 <script src="/js/ui.js"></script>
-<script src="/js/claim.js"></script>
+<script src="/js/gallery.js"></script>
 </body>
 </html>
