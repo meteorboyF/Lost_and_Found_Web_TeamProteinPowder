@@ -1,8 +1,8 @@
 /**
- * home.js — landing page.
+ * home.js — landing page: live board counts and the six most recent posts.
  *
- * Confirms the API is reachable and reports honestly either way: a failed
- * request and an empty board look completely different to the visitor.
+ * A failed request and an empty board are reported differently. Conflating
+ * them is how a broken backend ends up looking like a quiet campus.
  */
 (function () {
   'use strict';
@@ -19,64 +19,84 @@
     text.textContent = label;
   }
 
-  function skeletonGrid(count) {
-    var cells = '';
-    for (var i = 0; i < count; i++) {
-      cells +=
-        '<div class="overflow-hidden rounded-sm border border-line bg-surface">' +
-        '<div class="aspect-[4/3] animate-pulse bg-sunken"></div>' +
-        '<div class="space-y-3 p-4">' +
-        '<div class="h-5 w-3/4 animate-pulse rounded-xs bg-sunken"></div>' +
-        '<div class="h-3 w-1/2 animate-pulse rounded-xs bg-sunken"></div>' +
-        '</div></div>';
+  /** Counts up to the real figure, so the strip feels live without lying. */
+  function countTo(el, target) {
+    var reduced = window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (reduced || target <= 0) {
+      el.textContent = String(target);
+      return;
     }
-    return '<div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">' + cells + '</div>';
+
+    var start = performance.now();
+    var duration = 700;
+    function frame(now) {
+      var t = Math.min(1, (now - start) / duration);
+      /* ease-out cubic, matching the --ease-brand feel */
+      var eased = 1 - Math.pow(1 - t, 3);
+      el.textContent = String(Math.round(target * eased));
+      if (t < 1) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
   }
 
-  function emptyState(message) {
-    return (
-      '<div class="grid justify-items-center gap-3 rounded-sm border border-dashed border-line-strong px-6 py-16 text-center">' +
-      '<svg class="icon h-10 w-10 text-faint" aria-hidden="true"><use href="/assets/icons.svg#i-inbox"></use></svg>' +
-      '<p class="font-display text-xl">Nothing on the board yet</p>' +
-      '<p class="max-w-sm text-sm text-muted">' + LF.escapeHtml(message) + '</p>' +
-      '<a href="/report.html?kind=found" class="mt-2 rounded-sm bg-primary px-5 py-2.5 text-sm font-bold text-surface hover:bg-found hover:text-white">' +
-      'Post the first item</a>' +
-      '</div>'
-    );
+  function loadStats() {
+    return LF.api.get('/api/items/stats').then(function (stats) {
+      var map = {
+        open: stats.open,
+        resolved: stats.resolved,
+        found: stats.found,
+        lost: stats.lost
+      };
+      Object.keys(map).forEach(function (key) {
+        var el = document.querySelector('[data-stat="' + key + '"]');
+        if (el) countTo(el, map[key]);
+      });
+      return stats;
+    });
   }
 
-  function errorState(message) {
-    return (
-      '<div role="alert" class="grid justify-items-center gap-3 rounded-sm border border-lost bg-lost-wash px-6 py-16 text-center text-on-wash">' +
-      '<svg class="icon h-10 w-10 text-lost" aria-hidden="true"><use href="/assets/icons.svg#i-alert"></use></svg>' +
-      '<p class="font-display text-xl">Could not load the board</p>' +
-      '<p class="max-w-md text-sm opacity-85">' + LF.escapeHtml(message) + '</p>' +
-      '<button type="button" data-retry class="mt-2 rounded-sm border border-line-strong px-5 py-2.5 text-sm font-bold hover:border-primary">' +
-      'Try again</button>' +
-      '</div>'
-    );
+  function loadRecent() {
+    var host = document.querySelector('[data-recent]');
+    if (!host) return Promise.resolve();
+
+    host.innerHTML = LF.skeletonGrid(3);
+
+    return LF.api.get('/api/items?size=6&sort=recent').then(function (page) {
+      if (!page.content.length) {
+        host.innerHTML = LF.emptyState({
+          title: 'Nothing on the board yet',
+          message: host.dataset.emptyMessage || '',
+          actionHref: '/report.html',
+          actionLabel: 'Post the first item'
+        });
+        return;
+      }
+      host.innerHTML = LF.itemGrid(page.content);
+    });
   }
 
   function load() {
-    var host = document.querySelector('[data-recent]');
-    if (!host) return;
-
     setApiStatus('checking', 'Checking the registry…');
-    host.innerHTML = skeletonGrid(3);
 
-    LF.api
-      .health()
-      .then(function (info) {
-        setApiStatus('up', 'Registry online · ' + info.service);
-        /* The items endpoint arrives with the next feature; until then the
-           board is genuinely empty rather than broken. */
-        host.innerHTML = emptyState(host.dataset.emptyMessage || '');
+    Promise.all([loadStats(), loadRecent()])
+      .then(function () {
+        setApiStatus('up', 'Registry online');
       })
       .catch(function (err) {
         setApiStatus('down', 'Registry unreachable');
-        host.innerHTML = errorState(err.message);
-        var retry = host.querySelector('[data-retry]');
-        if (retry) retry.addEventListener('click', load);
+
+        var host = document.querySelector('[data-recent]');
+        if (host) {
+          host.innerHTML = LF.errorState(err.message);
+          var retry = host.querySelector('[data-retry]');
+          if (retry) retry.addEventListener('click', load);
+        }
+
+        document.querySelectorAll('[data-stat]').forEach(function (el) {
+          el.textContent = '—';
+        });
       });
   }
 
