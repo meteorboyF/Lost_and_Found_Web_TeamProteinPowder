@@ -479,3 +479,87 @@
     scroll-behavior: auto !important;
   }
 }
+
+
+/* ==========================================================================
+   Primary Navigation Header & Responsive Menu
+   ========================================================================== */
+
+#primary-nav {
+  display: none;
+}
+
+#primary-nav a {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 0.875rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+  border-radius: 0.5rem;
+  color: var(--sc-body);
+  text-decoration: none;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  white-space: nowrap;
+}
+
+#primary-nav a:hover {
+  background-color: var(--sc-sunken);
+  color: var(--sc-heading);
+}
+
+#primary-nav a[aria-current="page"] {
+  background-color: var(--sc-brand-soft);
+  color: var(--sc-brand-text);
+  font-weight: 600;
+}
+
+/* Desktop & Tablet: Always inline in header bar */
+@media (min-width: 768px) {
+  #primary-nav {
+    position: static !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    margin-left: 1.5rem !important;
+    gap: 0.375rem !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    width: auto !important;
+    inset: auto !important;
+    z-index: auto !important;
+  }
+
+  [data-nav-toggle] {
+    display: none !important;
+  }
+}
+
+/* Mobile: Hamburger Drawer */
+@media (max-width: 767.98px) {
+  #primary-nav[data-open="false"] {
+    display: none !important;
+  }
+
+  #primary-nav[data-open="true"] {
+    display: flex !important;
+    flex-direction: column !important;
+    position: fixed !important;
+    top: 4rem !important;
+    left: 0 !important;
+    right: 0 !important;
+    background-color: var(--sc-page) !important;
+    border-bottom: 1px solid var(--sc-line) !important;
+    padding: 1rem !important;
+    gap: 0.25rem !important;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+    z-index: 50 !important;
+  }
+
+  #primary-nav a {
+    width: 100%;
+    padding: 0.625rem 0.875rem;
+  }
+}
