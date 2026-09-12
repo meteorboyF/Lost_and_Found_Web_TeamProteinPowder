@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 /* Jackson 3 lives under tools.jackson, not com.fasterxml.jackson. */
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
+import com.teamproteinpowder.lostfound.domain.ApprovalStatus;
 import com.teamproteinpowder.lostfound.domain.Category;
 import com.teamproteinpowder.lostfound.domain.Item;
 import com.teamproteinpowder.lostfound.domain.ItemKind;
@@ -186,28 +187,60 @@ public class SeedLoader implements ApplicationRunner {
     }
 
     private void seedUsers() {
-        if (userRepository.count() > 0) {
-            return;
+        // Ensure Admin user
+        userRepository.findByEmailIgnoreCase("admin@campus.edu").ifPresentOrElse(admin -> {
+            admin.setApprovalStatus(ApprovalStatus.APPROVED);
+            admin.setRole(Role.ADMIN);
+            if (admin.getStudentId() == null) admin.setStudentId("ADMIN-001");
+            userRepository.save(admin);
+        }, () -> {
+            String adminSalt = passwordService.generateSalt();
+            User admin = new User();
+            admin.setUsername("admin");
+            admin.setEmail("admin@campus.edu");
+            admin.setStudentEmail("admin@campus.edu");
+            admin.setStudentId("ADMIN-001");
+            admin.setSalt(adminSalt);
+            admin.setPasswordHash(passwordService.hashPassword("admin123", adminSalt));
+            admin.setRole(Role.ADMIN);
+            admin.setApprovalStatus(ApprovalStatus.APPROVED);
+            userRepository.save(admin);
+        });
+
+        // Ensure Approved Student user
+        userRepository.findByEmailIgnoreCase("student@campus.edu").ifPresentOrElse(student -> {
+            student.setApprovalStatus(ApprovalStatus.APPROVED);
+            if (student.getStudentId() == null) student.setStudentId("STU-2026-001");
+            userRepository.save(student);
+        }, () -> {
+            String studentSalt = passwordService.generateSalt();
+            User student = new User();
+            student.setUsername("student");
+            student.setEmail("student@campus.edu");
+            student.setStudentEmail("student@campus.edu");
+            student.setStudentId("STU-2026-001");
+            student.setSalt(studentSalt);
+            student.setPasswordHash(passwordService.hashPassword("student123", studentSalt));
+            student.setRole(Role.USER);
+            student.setApprovalStatus(ApprovalStatus.APPROVED);
+            userRepository.save(student);
+        });
+
+        // Ensure Pending Student user for testing admin approval queue
+        if (userRepository.findByEmailIgnoreCase("pending_student@campus.edu").isEmpty()) {
+            String pendingSalt = passwordService.generateSalt();
+            User pending = new User();
+            pending.setUsername("pending_student");
+            pending.setEmail("pending_student@campus.edu");
+            pending.setStudentEmail("pending_student@campus.edu");
+            pending.setStudentId("STU-2026-999");
+            pending.setSalt(pendingSalt);
+            pending.setPasswordHash(passwordService.hashPassword("student123", pendingSalt));
+            pending.setRole(Role.USER);
+            pending.setApprovalStatus(ApprovalStatus.PENDING);
+            userRepository.save(pending);
         }
 
-        String adminSalt = passwordService.generateSalt();
-        User admin = new User();
-        admin.setUsername("admin");
-        admin.setEmail("admin@campus.edu");
-        admin.setSalt(adminSalt);
-        admin.setPasswordHash(passwordService.hashPassword("admin123", adminSalt));
-        admin.setRole(Role.ADMIN);
-        userRepository.save(admin);
-
-        String studentSalt = passwordService.generateSalt();
-        User student = new User();
-        student.setUsername("student");
-        student.setEmail("student@campus.edu");
-        student.setSalt(studentSalt);
-        student.setPasswordHash(passwordService.hashPassword("student123", studentSalt));
-        student.setRole(Role.USER);
-        userRepository.save(student);
-
-        log.info("Seeded initial users: admin@campus.edu (admin123) and student@campus.edu (student123)");
+        log.info("Seeded initial users with student credentials and verification statuses");
     }
 }

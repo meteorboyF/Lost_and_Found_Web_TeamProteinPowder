@@ -19,14 +19,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.teamproteinpowder.lostfound.domain.ApprovalStatus;
 import com.teamproteinpowder.lostfound.domain.Category;
 import com.teamproteinpowder.lostfound.domain.Comment;
 import com.teamproteinpowder.lostfound.domain.Item;
 import com.teamproteinpowder.lostfound.domain.ItemKind;
 import com.teamproteinpowder.lostfound.domain.ItemStatus;
+import com.teamproteinpowder.lostfound.domain.User;
 import com.teamproteinpowder.lostfound.repo.CommentRepository;
 import com.teamproteinpowder.lostfound.repo.ItemRepository;
+import com.teamproteinpowder.lostfound.repo.UserRepository;
 import com.teamproteinpowder.lostfound.service.ItemService;
+import com.teamproteinpowder.lostfound.web.dto.UserResponse;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -43,15 +47,18 @@ public class AdminController {
 
     private final ItemRepository items;
     private final CommentRepository comments;
+    private final UserRepository userRepository;
     private final ItemService itemService;
     private final String adminKey;
 
     public AdminController(ItemRepository items,
                            CommentRepository comments,
+                           UserRepository userRepository,
                            ItemService itemService,
                            @Value("${app.admin.key}") String adminKey) {
         this.items = items;
         this.comments = comments;
+        this.userRepository = userRepository;
         this.itemService = itemService;
         this.adminKey = adminKey;
     }
@@ -112,12 +119,15 @@ public class AdminController {
             }
         }
 
+        long pendingStudents = userRepository.countByApprovalStatus(ApprovalStatus.PENDING);
+
         return Map.of(
                 "stats", stats,
                 "byCategory", byCategory,
                 "postedThisWeek", postedThisWeek,
                 "staleOverNinetyDays", stale,
-                "comments", comments.count());
+                "comments", comments.count(),
+                "pendingStudents", pendingStudents);
     }
 
     /* ---------------------------------------------------------------------
@@ -199,5 +209,55 @@ public class AdminController {
         comment.setHidden(!comment.isHidden());
         comments.save(comment);
         return Map.of("id", id, "hidden", comment.isHidden());
+    }
+
+    /* ---------------------------------------------------------------------
+       Student Verifications & Approvals
+       --------------------------------------------------------------------- */
+
+    @GetMapping("/users")
+    @Transactional(readOnly = true)
+    public List<UserResponse> listUsers(@RequestHeader(value = "X-Admin-Key", required = false) String key,
+                                        HttpServletRequest request) {
+        requireKeyOrAdmin(key, request);
+        return userRepository.findAllByOrderByCreatedAtDesc().stream()
+                .map(UserResponse::from)
+                .toList();
+    }
+
+    @PostMapping("/users/{id}/approve")
+    @Transactional
+    public UserResponse approveUser(@PathVariable Long id,
+                                    @RequestHeader(value = "X-Admin-Key", required = false) String key,
+                                    HttpServletRequest request) {
+        requireKeyOrAdmin(key, request);
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        user.setApprovalStatus(ApprovalStatus.APPROVED);
+        return UserResponse.from(userRepository.save(user));
+    }
+
+    @PostMapping("/users/{id}/reject")
+    @Transactional
+    public UserResponse rejectUser(@PathVariable Long id,
+                                   @RequestHeader(value = "X-Admin-Key", required = false) String key,
+                                   HttpServletRequest request) {
+        requireKeyOrAdmin(key, request);
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        user.setApprovalStatus(ApprovalStatus.REJECTED);
+        return UserResponse.from(userRepository.save(user));
+    }
+
+    @DeleteMapping("/users/{id}")
+    @Transactional
+    public Map<String, Object> deleteUser(@PathVariable Long id,
+                                          @RequestHeader(value = "X-Admin-Key", required = false) String key,
+                                          HttpServletRequest request) {
+        requireKeyOrAdmin(key, request);
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        userRepository.delete(user);
+        return Map.of("deleted", id);
     }
 }

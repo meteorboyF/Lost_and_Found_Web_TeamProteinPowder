@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.teamproteinpowder.lostfound.domain.ApprovalStatus;
 import com.teamproteinpowder.lostfound.domain.Role;
 import com.teamproteinpowder.lostfound.domain.User;
 import com.teamproteinpowder.lostfound.repo.UserRepository;
@@ -48,12 +49,16 @@ public class AuthController {
                                                  HttpServletRequest httpRequest) {
         String email = request.getEmail().trim().toLowerCase();
         String username = request.getUsername().trim();
+        String studentId = request.getStudentId().trim();
 
         if (userRepository.existsByEmailIgnoreCase(email)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "An account with this email already exists");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "An account with this student email already exists");
         }
         if (userRepository.existsByUsernameIgnoreCase(username)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Username is already taken");
+        }
+        if (userRepository.existsByStudentIdIgnoreCase(studentId)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "A student account with this Student ID already exists");
         }
 
         String salt = passwordService.generateSalt();
@@ -62,16 +67,16 @@ public class AuthController {
         User user = new User();
         user.setUsername(username);
         user.setEmail(email);
+        user.setStudentEmail(email);
+        user.setStudentId(studentId);
         user.setSalt(salt);
         user.setPasswordHash(hash);
         user.setRole(Role.USER);
+        user.setApprovalStatus(ApprovalStatus.PENDING);
 
         User saved = userRepository.save(user);
 
-        // Bind user to session upon successful registration
-        HttpSession session = httpRequest.getSession(true);
-        bindSession(session, saved);
-
+        // Account is pending verification by admin, do NOT bind session yet
         return ResponseEntity.status(HttpStatus.CREATED).body(UserResponse.from(saved));
     }
 
@@ -91,6 +96,18 @@ public class AuthController {
         User user = userOpt.get();
         if (!passwordService.verifyPassword(request.getPassword(), user.getSalt(), user.getPasswordHash())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email/username or password");
+        }
+
+        // Verification check: Non-admin users must be approved by admin
+        if (user.getRole() != Role.ADMIN) {
+            if (user.getApprovalStatus() == ApprovalStatus.PENDING) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                        "Your account is pending administrator approval. Please wait for an administrator to verify your student credentials (Student ID: "
+                                + user.getStudentId() + ").");
+            } else if (user.getApprovalStatus() == ApprovalStatus.REJECTED) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                        "Your registration was rejected by an administrator. Please contact campus support.");
+            }
         }
 
         HttpSession session = httpRequest.getSession(true);

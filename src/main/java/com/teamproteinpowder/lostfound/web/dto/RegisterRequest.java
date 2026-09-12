@@ -12,8 +12,12 @@ public class RegisterRequest {
     @Pattern(regexp = "^[a-zA-Z0-9._-]+$", message = "Username can only contain letters, numbers, dots, underscores, and dashes")
     private String username;
 
-    @NotBlank(message = "Email is required")
-    @Email(message = "Please enter a valid email address")
+    @NotBlank(message = "Student ID is required")
+    @Size(min = 2, max = 60, message = "Student ID must be under 60 characters")
+    private String studentId;
+
+    @NotBlank(message = "Student institutional email is required")
+    @Email(message = "Please enter a valid student email address")
     @Size(max = 160)
     private String email;
 
@@ -23,6 +27,9 @@ public class RegisterRequest {
 
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
+
+    public String getStudentId() { return studentId; }
+    public void setStudentId(String studentId) { this.studentId = studentId; }
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }

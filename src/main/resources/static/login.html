@@ -134,9 +134,16 @@
         </div>
 
         <div>
-          <label for="reg-email" class="label">Campus Email</label>
+          <label for="reg-studentid" class="label">Student ID / Roll Number</label>
+          <input id="reg-studentid" name="studentId" type="text" required maxlength="60"
+                 class="field mt-1.5" placeholder="e.g. 2026-1-60-001 or STU-1024">
+          <p class="min-h-5 text-xs text-lost mt-1" id="reg-studentid-error"></p>
+        </div>
+
+        <div>
+          <label for="reg-email" class="label">Student Institutional Email</label>
           <input id="reg-email" name="email" type="email" autocomplete="email" required maxlength="160"
-                 class="field mt-1.5" placeholder="student@campus.edu">
+                 class="field mt-1.5" placeholder="e.g. student@campus.edu">
           <p class="min-h-5 text-xs text-lost mt-1" id="reg-email-error"></p>
         </div>
 
@@ -147,10 +154,16 @@
           <p class="min-h-5 text-xs text-lost mt-1" id="reg-password-error"></p>
         </div>
 
+        <div class="rounded-xl border border-line bg-sunken/60 p-3 text-xs text-muted flex items-start gap-2">
+          <svg class="icon mt-0.5 h-4 w-4 text-brand shrink-0" aria-hidden="true"><use href="/assets/icons.svg#i-lock"></use></svg>
+          <span><strong>Admin Verification:</strong> Your student ID and email will be reviewed and approved by an administrator before your account is activated.</span>
+        </div>
+
+        <div id="reg-success-banner" class="hidden rounded-xl bg-found-soft border border-found/30 p-3.5 text-xs text-found-text space-y-1"></div>
         <div id="reg-general-error" class="hidden rounded-lg bg-lost/10 border border-lost/20 p-3 text-sm text-lost"></div>
 
         <button type="submit" id="reg-submit-btn" class="btn btn-primary w-full py-2.5">
-          Create Account
+          Submit Registration for Approval
         </button>
       </form>
 
@@ -198,7 +211,7 @@
       var pwd = loginForm.elements.password.value;
       var errBox = document.getElementById('login-general-error');
       errBox.classList.add('hidden');
-      errBox.textContent = '';
+      errBox.innerHTML = '';
 
       var idErr = document.getElementById('login-id-error');
       var pwdErr = document.getElementById('login-password-error');
@@ -218,7 +231,11 @@
           }, 400);
         })
         .catch(function (err) {
-          errBox.textContent = err.message || 'Login failed';
+          if (err.status === 403) {
+            errBox.innerHTML = '<strong>⏳ Verification Required</strong><p class="mt-1">' + window.LF.escapeHtml(err.message) + '</p>';
+          } else {
+            errBox.textContent = err.message || 'Login failed';
+          }
           errBox.classList.remove('hidden');
         })
         .finally(function () {
@@ -232,30 +249,42 @@
     regForm.addEventListener('submit', function (e) {
       e.preventDefault();
       var username = regForm.elements.username.value.trim();
+      var studentId = regForm.elements.studentId.value.trim();
       var email = regForm.elements.email.value.trim();
       var pwd = regForm.elements.password.value;
       var errBox = document.getElementById('reg-general-error');
+      var successBox = document.getElementById('reg-success-banner');
+
       errBox.classList.add('hidden');
       errBox.textContent = '';
+      successBox.classList.add('hidden');
+      successBox.innerHTML = '';
 
       var uErr = document.getElementById('reg-username-error');
+      var sErr = document.getElementById('reg-studentid-error');
       var eErr = document.getElementById('reg-email-error');
       var pErr = document.getElementById('reg-password-error');
       uErr.textContent = username ? '' : 'Username is required';
-      eErr.textContent = email ? '' : 'Campus email is required';
+      sErr.textContent = studentId ? '' : 'Student ID is required';
+      eErr.textContent = email ? '' : 'Student institutional email is required';
       pErr.textContent = (pwd && pwd.length >= 6) ? '' : 'Password must be at least 6 characters';
-      if (!username || !email || !pwd || pwd.length < 6) return;
+      if (!username || !studentId || !email || !pwd || pwd.length < 6) return;
 
       var btn = document.getElementById('reg-submit-btn');
       btn.disabled = true;
-      btn.textContent = 'Creating account...';
+      btn.textContent = 'Submitting...';
 
-      window.LF.auth.register(username, email, pwd)
+      window.LF.auth.register(username, email, pwd, studentId)
         .then(function (user) {
-          window.LF.toast.success('Account created! Welcome, ' + user.username);
-          setTimeout(function () {
-            window.location.href = redirectUrl;
-          }, 400);
+          regForm.reset();
+          successBox.innerHTML =
+            '<p class="font-bold">✅ Registration Submitted for Review</p>' +
+            '<p class="mt-1">Student account for <strong>' + window.LF.escapeHtml(user.username) +
+            '</strong> (Student ID: <span class="font-mono">' + window.LF.escapeHtml(user.studentId) +
+            '</span>) is recorded and awaiting administrator verification.</p>' +
+            '<p class="mt-2 text-[0.75rem] opacity-90">An administrator will review your student credentials. You may sign in once approved.</p>';
+          successBox.classList.remove('hidden');
+          window.LF.toast.info('Account registered! Pending administrator approval.');
         })
         .catch(function (err) {
           errBox.textContent = err.message || 'Registration failed';
@@ -263,7 +292,7 @@
         })
         .finally(function () {
           btn.disabled = false;
-          btn.textContent = 'Create Account';
+          btn.textContent = 'Submit Registration for Approval';
         });
     });
   });

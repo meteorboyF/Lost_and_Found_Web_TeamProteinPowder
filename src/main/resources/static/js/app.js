@@ -435,15 +435,13 @@
         });
     },
 
-    register: function (username, email, password) {
-      return LF.api.post('/api/auth/register', { username: username, email: email, password: password })
-        .then(function (user) {
-          authUser = user;
-          LF.mine.remember(user.username, user.email);
-          syncAuthNav();
-          document.dispatchEvent(new CustomEvent('lf:auth-change', { detail: { user: user } }));
-          return user;
-        });
+    register: function (username, email, password, studentId) {
+      return LF.api.post('/api/auth/register', {
+        username: username,
+        email: email,
+        password: password,
+        studentId: studentId
+      });
     },
 
     logout: function () {

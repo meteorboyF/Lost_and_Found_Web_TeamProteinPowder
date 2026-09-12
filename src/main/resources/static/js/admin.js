@@ -12,7 +12,7 @@
   var e = LF.escapeHtml;
   var KEY = 'lf.adminkey';
 
-  var state = { tab: 'overview', items: [], comments: [], overview: null };
+  var state = { tab: 'overview', items: [], comments: [], users: [], overview: null };
 
   function key() {
     try {
@@ -97,12 +97,14 @@
     Promise.all([
       request('/api/admin/overview'),
       request('/api/admin/items'),
-      request('/api/admin/comments')
+      request('/api/admin/comments'),
+      request('/api/admin/users')
     ])
       .then(function (r) {
         state.overview = r[0];
         state.items = r[1];
         state.comments = r[2];
+        state.users = r[3] || [];
         render();
       })
       .catch(function (err) {
@@ -173,6 +175,13 @@
               (o.staleOverNinetyDays ? 'text-lost' : 'text-heading') + '">' +
               o.staleOverNinetyDays + '</p>' +
             '<p class="text-xs text-muted">unresolved for more than 90 days</p>' +
+          '</div>' +
+          '<div class="card p-5">' +
+            '<p class="text-sm font-semibold text-heading">Student verifications</p>' +
+            '<p class="mt-1 text-3xl font-bold tabular-nums ' +
+              (o.pendingStudents ? 'text-amber' : 'text-heading') + '">' +
+              (o.pendingStudents || 0) + '</p>' +
+            '<p class="text-xs text-muted">pending student ID and email approval</p>' +
           '</div>' +
         '</div>' +
       '</div>'
@@ -247,17 +256,101 @@
     }).join('') + '</div>';
   }
 
+  function studentStatusPill(status) {
+    if (status === 'APPROVED') {
+      return '<span class="pill bg-found-soft text-found-text">' +
+        '<svg class="icon h-3.5 w-3.5" aria-hidden="true"><use href="/assets/icons.svg#i-check"></use></svg>' +
+        'Approved</span>';
+    }
+    if (status === 'REJECTED') {
+      return '<span class="pill bg-lost-soft text-lost-text">' +
+        '<svg class="icon h-3.5 w-3.5" aria-hidden="true"><use href="/assets/icons.svg#i-alert"></use></svg>' +
+        'Rejected</span>';
+    }
+    return '<span class="pill bg-amber-soft text-amber-text">' +
+      '<svg class="icon h-3.5 w-3.5" aria-hidden="true"><use href="/assets/icons.svg#i-clock"></use></svg>' +
+      'Pending approval</span>';
+  }
+
+  function renderStudents() {
+    if (!state.users || !state.users.length) {
+      return LF.emptyState({ icon: 'i-user', title: 'No accounts', message: 'No registered student accounts found.' });
+    }
+
+    var rows = state.users.map(function (u) {
+      var actionButtons = '';
+      if (u.role === 'ADMIN') {
+        actionButtons = '<span class="text-xs font-semibold text-muted">Administrator</span>';
+      } else if (u.approvalStatus === 'PENDING') {
+        actionButtons = '<div class="flex items-center justify-end gap-2">' +
+          '<button type="button" class="btn btn-primary btn-sm" data-approve-user="' + u.id + '">Approve</button>' +
+          '<button type="button" class="btn btn-secondary btn-sm text-lost" data-reject-user="' + u.id + '">Reject</button>' +
+          '</div>';
+      } else if (u.approvalStatus === 'APPROVED') {
+        actionButtons = '<div class="flex items-center justify-end gap-2">' +
+          '<button type="button" class="btn btn-ghost btn-sm text-lost" data-reject-user="' + u.id + '">Revoke</button>' +
+          '</div>';
+      } else {
+        actionButtons = '<div class="flex items-center justify-end gap-2">' +
+          '<button type="button" class="btn btn-secondary btn-sm text-found" data-approve-user="' + u.id + '">Approve</button>' +
+          '</div>';
+      }
+
+      return (
+        '<tr class="border-t border-line">' +
+          '<td class="p-3">' +
+            '<p class="text-sm font-medium text-heading">' + e(u.username) + '</p>' +
+            '<p class="text-xs text-muted">' + (u.role === 'ADMIN' ? 'Staff' : 'Student') + '</p>' +
+          '</td>' +
+          '<td class="p-3 font-mono text-xs text-heading">' + e(u.studentId || '—') + '</td>' +
+          '<td class="p-3">' +
+            '<p class="text-sm text-body">' + e(u.studentEmail || u.email) + '</p>' +
+            (u.studentEmail && u.studentEmail !== u.email ? '<p class="text-xs text-muted">Login: ' + e(u.email) + '</p>' : '') +
+          '</td>' +
+          '<td class="p-3">' + studentStatusPill(u.approvalStatus) + '</td>' +
+          '<td class="p-3 text-xs text-muted">' + e(LF.timeAgo(u.createdAt)) + '</td>' +
+          '<td class="p-3 text-right">' + actionButtons + '</td>' +
+        '</tr>'
+      );
+    }).join('');
+
+    return (
+      '<div class="card overflow-hidden">' +
+        '<div class="overflow-x-auto">' +
+          '<table class="w-full min-w-[50rem] text-left">' +
+            '<thead class="bg-sunken text-xs uppercase tracking-wide text-muted">' +
+              '<tr>' +
+                '<th class="p-3 font-semibold">User / Name</th>' +
+                '<th class="p-3 font-semibold">Student ID</th>' +
+                '<th class="p-3 font-semibold">Student Email</th>' +
+                '<th class="p-3 font-semibold">Status</th>' +
+                '<th class="p-3 font-semibold">Registered</th>' +
+                '<th class="p-3 text-right font-semibold">Action</th>' +
+              '</tr>' +
+            '</thead>' +
+            '<tbody>' + rows + '</tbody>' +
+          '</table>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
   function render() {
     var host = document.querySelector('[data-admin-panel]');
     if (state.tab === 'overview') host.innerHTML = renderOverview();
     else if (state.tab === 'items') host.innerHTML = renderItems();
-    else host.innerHTML = renderComments();
+    else if (state.tab === 'comments') host.innerHTML = renderComments();
+    else if (state.tab === 'students') host.innerHTML = renderStudents();
+    else host.innerHTML = renderOverview();
 
     var pending = state.comments.filter(function (c) { return !c.hidden; }).length;
     var badge = document.querySelector('[data-admin-count="comments"]');
     if (badge) badge.textContent = pending;
     var itemCount = document.querySelector('[data-admin-count="items"]');
     if (itemCount) itemCount.textContent = state.items.length;
+    var pendingStudents = (state.users || []).filter(function (u) { return u.approvalStatus === 'PENDING'; }).length;
+    var studentBadge = document.querySelector('[data-admin-count="students"]');
+    if (studentBadge) studentBadge.textContent = pendingStudents;
 
     host.querySelectorAll('[data-toggle]').forEach(function (btn) {
       btn.addEventListener('click', function () {
@@ -287,6 +380,48 @@
             state.items = state.items.filter(function (i) { return i.reference !== ref; });
             render();
             LF.toast.success(ref + ' removed.');
+          })
+          .catch(function (err) {
+            btn.disabled = false;
+            LF.toast.error(err.message);
+          });
+      });
+    });
+
+    host.querySelectorAll('[data-approve-user]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var id = btn.dataset.approveUser;
+        btn.disabled = true;
+        request('/api/admin/users/' + id + '/approve', { method: 'POST' })
+          .then(function (updated) {
+            state.users.forEach(function (u) {
+              if (String(u.id) === String(id)) {
+                u.approvalStatus = updated.approvalStatus;
+              }
+            });
+            render();
+            LF.toast.success('Approved student account for ' + updated.username);
+          })
+          .catch(function (err) {
+            btn.disabled = false;
+            LF.toast.error(err.message);
+          });
+      });
+    });
+
+    host.querySelectorAll('[data-reject-user]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var id = btn.dataset.rejectUser;
+        btn.disabled = true;
+        request('/api/admin/users/' + id + '/reject', { method: 'POST' })
+          .then(function (updated) {
+            state.users.forEach(function (u) {
+              if (String(u.id) === String(id)) {
+                u.approvalStatus = updated.approvalStatus;
+              }
+            });
+            render();
+            LF.toast.info('Rejected student account for ' + updated.username);
           })
           .catch(function (err) {
             btn.disabled = false;
