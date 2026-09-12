@@ -36,15 +36,14 @@
 
     <nav id="primary-nav" aria-label="Primary"
          class="fixed inset-x-0 top-16 z-30 flex-col gap-1 border-b border-line bg-page p-4 shadow-lg
-                data-[open=false]:hidden lg:static lg:ml-4 lg:flex lg:flex-row lg:border-0 lg:bg-transparent
-                lg:p-0 lg:shadow-none"
+                data-[open=false]:hidden md:static md:ml-6 md:flex md:flex-row md:items-center md:gap-1 lg:gap-2 md:border-0 md:bg-transparent
+                md:p-0 md:shadow-none"
          data-open="false">
-      <a href="/browse.html" class="rounded-lg px-3 py-2.5 text-sm font-medium text-body transition hover:bg-sunken hover:text-heading lg:py-2">Browse</a>
-      <a href="/report.html?kind=lost" class="rounded-lg px-3 py-2.5 text-sm font-medium text-body transition hover:bg-sunken hover:text-heading lg:py-2">Report lost</a>
-      <a href="/report.html?kind=found" class="rounded-lg px-3 py-2.5 text-sm font-medium text-body transition hover:bg-sunken hover:text-heading lg:py-2">Report found</a>
-      <a href="/map.html" class="rounded-lg px-3 py-2.5 text-sm font-medium text-body transition hover:bg-sunken hover:text-heading lg:py-2">Campus map</a>
-      <a href="/gallery.html" class="rounded-lg px-3 py-2.5 text-sm font-medium text-body transition hover:bg-sunken hover:text-heading lg:py-2">Reunions</a>
-      <a href="/dashboard.html" class="rounded-lg px-3 py-2.5 text-sm font-medium text-body transition hover:bg-sunken hover:text-heading lg:py-2">My items</a>
+      <a href="/browse.html" class="rounded-lg px-3.5 py-2 text-sm font-medium text-body transition hover:bg-sunken hover:text-heading aria-[current=page]:bg-brand-soft aria-[current=page]:text-brand-text aria-[current=page]:font-semibold">Browse</a>
+      <a href="/report.html" class="rounded-lg px-3.5 py-2 text-sm font-medium text-body transition hover:bg-sunken hover:text-heading aria-[current=page]:bg-brand-soft aria-[current=page]:text-brand-text aria-[current=page]:font-semibold">Post an item</a>
+      <a href="/dashboard.html" class="rounded-lg px-3.5 py-2 text-sm font-medium text-body transition hover:bg-sunken hover:text-heading aria-[current=page]:bg-brand-soft aria-[current=page]:text-brand-text aria-[current=page]:font-semibold">My items</a>
+      <a href="/map.html" class="rounded-lg px-3.5 py-2 text-sm font-medium text-body transition hover:bg-sunken hover:text-heading aria-[current=page]:bg-brand-soft aria-[current=page]:text-brand-text aria-[current=page]:font-semibold">Campus map</a>
+      <a href="/gallery.html" class="rounded-lg px-3.5 py-2 text-sm font-medium text-body transition hover:bg-sunken hover:text-heading aria-[current=page]:bg-brand-soft aria-[current=page]:text-brand-text aria-[current=page]:font-semibold">Reunions</a>
     </nav>
 
     <div class="ml-auto flex items-center gap-2">
@@ -57,14 +56,9 @@
         <svg class="icon h-[1.15rem] w-[1.15rem]" aria-hidden="true" data-theme-icon="dark" hidden><use href="/assets/icons.svg#i-moon"></use></svg>
       </button>
 
-      <a href="/report.html" class="btn btn-primary btn-sm hidden sm:inline-flex">
-        <svg class="icon h-4 w-4" aria-hidden="true"><use href="/assets/icons.svg#i-plus"></use></svg>
-        Post an item
-      </a>
-
       <button type="button" data-nav-toggle aria-controls="primary-nav" aria-expanded="false"
               aria-label="Open navigation"
-              class="grid h-9 w-9 place-items-center rounded-lg text-muted transition hover:bg-sunken hover:text-heading lg:hidden">
+              class="grid h-9 w-9 place-items-center rounded-lg text-muted transition hover:bg-sunken hover:text-heading md:hidden">
         <svg class="icon h-[1.15rem] w-[1.15rem]" aria-hidden="true"><use href="/assets/icons.svg#i-menu"></use></svg>
       </button>
     </div>

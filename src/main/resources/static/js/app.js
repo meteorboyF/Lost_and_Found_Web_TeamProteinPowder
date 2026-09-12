@@ -78,7 +78,7 @@
     /* Reset when the viewport crosses into the desktop layout, so the panel
        is never left stuck open as a floating box. */
     if (window.matchMedia) {
-      var mq = window.matchMedia('(min-width: 1024px)');
+      var mq = window.matchMedia('(min-width: 768px)');
       if (mq.addEventListener) {
         mq.addEventListener('change', function (e) {
           if (e.matches) setOpen(false);
