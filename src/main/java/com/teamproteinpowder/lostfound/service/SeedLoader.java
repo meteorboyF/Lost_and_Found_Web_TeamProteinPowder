@@ -22,7 +22,10 @@ import com.teamproteinpowder.lostfound.domain.Category;
 import com.teamproteinpowder.lostfound.domain.Item;
 import com.teamproteinpowder.lostfound.domain.ItemKind;
 import com.teamproteinpowder.lostfound.domain.ItemStatus;
+import com.teamproteinpowder.lostfound.domain.Role;
+import com.teamproteinpowder.lostfound.domain.User;
 import com.teamproteinpowder.lostfound.repo.ItemRepository;
+import com.teamproteinpowder.lostfound.repo.UserRepository;
 
 /**
  * Populates an empty database from src/main/resources/seed/items.json so a
@@ -37,15 +40,24 @@ public class SeedLoader implements ApplicationRunner {
     private static final Logger log = LoggerFactory.getLogger(SeedLoader.class);
 
     private final ItemRepository repository;
+    private final UserRepository userRepository;
+    private final PasswordService passwordService;
     private final ObjectMapper mapper;
 
-    public SeedLoader(ItemRepository repository, ObjectMapper mapper) {
+    public SeedLoader(ItemRepository repository,
+                      UserRepository userRepository,
+                      PasswordService passwordService,
+                      ObjectMapper mapper) {
         this.repository = repository;
+        this.userRepository = userRepository;
+        this.passwordService = passwordService;
         this.mapper = mapper;
     }
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
+        seedUsers();
+
         if (repository.count() > 0) {
             log.info("Database already has {} items — skipping seed", repository.count());
             return;
@@ -171,5 +183,31 @@ public class SeedLoader implements ApplicationRunner {
         }
         String s = value.asString("").trim();
         return s.isEmpty() ? fallback : s;
+    }
+
+    private void seedUsers() {
+        if (userRepository.count() > 0) {
+            return;
+        }
+
+        String adminSalt = passwordService.generateSalt();
+        User admin = new User();
+        admin.setUsername("admin");
+        admin.setEmail("admin@campus.edu");
+        admin.setSalt(adminSalt);
+        admin.setPasswordHash(passwordService.hashPassword("admin123", adminSalt));
+        admin.setRole(Role.ADMIN);
+        userRepository.save(admin);
+
+        String studentSalt = passwordService.generateSalt();
+        User student = new User();
+        student.setUsername("student");
+        student.setEmail("student@campus.edu");
+        student.setSalt(studentSalt);
+        student.setPasswordHash(passwordService.hashPassword("student123", studentSalt));
+        student.setRole(Role.USER);
+        userRepository.save(student);
+
+        log.info("Seeded initial users: admin@campus.edu (admin123) and student@campus.edu (student123)");
     }
 }

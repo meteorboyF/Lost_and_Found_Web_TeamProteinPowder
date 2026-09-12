@@ -312,6 +312,161 @@
   };
 
   /* =====================================================================
+     Authentication & Session Management
+     ===================================================================== */
+
+  var authUser = null;
+
+  function syncAuthNav() {
+    var containers = document.querySelectorAll('[data-auth-nav]');
+    if (!containers.length) return;
+
+    var currentPath = window.location.pathname + window.location.search;
+    var redirectParam = encodeURIComponent(currentPath);
+
+    containers.forEach(function (container) {
+      if (authUser) {
+        var initial = (authUser.username || 'U').charAt(0).toUpperCase();
+        var isAdmin = authUser.role === 'ADMIN';
+        container.innerHTML =
+          '<div class="relative" data-user-menu>' +
+            '<button type="button" data-user-menu-btn aria-haspopup="true" aria-expanded="false" ' +
+                    'class="flex items-center gap-2 rounded-xl border border-line bg-surface px-2.5 py-1.5 text-xs font-semibold text-heading transition hover:bg-sunken shadow-xs">' +
+              '<span class="grid h-6 w-6 place-items-center rounded-full bg-brand-soft text-[0.7rem] font-bold text-brand-text">' +
+                escapeHtml(initial) +
+              '</span>' +
+              '<span class="hidden sm:inline max-w-[90px] truncate">' + escapeHtml(authUser.username) + '</span>' +
+              (isAdmin ? '<span class="rounded bg-brand px-1 py-0.5 text-[0.625rem] font-bold text-white">Admin</span>' : '') +
+              '<svg class="icon h-3 w-3 text-faint" aria-hidden="true"><use href="/assets/icons.svg#i-chevron-down"></use></svg>' +
+            '</button>' +
+            '<div data-user-menu-panel hidden ' +
+                 'class="absolute right-0 top-full z-50 mt-2 w-52 overflow-hidden rounded-xl border border-line bg-surface p-1.5 shadow-[var(--shadow-pop)]">' +
+              '<div class="border-b border-line px-3 py-2 text-xs">' +
+                '<p class="font-bold text-heading truncate">' + escapeHtml(authUser.username) + '</p>' +
+                '<p class="text-faint truncate">' + escapeHtml(authUser.email) + '</p>' +
+              '</div>' +
+              '<a href="/dashboard.html" class="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-body transition hover:bg-sunken hover:text-heading">' +
+                '<svg class="icon h-4 w-4 text-faint" aria-hidden="true"><use href="/assets/icons.svg#i-pin"></use></svg>' +
+                'My items' +
+              '</a>' +
+              (isAdmin ?
+                '<a href="/admin.html" class="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-body transition hover:bg-sunken hover:text-heading">' +
+                  '<svg class="icon h-4 w-4 text-brand" aria-hidden="true"><use href="/assets/icons.svg#i-lock"></use></svg>' +
+                  'Moderation' +
+                '</a>' : '') +
+              '<button type="button" data-logout-btn class="w-full flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-lost transition hover:bg-lost/10">' +
+                '<svg class="icon h-4 w-4 text-lost" aria-hidden="true"><use href="/assets/icons.svg#i-close"></use></svg>' +
+                'Sign out' +
+              '</button>' +
+            '</div>' +
+          '</div>';
+
+        var menuBtn = container.querySelector('[data-user-menu-btn]');
+        var panel = container.querySelector('[data-user-menu-panel]');
+        var logoutBtn = container.querySelector('[data-logout-btn]');
+
+        if (menuBtn && panel) {
+          menuBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var open = panel.hidden;
+            panel.hidden = !open;
+            menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+          });
+
+          document.addEventListener('click', function (e) {
+            if (!container.contains(e.target)) {
+              panel.hidden = true;
+              menuBtn.setAttribute('aria-expanded', 'false');
+            }
+          });
+        }
+
+        if (logoutBtn) {
+          logoutBtn.addEventListener('click', function () {
+            LF.auth.logout();
+          });
+        }
+      } else {
+        container.innerHTML =
+          '<div class="flex items-center gap-1.5">' +
+            '<a href="/login.html?redirect=' + redirectParam + '" ' +
+               'class="rounded-lg px-3 py-1.5 text-xs sm:text-sm font-medium text-heading transition hover:bg-sunken">' +
+              'Sign In' +
+            '</a>' +
+            '<a href="/login.html?tab=register&redirect=' + redirectParam + '" ' +
+               'class="hidden sm:inline-flex rounded-lg border border-line bg-surface px-3 py-1.5 text-xs sm:text-sm font-medium text-heading shadow-xs transition hover:bg-sunken">' +
+              'Register' +
+            '</a>' +
+          '</div>';
+      }
+    });
+  }
+
+  LF.auth = {
+    getUser: function () { return authUser; },
+    isLoggedIn: function () { return !!authUser; },
+    isAdmin: function () { return authUser && authUser.role === 'ADMIN'; },
+
+    me: function () {
+      return LF.api.get('/api/auth/me')
+        .then(function (user) {
+          authUser = user;
+          LF.mine.remember(user.username, user.email);
+          syncAuthNav();
+          document.dispatchEvent(new CustomEvent('lf:auth-change', { detail: { user: user } }));
+          return user;
+        })
+        .catch(function () {
+          authUser = null;
+          syncAuthNav();
+          document.dispatchEvent(new CustomEvent('lf:auth-change', { detail: { user: null } }));
+          return null;
+        });
+    },
+
+    login: function (identifier, password) {
+      return LF.api.post('/api/auth/login', { identifier: identifier, password: password })
+        .then(function (user) {
+          authUser = user;
+          LF.mine.remember(user.username, user.email);
+          syncAuthNav();
+          document.dispatchEvent(new CustomEvent('lf:auth-change', { detail: { user: user } }));
+          return user;
+        });
+    },
+
+    register: function (username, email, password) {
+      return LF.api.post('/api/auth/register', { username: username, email: email, password: password })
+        .then(function (user) {
+          authUser = user;
+          LF.mine.remember(user.username, user.email);
+          syncAuthNav();
+          document.dispatchEvent(new CustomEvent('lf:auth-change', { detail: { user: user } }));
+          return user;
+        });
+    },
+
+    logout: function () {
+      return LF.api.post('/api/auth/logout', {})
+        .catch(function () {})
+        .then(function () {
+          authUser = null;
+          syncAuthNav();
+          document.dispatchEvent(new CustomEvent('lf:auth-change', { detail: { user: null } }));
+          LF.toast.info('You have been signed out');
+          if (window.location.pathname.indexOf('admin') !== -1) {
+            window.location.href = '/';
+          }
+        });
+    },
+
+    init: function () {
+      syncAuthNav();
+      LF.auth.me();
+    }
+  };
+
+  /* =====================================================================
      Small shared helpers
      ===================================================================== */
 
@@ -364,6 +519,7 @@
   function boot() {
     initTheme();
     initNav();
+    LF.auth.init();
     document.dispatchEvent(new CustomEvent('lf:ready'));
   }
 

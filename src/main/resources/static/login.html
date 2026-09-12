@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Account Sign In &amp; Register — Lost &amp; Found</title>
+<meta name="description" content="Sign in or create an account on the Campus Lost & Found registry.">
+
+<script>
+  (function () {
+    try {
+      var t = localStorage.getItem('lf.theme');
+      if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    } catch (e) {}
+  })();
+</script>
+
+<link rel="preload" href="/assets/fonts/inter-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/inter-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/css/app.css">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+</head>
+
+<body class="min-h-screen flex flex-col bg-page">
+
+<header class="sticky top-0 z-40 border-b border-line bg-page/80 backdrop-blur-xl">
+  <div class="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6 lg:px-8">
+    <a href="/" class="flex items-center gap-2.5 font-bold tracking-tight text-heading">
+      <span class="grid h-9 w-9 place-items-center rounded-xl bg-brand text-white shadow-[var(--shadow-brand)]">
+        <svg class="icon h-5 w-5" aria-hidden="true"><use href="/assets/icons.svg#i-pin"></use></svg>
+      </span>
+      <span class="text-[1.0625rem]">Lost &amp; Found</span>
+    </a>
+
+    <nav id="primary-nav" aria-label="Primary"
+         class="fixed inset-x-0 top-16 z-30 flex-col gap-1 border-b border-line bg-page p-4 shadow-lg
+                data-[open=false]:hidden lg:static lg:ml-4 lg:flex lg:flex-row lg:border-0 lg:bg-transparent
+                lg:p-0 lg:shadow-none"
+         data-open="false">
+      <a href="/browse.html" class="rounded-lg px-3 py-2.5 text-sm font-medium text-body transition hover:bg-sunken hover:text-heading lg:py-2">Browse</a>
+      <a href="/report.html?kind=lost" class="rounded-lg px-3 py-2.5 text-sm font-medium text-body transition hover:bg-sunken hover:text-heading lg:py-2">Report lost</a>
+      <a href="/report.html?kind=found" class="rounded-lg px-3 py-2.5 text-sm font-medium text-body transition hover:bg-sunken hover:text-heading lg:py-2">Report found</a>
+      <a href="/map.html" class="rounded-lg px-3 py-2.5 text-sm font-medium text-body transition hover:bg-sunken hover:text-heading lg:py-2">Campus map</a>
+      <a href="/gallery.html" class="rounded-lg px-3 py-2.5 text-sm font-medium text-body transition hover:bg-sunken hover:text-heading lg:py-2">Reunions</a>
+      <a href="/dashboard.html" class="rounded-lg px-3 py-2.5 text-sm font-medium text-body transition hover:bg-sunken hover:text-heading lg:py-2">My items</a>
+    </nav>
+
+    <div class="ml-auto flex items-center gap-2">
+      <div data-auth-nav class="flex items-center"></div>
+
+      <button type="button" data-theme-toggle
+              class="grid h-9 w-9 place-items-center rounded-lg text-muted transition hover:bg-sunken hover:text-heading"
+              aria-label="Switch to dark theme" aria-pressed="false">
+        <svg class="icon h-[1.15rem] w-[1.15rem]" aria-hidden="true" data-theme-icon="light"><use href="/assets/icons.svg#i-sun"></use></svg>
+        <svg class="icon h-[1.15rem] w-[1.15rem]" aria-hidden="true" data-theme-icon="dark" hidden><use href="/assets/icons.svg#i-moon"></use></svg>
+      </button>
+
+      <a href="/report.html" class="btn btn-primary btn-sm hidden sm:inline-flex">
+        <svg class="icon h-4 w-4" aria-hidden="true"><use href="/assets/icons.svg#i-plus"></use></svg>
+        Post an item
+      </a>
+
+      <button type="button" data-nav-toggle aria-controls="primary-nav" aria-expanded="false"
+              aria-label="Open navigation"
+              class="grid h-9 w-9 place-items-center rounded-lg text-muted transition hover:bg-sunken hover:text-heading lg:hidden">
+        <svg class="icon h-[1.15rem] w-[1.15rem]" aria-hidden="true"><use href="/assets/icons.svg#i-menu"></use></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+  <div class="w-full max-w-md">
+    <div class="card p-6 sm:p-8 shadow-[var(--shadow-card)]">
+
+      <div class="flex items-center justify-center gap-3 mb-6">
+        <span class="grid h-10 w-10 place-items-center rounded-xl bg-brand text-white shadow-[var(--shadow-brand)]">
+          <svg class="icon h-5 w-5" aria-hidden="true"><use href="/assets/icons.svg#i-user"></use></svg>
+        </span>
+        <div>
+          <h1 class="text-xl font-bold text-heading">Campus Account</h1>
+          <p class="text-xs text-muted">Lost &amp; Found Registry</p>
+        </div>
+      </div>
+
+      <!-- Tab Buttons -->
+      <div class="grid grid-cols-2 rounded-xl bg-sunken p-1 text-sm font-medium mb-6">
+        <button type="button" id="tab-login-btn"
+                class="rounded-lg py-2 transition text-center font-semibold bg-surface text-heading shadow-sm"
+                onclick="switchAuthTab('login')">Sign In</button>
+        <button type="button" id="tab-register-btn"
+                class="rounded-lg py-2 transition text-center text-muted hover:text-heading"
+                onclick="switchAuthTab('register')">Register</button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="auth-login-form" class="space-y-4" novalidate>
+        <div>
+          <label for="login-id" class="label">Email or Username</label>
+          <input id="login-id" name="identifier" type="text" autocomplete="username" required
+                 class="field mt-1.5" placeholder="student@campus.edu or student">
+          <p class="min-h-5 text-xs text-lost mt-1" id="login-id-error"></p>
+        </div>
+
+        <div>
+          <label for="login-password" class="label">Password</label>
+          <input id="login-password" name="password" type="password" autocomplete="current-password" required
+                 class="field mt-1.5" placeholder="••••••••">
+          <p class="min-h-5 text-xs text-lost mt-1" id="login-password-error"></p>
+        </div>
+
+        <div id="login-general-error" class="hidden rounded-lg bg-lost/10 border border-lost/20 p-3 text-sm text-lost"></div>
+
+        <button type="submit" id="login-submit-btn" class="btn btn-primary w-full py-2.5">
+          Sign In
+        </button>
+
+        <div class="mt-4 rounded-xl bg-sunken/60 p-3.5 text-xs text-muted space-y-1">
+          <p class="font-semibold text-heading">Demo accounts available:</p>
+          <p>• Student: <span class="font-mono text-body">student@campus.edu</span> / <span class="font-mono text-body">student123</span></p>
+          <p>• Admin: <span class="font-mono text-body">admin@campus.edu</span> / <span class="font-mono text-body">admin123</span></p>
+        </div>
+      </form>
+
+      <!-- Register Form -->
+      <form id="auth-register-form" class="space-y-4 hidden" novalidate>
+        <div>
+          <label for="reg-username" class="label">Username</label>
+          <input id="reg-username" name="username" type="text" autocomplete="username" required maxlength="40"
+                 class="field mt-1.5" placeholder="e.g. john_doe">
+          <p class="min-h-5 text-xs text-lost mt-1" id="reg-username-error"></p>
+        </div>
+
+        <div>
+          <label for="reg-email" class="label">Campus Email</label>
+          <input id="reg-email" name="email" type="email" autocomplete="email" required maxlength="160"
+                 class="field mt-1.5" placeholder="student@campus.edu">
+          <p class="min-h-5 text-xs text-lost mt-1" id="reg-email-error"></p>
+        </div>
+
+        <div>
+          <label for="reg-password" class="label">Password</label>
+          <input id="reg-password" name="password" type="password" autocomplete="new-password" required minlength="6"
+                 class="field mt-1.5" placeholder="At least 6 characters">
+          <p class="min-h-5 text-xs text-lost mt-1" id="reg-password-error"></p>
+        </div>
+
+        <div id="reg-general-error" class="hidden rounded-lg bg-lost/10 border border-lost/20 p-3 text-sm text-lost"></div>
+
+        <button type="submit" id="reg-submit-btn" class="btn btn-primary w-full py-2.5">
+          Create Account
+        </button>
+      </form>
+
+    </div>
+  </div>
+</main>
+
+<footer class="mt-auto border-t border-line bg-surface">
+  <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 text-center text-xs text-muted">
+    Campus Lost &amp; Found Registry &bull; Team Protein Powder
+  </div>
+</footer>
+
+<div class="pointer-events-none fixed bottom-4 right-4 z-50 flex w-[min(24rem,calc(100vw-2rem))] flex-col-reverse gap-2"
+     data-toast-region role="status" aria-live="polite"></div>
+
+<script src="/js/app.js"></script>
+<script>
+  function switchAuthTab(tab) {
+    var isLogin = tab === 'login';
+    document.getElementById('tab-login-btn').className = isLogin
+      ? 'rounded-lg py-2 transition text-center font-semibold bg-surface text-heading shadow-sm'
+      : 'rounded-lg py-2 transition text-center text-muted hover:text-heading';
+    document.getElementById('tab-register-btn').className = !isLogin
+      ? 'rounded-lg py-2 transition text-center font-semibold bg-surface text-heading shadow-sm'
+      : 'rounded-lg py-2 transition text-center text-muted hover:text-heading';
+
+    document.getElementById('auth-login-form').classList.toggle('hidden', !isLogin);
+    document.getElementById('auth-register-form').classList.toggle('hidden', isLogin);
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var params = new URLSearchParams(window.location.search);
+    if (params.get('tab') === 'register') {
+      switchAuthTab('register');
+    }
+
+    var redirectUrl = params.get('redirect') || '/';
+
+    // Login Form Submit
+    var loginForm = document.getElementById('auth-login-form');
+    loginForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var id = loginForm.elements.identifier.value.trim();
+      var pwd = loginForm.elements.password.value;
+      var errBox = document.getElementById('login-general-error');
+      errBox.classList.add('hidden');
+      errBox.textContent = '';
+
+      var idErr = document.getElementById('login-id-error');
+      var pwdErr = document.getElementById('login-password-error');
+      idErr.textContent = id ? '' : 'Please enter your email or username';
+      pwdErr.textContent = pwd ? '' : 'Please enter your password';
+      if (!id || !pwd) return;
+
+      var btn = document.getElementById('login-submit-btn');
+      btn.disabled = true;
+      btn.textContent = 'Signing in...';
+
+      window.LF.auth.login(id, pwd)
+        .then(function (user) {
+          window.LF.toast.success('Welcome back, ' + user.username + '!');
+          setTimeout(function () {
+            window.location.href = redirectUrl;
+          }, 400);
+        })
+        .catch(function (err) {
+          errBox.textContent = err.message || 'Login failed';
+          errBox.classList.remove('hidden');
+        })
+        .finally(function () {
+          btn.disabled = false;
+          btn.textContent = 'Sign In';
+        });
+    });
+
+    // Register Form Submit
+    var regForm = document.getElementById('auth-register-form');
+    regForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var username = regForm.elements.username.value.trim();
+      var email = regForm.elements.email.value.trim();
+      var pwd = regForm.elements.password.value;
+      var errBox = document.getElementById('reg-general-error');
+      errBox.classList.add('hidden');
+      errBox.textContent = '';
+
+      var uErr = document.getElementById('reg-username-error');
+      var eErr = document.getElementById('reg-email-error');
+      var pErr = document.getElementById('reg-password-error');
+      uErr.textContent = username ? '' : 'Username is required';
+      eErr.textContent = email ? '' : 'Campus email is required';
+      pErr.textContent = (pwd && pwd.length >= 6) ? '' : 'Password must be at least 6 characters';
+      if (!username || !email || !pwd || pwd.length < 6) return;
+
+      var btn = document.getElementById('reg-submit-btn');
+      btn.disabled = true;
+      btn.textContent = 'Creating account...';
+
+      window.LF.auth.register(username, email, pwd)
+        .then(function (user) {
+          window.LF.toast.success('Account created! Welcome, ' + user.username);
+          setTimeout(function () {
+            window.location.href = redirectUrl;
+          }, 400);
+        })
+        .catch(function (err) {
+          errBox.textContent = err.message || 'Registration failed';
+          errBox.classList.remove('hidden');
+        })
+        .finally(function () {
+          btn.disabled = false;
+          btn.textContent = 'Create Account';
+        });
+    });
+  });
+</script>
+</body>
+</html>
