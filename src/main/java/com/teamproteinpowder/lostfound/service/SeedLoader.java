@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 /* Jackson 3 lives under tools.jackson, not com.fasterxml.jackson. */
@@ -36,6 +37,7 @@ import com.teamproteinpowder.lostfound.repo.UserRepository;
  * duplicates rows on restart.
  */
 @Component
+@Order(10)   // items first; AccountSeeder (20) links them to accounts
 public class SeedLoader implements ApplicationRunner {
 
     private static final Logger log = LoggerFactory.getLogger(SeedLoader.class);

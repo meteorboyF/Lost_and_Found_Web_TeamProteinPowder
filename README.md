@@ -13,7 +13,7 @@ Built by **Team Protein Powder**.
 | Layer     | Choice |
 |-----------|--------|
 | Backend   | Spring Boot 4.1 (Java 21), Spring MVC, Spring Data JPA, Bean Validation |
-| Database  | H2, file-backed — no external database to install |
+| Database  | MySQL 8 (H2 in-memory for the test suite only) |
 | Frontend  | Static HTML + vanilla JavaScript (ES2017), served by Spring Boot |
 | Styling   | Tailwind CSS v4, compiled with the Tailwind CLI |
 
@@ -90,15 +90,31 @@ npm run watch
 — it is checked in deliberately so a teammate with only a JDK can clone and run
 the project without installing Node.
 
-### Inspecting the database
+### The database
 
-The H2 console is enabled in development at <http://localhost:8080/h2-console>.
+The application uses **MySQL 8**. `./run.sh` takes care of it automatically:
+if `DB_URL` is not set, it starts a dockerised MySQL on port **3307** (your
+own MySQL on 3306 is never touched) with data persisted in the
+`lostfound-mysql-dev` volume.
 
-- **JDBC URL** — `jdbc:h2:file:./db/lostfound;AUTO_SERVER=TRUE`
-- **User** — `sa`, no password
+To use a native MySQL server instead, create the database and user once:
 
-The database file lives in `db/` and is gitignored, so every clone starts clean
-and reseeds itself.
+```bash
+sudo mysql -e "CREATE DATABASE IF NOT EXISTS lostfound CHARACTER SET utf8mb4;
+               CREATE USER IF NOT EXISTS 'lostfound'@'localhost' IDENTIFIED BY 'lostfound';
+               GRANT ALL PRIVILEGES ON lostfound.* TO 'lostfound'@'localhost';"
+```
+
+then point the app at it:
+
+```bash
+DB_URL="jdbc:mysql://127.0.0.1:3306/lostfound" ./run.sh
+```
+
+`DB_USERNAME` and `DB_PASSWORD` override the credentials (both default to
+`lostfound`). An empty database seeds itself on first boot. The test suite
+runs on an in-memory H2 in MySQL mode, so tests and CI need no database
+server at all.
 
 ---
 

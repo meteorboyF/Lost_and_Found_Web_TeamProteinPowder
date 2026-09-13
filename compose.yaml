@@ -1,11 +1,11 @@
-# One-command local or server deployment:
+# One-command deployment: application + MySQL.
 #
 #   docker compose up -d
 #
-# Data survives restarts through the two named volumes. Set a real moderation
-# key in the environment before exposing this anywhere:
+# Data survives restarts in the two app volumes and the database volume.
+# Override the secrets before exposing this anywhere:
 #
-#   APP_ADMIN_KEY=something-secret docker compose up -d
+#   APP_ADMIN_KEY=... DB_PASSWORD=... docker compose up -d
 services:
   app:
     build: .
@@ -14,11 +14,34 @@ services:
       - "8080:8080"
     environment:
       APP_ADMIN_KEY: ${APP_ADMIN_KEY:-campus-admin-2026}
+      DB_URL: jdbc:mysql://db:3306/lostfound?allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: lostfound
+      DB_PASSWORD: ${DB_PASSWORD:-lostfound}
     volumes:
       - lostfound-db:/app/db
       - lostfound-uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: mysql:8
+    environment:
+      MYSQL_DATABASE: lostfound
+      MYSQL_USER: lostfound
+      MYSQL_PASSWORD: ${DB_PASSWORD:-lostfound}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-lostfound-root}
+    volumes:
+      - lostfound-mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-ulostfound", "-p${DB_PASSWORD:-lostfound}", "--silent"]
+      interval: 5s
+      timeout: 4s
+      retries: 20
     restart: unless-stopped
 
 volumes:
   lostfound-db:
   lostfound-uploads:
+  lostfound-mysql:

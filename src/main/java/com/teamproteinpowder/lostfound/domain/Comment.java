@@ -43,6 +43,18 @@ public class Comment {
     @Column(length = 160)
     private String authorEmail;
 
+    /**
+     * The account that created this, when one was signed in.
+     *
+     * Nullable on purpose: posts predating accounts, and guest submissions,
+     * still have to be representable. The author_email column stays as the
+     * contact of record so a guest post is not anonymous.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
+
     @Column(nullable = false, length = 1000)
     private String body;
 
@@ -87,4 +99,12 @@ public class Comment {
 
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 }

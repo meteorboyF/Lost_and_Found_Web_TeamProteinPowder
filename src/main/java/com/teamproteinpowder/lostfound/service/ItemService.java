@@ -16,6 +16,7 @@ import com.teamproteinpowder.lostfound.domain.Category;
 import com.teamproteinpowder.lostfound.domain.Item;
 import com.teamproteinpowder.lostfound.domain.ItemKind;
 import com.teamproteinpowder.lostfound.domain.ItemStatus;
+import com.teamproteinpowder.lostfound.domain.User;
 import com.teamproteinpowder.lostfound.repo.ItemRepository;
 import com.teamproteinpowder.lostfound.web.dto.ItemRequest;
 
@@ -70,6 +71,13 @@ public class ItemService {
 
         return repository.search(kind, status, category, q,
                 PageRequest.of(safePage, safeSize, order));
+    }
+
+    /** Record which account posted an item, once it is known. */
+    @Transactional
+    public Item attachOwner(Item item, User user) {
+        item.setUser(user);
+        return repository.save(item);
     }
 
     @Transactional(readOnly = true)

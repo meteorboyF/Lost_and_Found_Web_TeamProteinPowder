@@ -23,6 +23,7 @@ import com.teamproteinpowder.lostfound.domain.Category;
 import com.teamproteinpowder.lostfound.domain.Item;
 import com.teamproteinpowder.lostfound.domain.ItemKind;
 import com.teamproteinpowder.lostfound.domain.ItemStatus;
+import com.teamproteinpowder.lostfound.service.CurrentUser;
 import com.teamproteinpowder.lostfound.service.ItemService;
 import com.teamproteinpowder.lostfound.service.MatchService;
 import com.teamproteinpowder.lostfound.service.StorageService;
@@ -31,6 +32,7 @@ import com.teamproteinpowder.lostfound.web.dto.ItemResponse;
 import com.teamproteinpowder.lostfound.web.dto.MatchResponse;
 import com.teamproteinpowder.lostfound.web.dto.PageResponse;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 @RestController
@@ -40,11 +42,14 @@ public class ItemController {
     private final ItemService items;
     private final StorageService storage;
     private final MatchService matches;
+    private final CurrentUser currentUser;
 
-    public ItemController(ItemService items, StorageService storage, MatchService matches) {
+    public ItemController(ItemService items, StorageService storage, MatchService matches,
+                          CurrentUser currentUser) {
         this.items = items;
         this.storage = storage;
         this.matches = matches;
+        this.currentUser = currentUser;
     }
 
     /** Browse and search. Every filter is optional. */
@@ -80,10 +85,14 @@ public class ItemController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ItemResponse> create(
             @RequestPart("item") @Valid @Validated ItemRequest request,
-            @RequestPart(value = "photo", required = false) MultipartFile photo) {
+            @RequestPart(value = "photo", required = false) MultipartFile photo,
+            HttpServletRequest httpRequest) {
 
         request.setPhotoUrl(storage.store(photo));
         Item saved = items.create(request);
+        /* Link the post to its author when one is signed in; a guest post
+           simply keeps its email and stays unlinked. */
+        currentUser.from(httpRequest).ifPresent(user -> items.attachOwner(saved, user));
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ItemResponse.from(saved));

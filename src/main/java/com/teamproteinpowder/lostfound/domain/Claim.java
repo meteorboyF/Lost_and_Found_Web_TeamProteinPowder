@@ -59,6 +59,18 @@ public class Claim {
     private String claimantEmail;
 
     /**
+     * The account that created this, when one was signed in.
+     *
+     * Nullable on purpose: posts predating accounts, and guest submissions,
+     * still have to be representable. The claimant_email column stays as the
+     * contact of record so a guest post is not anonymous.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
+
+    /**
      * What only the real owner would know. Shown to the poster so they can
      * judge the claim — it is the whole point of the flow.
      */
@@ -128,4 +140,12 @@ public class Claim {
 
     public Instant getResolvedAt() { return resolvedAt; }
     public void setResolvedAt(Instant resolvedAt) { this.resolvedAt = resolvedAt; }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 }

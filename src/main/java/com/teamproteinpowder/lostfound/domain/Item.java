@@ -9,6 +9,9 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.PrePersist;
@@ -81,6 +84,18 @@ public class Item {
 
     @Column(nullable = false, length = 160)
     private String reporterEmail;
+
+    /**
+     * The account that created this, when one was signed in.
+     *
+     * Nullable on purpose: posts predating accounts, and guest submissions,
+     * still have to be representable. The reporter_email column stays as the
+     * contact of record so a guest post is not anonymous.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
 
     @Column(nullable = false)
     private Instant createdAt;
@@ -241,5 +256,13 @@ public class Item {
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }
