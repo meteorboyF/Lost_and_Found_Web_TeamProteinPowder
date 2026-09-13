@@ -57,18 +57,17 @@ HEAD = """<!doctype html>
       <span class="text-[1.0625rem]">Lost &amp; Found</span>
     </a>
 
-    <nav id="primary-nav" aria-label="Primary"
-         class="fixed inset-x-0 top-16 z-30 flex-col gap-1 border-b border-line bg-page p-4 shadow-lg
-                data-[open=false]:hidden lg:static lg:ml-4 lg:flex lg:flex-row lg:border-0 lg:bg-transparent
-                lg:p-0 lg:shadow-none"
-         data-open="false">
-      <a href="/browse.html"{nav_browse} class="rounded-lg px-3 py-2.5 text-sm font-medium text-body transition hover:bg-sunken hover:text-heading lg:py-2 aria-[current=page]:bg-brand-soft aria-[current=page]:text-brand-text aria-[current=page]:font-semibold">Browse</a>
-      <a href="/report.html?kind=lost"{nav_lost} class="rounded-lg px-3 py-2.5 text-sm font-medium text-body transition hover:bg-sunken hover:text-heading lg:py-2 aria-[current=page]:bg-brand-soft aria-[current=page]:text-brand-text aria-[current=page]:font-semibold">Report lost</a>
-      <a href="/report.html?kind=found"{nav_found} class="rounded-lg px-3 py-2.5 text-sm font-medium text-body transition hover:bg-sunken hover:text-heading lg:py-2 aria-[current=page]:bg-brand-soft aria-[current=page]:text-brand-text aria-[current=page]:font-semibold">Report found</a>
-      <a href="/dashboard.html"{nav_dash} class="rounded-lg px-3 py-2.5 text-sm font-medium text-body transition hover:bg-sunken hover:text-heading lg:py-2 aria-[current=page]:bg-brand-soft aria-[current=page]:text-brand-text aria-[current=page]:font-semibold">My items</a>
+    <nav id="primary-nav" aria-label="Primary" data-open="false">
+      <a href="/browse.html"{nav_browse}>Browse</a>
+      <a href="/report.html"{nav_report}>Post an item</a>
+      <a href="/dashboard.html"{nav_dash}>My items</a>
+      <a href="/map.html"{nav_map}>Campus map</a>
+      <a href="/gallery.html"{nav_gallery}>Reunions</a>
     </nav>
 
     <div class="ml-auto flex items-center gap-2">
+      <div data-auth-nav class="flex items-center"></div>
+
       <span class="relative" data-alerts>
         <button type="button" data-alerts-toggle aria-expanded="false" aria-haspopup="true"
                 aria-controls="alerts-panel" aria-label="Notifications" hidden
@@ -88,14 +87,9 @@ HEAD = """<!doctype html>
         <svg class="icon h-[1.15rem] w-[1.15rem]" aria-hidden="true" data-theme-icon="dark" hidden><use href="/assets/icons.svg#i-moon"></use></svg>
       </button>
 
-      <a href="/report.html" class="btn btn-primary btn-sm hidden sm:inline-flex">
-        <svg class="icon h-4 w-4" aria-hidden="true"><use href="/assets/icons.svg#i-plus"></use></svg>
-        Post an item
-      </a>
-
       <button type="button" data-nav-toggle aria-controls="primary-nav" aria-expanded="false"
               aria-label="Open navigation"
-              class="grid h-9 w-9 place-items-center rounded-lg text-muted transition hover:bg-sunken hover:text-heading lg:hidden">
+              class="grid h-9 w-9 place-items-center rounded-lg text-muted transition hover:bg-sunken hover:text-heading">
         <svg class="icon h-[1.15rem] w-[1.15rem]" aria-hidden="true"><use href="/assets/icons.svg#i-menu"></use></svg>
       </button>
     </div>
@@ -146,7 +140,7 @@ CURRENT = ' aria-current="page"'
 
 
 def page(filename, title, description, body, scripts, active=None):
-    nav = {k: "" for k in ("nav_browse", "nav_lost", "nav_found", "nav_dash")}
+    nav = {k: "" for k in ("nav_browse", "nav_report", "nav_dash", "nav_map", "nav_gallery")}
     if active:
         nav[active] = CURRENT
     html = HEAD.format(title=title, description=description, **nav) + body + FOOT.format(scripts=scripts)
@@ -740,6 +734,9 @@ ADMIN_BODY = """
         <button role="tab" type="button" data-tab="comments" aria-selected="false"
                 class="-mb-px whitespace-nowrap border-b-2 border-transparent px-4 py-3 text-sm font-medium text-muted transition hover:text-heading aria-[selected=true]:border-brand aria-[selected=true]:font-semibold aria-[selected=true]:text-brand">
           Comments <span class="ml-1 font-mono text-xs text-faint" data-admin-count="comments">0</span></button>
+        <button role="tab" type="button" data-tab="students" aria-selected="false"
+                class="-mb-px whitespace-nowrap border-b-2 border-transparent px-4 py-3 text-sm font-medium text-muted transition hover:text-heading aria-[selected=true]:border-brand aria-[selected=true]:font-semibold aria-[selected=true]:text-brand">
+          Student Approvals <span class="ml-1 rounded-full bg-brand-soft text-brand-text px-1.5 py-0.5 text-xs font-bold font-mono" data-admin-count="students">0</span></button>
       </div>
     </div>
 
@@ -760,7 +757,7 @@ page("browse.html", "Browse the board — Lost &amp; Found",
 
 page("report.html", "Post an item — Lost &amp; Found",
      "Report something you lost or hand in something you found.",
-     REPORT_BODY, '<script src="/js/report.js"></script>')
+     REPORT_BODY, '<script src="/js/report.js"></script>', active="nav_report")
 
 page("item.html", "Item — Lost &amp; Found",
      "Details for one item on the Lost and Found board.",
@@ -776,11 +773,11 @@ page("dashboard.html", "My items — Lost &amp; Found",
 
 page("gallery.html", "Reunions — Lost &amp; Found",
      "Items that made it back to their owners.",
-     GALLERY_BODY, '<script src="/js/gallery.js"></script>')
+     GALLERY_BODY, '<script src="/js/gallery.js"></script>', active="nav_gallery")
 
 page("map.html", "Campus map — Lost &amp; Found",
      "Where items are lost and found across campus.",
-     MAP_BODY, '<script src="/js/map.js"></script>')
+     MAP_BODY, '<script src="/js/map.js"></script>', active="nav_map")
 
 page("admin.html", "Moderation — Lost &amp; Found",
      "Moderation tools for the campus Lost and Found board.",
