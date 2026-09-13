@@ -18,6 +18,8 @@ public class CommentRequest {
     @Size(max = 1000, message = "Keep the comment under 1000 characters")
     private String body;
 
+    private boolean privateMessage = false;
+
     public String getAuthorName() { return authorName; }
     public void setAuthorName(String authorName) { this.authorName = authorName; }
 
@@ -26,4 +28,7 @@ public class CommentRequest {
 
     public String getBody() { return body; }
     public void setBody(String body) { this.body = body; }
+
+    public boolean isPrivateMessage() { return privateMessage; }
+    public void setPrivateMessage(boolean privateMessage) { this.privateMessage = privateMessage; }
 }

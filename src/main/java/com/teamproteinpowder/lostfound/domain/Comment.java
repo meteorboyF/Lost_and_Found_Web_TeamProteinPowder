@@ -50,6 +50,10 @@ public class Comment {
     @Column(nullable = false)
     private boolean hidden = false;
 
+    /** When true, only visible to post owner, comment author, and moderators. */
+    @Column(nullable = false)
+    private boolean privateMessage = false;
+
     @Column(nullable = false)
     private Instant createdAt;
 
@@ -77,6 +81,9 @@ public class Comment {
 
     public boolean isHidden() { return hidden; }
     public void setHidden(boolean hidden) { this.hidden = hidden; }
+
+    public boolean isPrivateMessage() { return privateMessage; }
+    public void setPrivateMessage(boolean privateMessage) { this.privateMessage = privateMessage; }
 
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }

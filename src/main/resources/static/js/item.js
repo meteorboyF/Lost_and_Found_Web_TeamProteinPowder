@@ -120,13 +120,17 @@
      ------------------------------------------------------------------ */
 
   function loadComments(item) {
+    var user = LF.auth && LF.auth.getUser();
+    var defaultName = (user && user.username) || LF.mine.all().name || '';
+    var defaultEmail = (user && user.email) || LF.mine.all().email || '';
+
     var section = document.createElement('section');
     section.className = 'mt-12 border-t border-line pt-8';
     section.innerHTML =
       '<h2 class="text-xl text-heading">Can anyone help?</h2>' +
       '<p class="mt-2 text-sm text-muted">' +
         'Seen this around, or know something that might narrow it down? Say so here. ' +
-        'This thread is public — to claim the item, use the button above instead.' +
+        'This thread is public, or you can send a private message with secret details directly to the post owner.' +
       '</p>' +
       '<div class="mt-5" data-comments></div>' +
       '<form class="mt-5 card p-4" data-comment-form novalidate>' +
@@ -134,11 +138,27 @@
         '<textarea id="comment-body" name="body" rows="3" maxlength="1000" class="field mt-2 resize-y" ' +
           'placeholder="I think I saw one like this near the sports hall on Tuesday."></textarea>' +
         '<p class="min-h-5 text-sm text-lost" data-error="body"></p>' +
+
+        '<div class="rounded-xl border border-line bg-sunken/40 p-3 mb-4">' +
+          '<label class="flex items-start gap-2.5 cursor-pointer">' +
+            '<input type="checkbox" id="comment-private" name="privateMessage" class="mt-0.5 h-4 w-4 rounded border-line text-brand focus:ring-brand">' +
+            '<div class="text-xs leading-relaxed text-body">' +
+              '<span class="inline-flex items-center gap-1 font-semibold text-heading">' +
+                '<svg class="icon h-3.5 w-3.5 text-brand" aria-hidden="true"><use href="/assets/icons.svg#i-lock"></use></svg>' +
+                'Send as private message / secret information' +
+              '</span><br>' +
+              'Restricted privacy: only visible to the post owner, you, and moderators. Other users will not be able to see this.' +
+            '</div>' +
+          '</label>' +
+        '</div>' +
+
         '<div class="mt-2 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">' +
           '<div class="grid gap-1.5">' +
-            '<label for="comment-name" class="label">Your name</label>' +
+            '<label for="comment-name" class="label">Your name' +
+              (user ? ' <span class="text-xs font-normal text-muted">(signed in as ' + e(user.username) + ')</span>' : '') +
+            '</label>' +
             '<input id="comment-name" name="authorName" maxlength="80" class="field" value="' +
-              e(LF.mine.all().name) + '">' +
+              e(defaultName) + '">' +
             '<p class="min-h-5 text-sm text-lost" data-error="authorName"></p>' +
           '</div>' +
           '<button type="submit" class="btn btn-primary mb-5" data-comment-submit>Post comment</button>' +
@@ -158,15 +178,28 @@
         return;
       }
       list.innerHTML = '<ul class="grid gap-3">' + comments.map(function (c) {
+        var isPriv = !!c.privateMessage;
         return (
-          '<li class="card p-4">' +
-            '<div class="flex items-center gap-2.5">' +
-              '<span class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-soft text-xs font-semibold text-brand-text">' +
+          '<li class="card p-4 ' + (isPriv ? 'border-l-4 border-l-amber-500 bg-amber-500/[0.04]' : '') + '">' +
+            '<div class="flex flex-wrap items-center gap-2.5">' +
+              '<span class="grid h-8 w-8 shrink-0 place-items-center rounded-full ' +
+                (isPriv ? 'bg-amber-500/20 text-amber-700 dark:text-amber-400' : 'bg-brand-soft text-brand-text') +
+                ' text-xs font-semibold">' +
                 e(c.authorName.charAt(0).toUpperCase()) + '</span>' +
               '<span class="text-sm font-semibold text-heading">' + e(c.authorName) + '</span>' +
               '<span class="text-xs text-faint">' + e(LF.timeAgo(c.createdAt)) + '</span>' +
+              (isPriv ?
+                '<span class="inline-flex items-center gap-1 rounded-md bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 text-[0.7rem] font-bold text-amber-700 dark:text-amber-300">' +
+                  '<svg class="icon h-3 w-3" aria-hidden="true"><use href="/assets/icons.svg#i-lock"></use></svg>' +
+                  'Secret / Private Message' +
+                '</span>' : '') +
             '</div>' +
             '<p class="mt-2.5 whitespace-pre-line text-sm leading-relaxed text-body">' + e(c.body) + '</p>' +
+            (isPriv ?
+              '<p class="mt-2.5 text-[0.7rem] text-muted flex items-center gap-1">' +
+                '<svg class="icon h-3 w-3 text-amber-600 dark:text-amber-400" aria-hidden="true"><use href="/assets/icons.svg#i-info"></use></svg>' +
+                'Confidential: visible only to post owner, author, and moderators.' +
+              '</p>' : '') +
           '</li>'
         );
       }).join('') + '</ul>';
@@ -184,19 +217,25 @@
 
       var body = form.elements.body.value.trim();
       var name = form.elements.authorName.value.trim();
+      var isPrivate = form.elements.privateMessage ? form.elements.privateMessage.checked : false;
+
       form.querySelector('[data-error="body"]').textContent = body ? '' : 'Write something first';
       form.querySelector('[data-error="authorName"]').textContent = name ? '' : 'Tell us your name';
       if (!body || !name) return;
+
+      var currentUser = LF.auth && LF.auth.getUser();
+      var email = (currentUser && currentUser.email) || LF.mine.all().email || null;
 
       var submit = form.querySelector('[data-comment-submit]');
       submit.disabled = true;
 
       LF.api
         .post('/api/items/' + encodeURIComponent(item.reference) + '/comments',
-              { body: body, authorName: name, authorEmail: LF.mine.all().email || null })
+              { body: body, authorName: name, authorEmail: email, privateMessage: isPrivate })
         .then(function () {
           LF.mine.remember(name, null);
           form.elements.body.value = '';
+          if (form.elements.privateMessage) form.elements.privateMessage.checked = false;
           return LF.api.get('/api/items/' + encodeURIComponent(item.reference) + '/comments');
         })
         .then(paint)
