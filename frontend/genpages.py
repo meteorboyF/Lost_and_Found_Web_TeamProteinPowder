@@ -57,14 +57,7 @@ HEAD = """<!doctype html>
       <span class="text-[1.0625rem]">Lost &amp; Found</span>
     </a>
 
-    <nav id="primary-nav" aria-label="Primary" data-open="false">
-      <a href="/browse.html"{nav_browse}>Browse</a>
-      <a href="/report.html"{nav_report}>Post an item</a>
-      <a href="/dashboard.html"{nav_dash}>My items</a>
-      <a href="/map.html"{nav_map}>Campus map</a>
-      <a href="/gallery.html"{nav_gallery}>Reunions</a>
-    </nav>
-
+{primary_nav}
     <div class="ml-auto flex items-center gap-2">
       <div data-auth-nav class="flex items-center"></div>
 
@@ -87,12 +80,7 @@ HEAD = """<!doctype html>
         <svg class="icon h-[1.15rem] w-[1.15rem]" aria-hidden="true" data-theme-icon="dark" hidden><use href="/assets/icons.svg#i-moon"></use></svg>
       </button>
 
-      <button type="button" data-nav-toggle aria-controls="primary-nav" aria-expanded="false"
-              aria-label="Open navigation"
-              class="grid h-9 w-9 place-items-center rounded-lg text-muted transition hover:bg-sunken hover:text-heading">
-        <svg class="icon h-[1.15rem] w-[1.15rem]" aria-hidden="true"><use href="/assets/icons.svg#i-menu"></use></svg>
-      </button>
-    </div>
+{nav_toggle}    </div>
   </div>
 </header>
 
@@ -136,14 +124,43 @@ FOOT = """</main>
 </html>
 """
 
+PRIMARY_NAV = """    <nav id="primary-nav" aria-label="Primary" data-open="false">
+      <a href="/browse.html"{nav_browse}>Browse</a>
+      <a href="/report.html"{nav_report}>Post an item</a>
+      <a href="/dashboard.html"{nav_dash}>My items</a>
+      <a href="/map.html"{nav_map}>Campus map</a>
+      <a href="/gallery.html"{nav_gallery}>Reunions</a>
+    </nav>
+"""
+
+NAV_TOGGLE = """      <button type="button" data-nav-toggle aria-controls="primary-nav" aria-expanded="false"
+              aria-label="Open navigation"
+              class="grid h-9 w-9 place-items-center rounded-lg text-muted transition hover:bg-sunken hover:text-heading">
+        <svg class="icon h-[1.15rem] w-[1.15rem]" aria-hidden="true"><use href="/assets/icons.svg#i-menu"></use></svg>
+      </button>
+"""
+
 CURRENT = ' aria-current="page"'
 
 
-def page(filename, title, description, body, scripts, active=None):
+def page(filename, title, description, body, scripts, active=None, public_nav=True):
+    """Render one page.
+
+    public_nav=False drops the site navigation — used by the moderation
+    workspace, which is a separate surface and should not offer the public
+    board's links. The mobile toggle is dropped with it: a hamburger whose
+    aria-controls target does not exist is a visible button that does nothing.
+    """
     nav = {k: "" for k in ("nav_browse", "nav_report", "nav_dash", "nav_map", "nav_gallery")}
     if active:
         nav[active] = CURRENT
-    html = HEAD.format(title=title, description=description, **nav) + body + FOOT.format(scripts=scripts)
+
+    chrome = {
+        "primary_nav": PRIMARY_NAV.format(**nav) if public_nav else "",
+        "nav_toggle": NAV_TOGGLE if public_nav else "",
+    }
+
+    html = HEAD.format(title=title, description=description, **chrome) + body + FOOT.format(scripts=scripts)
     (STATIC / filename).write_text(html, encoding="utf-8")
     print(f"wrote {filename} ({len(html):,} bytes)")
 
@@ -781,4 +798,4 @@ page("map.html", "Campus map — Lost &amp; Found",
 
 page("admin.html", "Moderation — Lost &amp; Found",
      "Moderation tools for the campus Lost and Found board.",
-     ADMIN_BODY, '<script src="/js/admin.js"></script>')
+     ADMIN_BODY, '<script src="/js/admin.js"></script>', public_nav=False)
