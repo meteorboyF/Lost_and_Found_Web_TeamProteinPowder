@@ -17,6 +17,7 @@ import com.teamproteinpowder.lostfound.domain.ApprovalStatus;
 import com.teamproteinpowder.lostfound.domain.Role;
 import com.teamproteinpowder.lostfound.domain.User;
 import com.teamproteinpowder.lostfound.repo.UserRepository;
+import com.teamproteinpowder.lostfound.service.LoginThrottle;
 import com.teamproteinpowder.lostfound.service.PasswordService;
 import com.teamproteinpowder.lostfound.web.dto.LoginRequest;
 import com.teamproteinpowder.lostfound.web.dto.RegisterRequest;
@@ -37,10 +38,24 @@ public class AuthController {
 
     private final UserRepository userRepository;
     private final PasswordService passwordService;
+    private final LoginThrottle throttle;
 
-    public AuthController(UserRepository userRepository, PasswordService passwordService) {
+    /**
+     * A real salted hash that no password matches, verified whenever the
+     * account does not exist. PBKDF2 at 65,536 iterations takes ~200 ms; without
+     * this, an unknown username answered in ~5 ms and response time alone
+     * revealed which usernames and emails are registered.
+     */
+    private final String dummySalt;
+    private final String dummyHash;
+
+    public AuthController(UserRepository userRepository, PasswordService passwordService,
+                          LoginThrottle throttle) {
         this.userRepository = userRepository;
         this.passwordService = passwordService;
+        this.throttle = throttle;
+        this.dummySalt = passwordService.generateSalt();
+        this.dummyHash = passwordService.hashPassword(java.util.UUID.randomUUID().toString(), dummySalt);
     }
 
     @PostMapping("/register")
@@ -85,18 +100,36 @@ public class AuthController {
     public ResponseEntity<UserResponse> login(@Valid @RequestBody LoginRequest request,
                                               HttpServletRequest httpRequest) {
         String identifier = request.getIdentifier().trim();
+        String ip = httpRequest.getRemoteAddr();
+
+        /* Before any lookup or hashing: a locked client gets nothing, and
+           cannot use this endpoint to burn CPU on PBKDF2 either. */
+        throttle.checkAllowed(identifier, ip);
+
         Optional<User> userOpt = identifier.contains("@")
                 ? userRepository.findByEmailIgnoreCase(identifier.toLowerCase())
                 : userRepository.findByUsernameIgnoreCase(identifier);
 
-        if (userOpt.isEmpty()) {
+        /* Always run exactly one PBKDF2 verification, real or dummy, so a
+           missing account and a wrong password take the same time and give
+           the same answer. */
+        boolean passwordOk;
+        if (userOpt.isPresent()) {
+            User candidate = userOpt.get();
+            passwordOk = passwordService.verifyPassword(request.getPassword(), candidate.getSalt(), candidate.getPasswordHash());
+        } else {
+            // Result deliberately ignored: this call exists only to spend the same time.
+            passwordService.verifyPassword(request.getPassword(), dummySalt, dummyHash);
+            passwordOk = false;
+        }
+
+        if (!passwordOk) {
+            throttle.recordFailure(identifier, ip);
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email/username or password");
         }
 
         User user = userOpt.get();
-        if (!passwordService.verifyPassword(request.getPassword(), user.getSalt(), user.getPasswordHash())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email/username or password");
-        }
+        throttle.recordSuccess(identifier);
 
         // Verification check: Non-admin users must be approved by admin
         if (user.getRole() != Role.ADMIN) {
