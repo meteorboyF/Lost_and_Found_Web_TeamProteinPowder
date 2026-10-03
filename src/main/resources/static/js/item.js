@@ -240,14 +240,23 @@
       }
       list.innerHTML = '<ul class="grid gap-3">' + comments.map(function (c) {
         var isPriv = !!c.privateMessage;
+        /* A guest picks their own display name, so a guest called "admin" must
+           never look like the real one. Verified accounts get a badge; guests
+           are labelled as guests, whatever name they typed. */
+        var author = c.authorName || 'Guest';
+        var identity = c.verified
+          ? '<span class="inline-flex items-center gap-1 rounded-md bg-found-soft px-1.5 py-0.5 text-[0.7rem] font-semibold text-found-text" title="Signed-in account">' +
+              '<svg class="icon h-3 w-3" aria-hidden="true"><use href="/assets/icons.svg#i-check"></use></svg>Verified</span>'
+          : '<span class="inline-flex items-center rounded-md border border-line-strong px-1.5 py-0.5 text-[0.7rem] font-semibold text-muted" title="Not signed in — this name was not checked">Guest</span>';
         return (
           '<li class="card p-4 ' + (isPriv ? 'border-l-4 border-l-amber-500 bg-amber-500/[0.04]' : '') + '">' +
             '<div class="flex flex-wrap items-center gap-2.5">' +
               '<span class="grid h-8 w-8 shrink-0 place-items-center rounded-full ' +
                 (isPriv ? 'bg-amber-500/20 text-amber-700 dark:text-amber-400' : 'bg-brand-soft text-brand-text') +
                 ' text-xs font-semibold">' +
-                e(c.authorName.charAt(0).toUpperCase()) + '</span>' +
-              '<span class="text-sm font-semibold text-heading">' + e(c.authorName) + '</span>' +
+                e(author.charAt(0).toUpperCase()) + '</span>' +
+              '<span class="text-sm font-semibold text-heading">' + e(author) + '</span>' +
+              identity +
               '<span class="text-xs text-faint">' + e(LF.timeAgo(c.createdAt)) + '</span>' +
               (isPriv ?
                 '<span class="inline-flex items-center gap-1 rounded-md bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 text-[0.7rem] font-bold text-amber-700 dark:text-amber-300">' +
