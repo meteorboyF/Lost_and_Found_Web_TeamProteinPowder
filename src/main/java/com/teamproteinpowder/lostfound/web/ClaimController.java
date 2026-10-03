@@ -165,6 +165,13 @@ public class ClaimController {
         return ClaimResponse.from(claims.getDetail(reference), "CLAIMANT");
     }
 
+    /** The poster marks their own report resolved; open claims on it are closed. */
+    @PostMapping("/items/{reference}/close")
+    @Transactional
+    public ItemResponse close(@PathVariable String reference, HttpServletRequest http) {
+        return ItemResponse.from(claims.closeByOwner(reference, currentUser.require(http)), true);
+    }
+
     @GetMapping("/claims/summary")
     public Map<String, Long> summary(HttpServletRequest http) {
         List<Claim> involved = claims.forUser(currentUser.require(http));

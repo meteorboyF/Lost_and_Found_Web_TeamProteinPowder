@@ -260,6 +260,48 @@ public class ClaimService {
     }
 
     /**
+     * The poster closes their own report: the owner got it back outside the
+     * app, or the finder handed it to campus security. Before this, the only
+     * way out of OPEN was a completed claim, so a self-recovered item stayed
+     * on the board forever and kept drawing claims and answer guesses.
+     */
+    @Transactional
+    public Item closeByOwner(String itemReference, User user) {
+        Item item = items.lockByReference(itemReference).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "No item with reference " + itemReference));
+        entityManager.refresh(item);
+        access.requireOwner(item, user);
+        if (item.getStatus() == ItemStatus.RESOLVED) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "This report is already closed");
+        }
+        /* A reported dispute is for staff to settle; closing would silently
+           decline the claims they are reviewing. */
+        if (item.isHandoverFrozen()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Campus staff are reviewing a dispute on this item. It can be closed once they finish");
+        }
+        if (claims.countByItemAndStatus(item, ClaimStatus.APPROVED) > 0) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "A claim is approved for pickup. Complete that handover or decline the claim first");
+        }
+
+        item.setStatus(ItemStatus.RESOLVED);
+        items.save(item);
+
+        /* Tell everyone still waiting, rather than leaving their threads open. */
+        for (Claim other : claims.findForItem(item)) {
+            if (other.getStatus().isClosed()) continue;
+            other.setStatus(ClaimStatus.DECLINED);
+            other.setResolvedAt(Instant.now());
+            addMessage(other, ClaimMessage.Author.SYSTEM, "Registry",
+                    "The poster closed this report, so this claim has ended.");
+            claims.save(other);
+            record(other, user, "REPORT_CLOSED", "Poster closed the report.");
+        }
+        return item;
+    }
+
+    /**
      * Put the item back on the board once nothing is outstanding. Without this
      * a single declined claim would leave the item stuck at PENDING forever.
      */

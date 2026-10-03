@@ -57,6 +57,11 @@
     if (crumb) crumb.textContent = item.reference;
 
     var resolved = item.status === 'RESOLVED';
+    var resolvedPanel =
+      '<div class="rounded-xl bg-found-soft p-4 text-center">' +
+        '<svg class="icon mx-auto h-6 w-6 text-found" aria-hidden="true"><use href="/assets/icons.svg#i-check"></use></svg>' +
+        '<p class="mt-2 text-sm font-semibold text-found-text">Back with its owner</p>' +
+        '<p class="mt-1 text-xs text-found-text/80">Nothing more to do here.</p></div>';
 
     host.innerHTML =
       '<div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-10">' +
@@ -91,13 +96,16 @@
             '</div>' +
 
             '<div class="p-5">' +
-              (item.viewerIsOwner
-                ? '<p class="text-sm text-muted">This is your post. Incoming claims appear below.</p>'
-                : resolved
-                ? '<div class="rounded-xl bg-found-soft p-4 text-center">' +
-                  '<svg class="icon mx-auto h-6 w-6 text-found" aria-hidden="true"><use href="/assets/icons.svg#i-check"></use></svg>' +
-                  '<p class="mt-2 text-sm font-semibold text-found-text">Back with its owner</p>' +
-                  '<p class="mt-1 text-xs text-found-text/80">Nothing more to do here.</p></div>'
+              (resolved
+                ? resolvedPanel
+                : item.viewerIsOwner
+                ? '<p class="text-sm text-muted">This is your post. Incoming claims appear below.</p>' +
+                  /* Without this, a post whose owner recovered the item some
+                     other way could never leave the board. */
+                  '<button type="button" data-close-report class="btn btn-secondary mt-3 w-full">' +
+                    '<svg class="icon h-[1.15rem] w-[1.15rem]" aria-hidden="true"><use href="/assets/icons.svg#i-check"></use></svg>' +
+                    'Mark as resolved</button>' +
+                  '<p class="mt-2 text-xs leading-relaxed text-faint">Sorted another way? This takes the post off the board and ends any open claims on it.</p>'
                 : '<button type="button" data-claim class="btn btn-primary w-full">' +
                   '<svg class="icon h-[1.15rem] w-[1.15rem]" aria-hidden="true"><use href="/assets/icons.svg#i-hand"></use></svg>' +
                   (item.kind === 'FOUND' ? 'This is mine' : 'I think I found this') +
@@ -115,6 +123,16 @@
 
     var claimBtn = host.querySelector('[data-claim]');
     if (claimBtn) claimBtn.addEventListener('click', function () { openClaimDialog(item); });
+
+    var closeBtn = host.querySelector('[data-close-report]');
+    if (closeBtn) closeBtn.addEventListener('click', function () {
+      if (!window.confirm('Mark this report as resolved? It leaves the board, and anyone with an open claim is told it has ended. This cannot be undone.')) return;
+      closeBtn.disabled = true;
+      LF.api.post('/api/items/' + encodeURIComponent(item.reference) + '/close').then(function (updated) {
+        host.parentElement.querySelectorAll('[data-item-supplement]').forEach(function (node) { node.remove(); });
+        render(updated); LF.toast.success('Marked as resolved. Thanks for closing the loop.');
+      }).catch(function (err) { LF.toast.error(err.message); closeBtn.disabled = false; });
+    });
 
     /* If this browser posted the item, show who is asking about it rather
        than offering to claim your own thing. */
