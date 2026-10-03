@@ -35,7 +35,9 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
      * whole faceted search instead of hand-assembling a Specification.
      *
      * The keyword search is a case-insensitive LIKE across the fields a person
-     * would actually type into a search box.
+     * would actually type into a search box. The caller escapes the term with
+     * '!' so that % and _ match literally; '!' rather than backslash because
+     * MySQL reads a backslash inside a string literal as an escape itself.
      */
     @Query("""
             SELECT i FROM Item i
@@ -43,10 +45,10 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
               AND (:status IS NULL OR i.status = :status)
               AND (:category IS NULL OR i.category = :category)
               AND (:q IS NULL OR
-                   LOWER(i.title)       LIKE LOWER(CONCAT('%', :q, '%')) OR
-                   LOWER(i.description) LIKE LOWER(CONCAT('%', :q, '%')) OR
-                   LOWER(i.location)    LIKE LOWER(CONCAT('%', :q, '%')) OR
-                   LOWER(COALESCE(i.colour, '')) LIKE LOWER(CONCAT('%', :q, '%')))
+                   LOWER(i.title)       LIKE LOWER(CONCAT('%', :q, '%')) ESCAPE '!' OR
+                   LOWER(i.description) LIKE LOWER(CONCAT('%', :q, '%')) ESCAPE '!' OR
+                   LOWER(i.location)    LIKE LOWER(CONCAT('%', :q, '%')) ESCAPE '!' OR
+                   LOWER(COALESCE(i.colour, '')) LIKE LOWER(CONCAT('%', :q, '%')) ESCAPE '!')
             """)
     Page<Item> search(@Param("kind") ItemKind kind,
                       @Param("status") ItemStatus status,

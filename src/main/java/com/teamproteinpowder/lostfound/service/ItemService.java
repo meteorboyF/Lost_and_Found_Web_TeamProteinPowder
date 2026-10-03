@@ -28,6 +28,8 @@ public class ItemService {
 
     private static final int MAX_PAGE_SIZE = 60;
 
+    private static final int MAX_QUERY_LENGTH = 100;
+
     private final ItemRepository repository;
     private final QuestionService questions;
     private final AccessService access;
@@ -88,6 +90,15 @@ public class ItemService {
                              String query, String sort, int page, int size) {
 
         String q = blankToNull(query);
+        if (q != null && q.length() > MAX_QUERY_LENGTH) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Keep the search under " + MAX_QUERY_LENGTH + " characters");
+        }
+        /* Without escaping, a search for "_" or "%" matched every item and a
+           literal "100%" could never be found. */
+        if (q != null) {
+            q = q.replace("!", "!!").replace("%", "!%").replace("_", "!_");
+        }
         Sort order = switch (sort == null ? "recent" : sort) {
             case "oldest" -> Sort.by(Sort.Direction.ASC, "createdAt");
             case "title" -> Sort.by(Sort.Direction.ASC, "title");

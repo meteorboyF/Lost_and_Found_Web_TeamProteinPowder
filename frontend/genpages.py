@@ -360,7 +360,7 @@ BROWSE_BODY = """
           <svg class="icon pointer-events-none absolute left-3.5 h-[1.15rem] w-[1.15rem] text-faint" aria-hidden="true">
             <use href="/assets/icons.svg#i-search"></use>
           </svg>
-          <input type="search" id="f-q" placeholder="Search the board" class="field pl-11">
+          <input type="search" id="f-q" maxlength="100" placeholder="Search the board" class="field pl-11">
         </div>
 
         <div class="card overflow-hidden">
