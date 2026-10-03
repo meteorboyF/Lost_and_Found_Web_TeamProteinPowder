@@ -28,4 +28,9 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Comment> findAllForModeration();
 
     long countByItemAndHiddenFalse(Item item);
+
+    /** Every comment on an item, hidden ones included, for removing the item. */
+    List<Comment> findByItem(Item item);
+
+    long countByUserId(Long userId);
 }

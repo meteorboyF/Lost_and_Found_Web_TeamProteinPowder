@@ -29,4 +29,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findAllByOrderByCreatedAtDesc();
 
     long countByApprovalStatus(ApprovalStatus approvalStatus);
+
+    long countByRoleAndApprovalStatus(com.teamproteinpowder.lostfound.domain.Role role, ApprovalStatus approvalStatus);
 }

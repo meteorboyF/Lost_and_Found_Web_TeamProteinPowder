@@ -21,15 +21,18 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.teamproteinpowder.lostfound.domain.ApprovalStatus;
 import com.teamproteinpowder.lostfound.domain.Category;
+import com.teamproteinpowder.lostfound.domain.Claim;
 import com.teamproteinpowder.lostfound.domain.Comment;
 import com.teamproteinpowder.lostfound.domain.Item;
 import com.teamproteinpowder.lostfound.domain.ItemKind;
 import com.teamproteinpowder.lostfound.domain.ItemStatus;
 import com.teamproteinpowder.lostfound.domain.User;
+import com.teamproteinpowder.lostfound.repo.ClaimRepository;
 import com.teamproteinpowder.lostfound.repo.CommentRepository;
 import com.teamproteinpowder.lostfound.repo.ItemRepository;
 import com.teamproteinpowder.lostfound.repo.UserRepository;
 import com.teamproteinpowder.lostfound.service.ItemService;
+import com.teamproteinpowder.lostfound.service.StorageService;
 import com.teamproteinpowder.lostfound.web.dto.UserResponse;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -50,13 +53,19 @@ public class AdminController {
     private final ItemService itemService;
     private final String adminKey;
     private final com.teamproteinpowder.lostfound.service.CurrentUser currentUser;
+    private final ClaimRepository claims;
+    private final StorageService storage;
 
     public AdminController(ItemRepository items,
                            CommentRepository comments,
                            UserRepository userRepository,
                            ItemService itemService,
                            @Value("${app.admin.key}") String adminKey,
-                           com.teamproteinpowder.lostfound.service.CurrentUser currentUser) {
+                           com.teamproteinpowder.lostfound.service.CurrentUser currentUser,
+                           ClaimRepository claims,
+                           StorageService storage) {
+        this.claims = claims;
+        this.storage = storage;
         this.items = items;
         this.comments = comments;
         this.userRepository = userRepository;
@@ -69,7 +78,10 @@ public class AdminController {
         if (currentUser.from(request).filter(user -> user.getRole() == com.teamproteinpowder.lostfound.domain.Role.ADMIN).isPresent()) return;
 
         // Otherwise check X-Admin-Key header
-        if (adminKey == null || adminKey.isBlank() || !adminKey.equals(provided)) {
+        // Constant-time, so response timing does not reveal how much of a guess was right.
+        if (adminKey == null || adminKey.isBlank() || provided == null
+                || !java.security.MessageDigest.isEqual(adminKey.getBytes(java.nio.charset.StandardCharsets.UTF_8),
+                        provided.getBytes(java.nio.charset.StandardCharsets.UTF_8))) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Admin authorisation required");
         }
     }
@@ -161,7 +173,33 @@ public class AdminController {
         requireKeyOrAdmin(key, request);
         Item item = items.findByReference(reference)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No item " + reference));
+
+        /* Comments and claims reference the item, so they go first; without
+           this the foreign keys refused, and moderation failed on exactly the
+           posts that had drawn responses. Claim messages cascade from their
+           claim. The claim audit log stores references, not keys, so the
+           record of what happened survives the removal. */
+        java.util.List<Claim> itemClaims = claims.findForItem(item);
+        java.util.List<String> evidence = itemClaims.stream()
+                .map(Claim::getEvidencePhotoName).filter(java.util.Objects::nonNull).toList();
+        comments.deleteAll(comments.findByItem(item));
+        claims.deleteAll(itemClaims);
         items.delete(item);
+
+        /* The photos must stop being served too. Removed only once the
+           delete has committed, so a rollback never leaves a post without
+           its pictures. */
+        String photoUrl = item.getPhotoUrl();
+        String privatePhoto = item.getPrivatePhotoName();
+        org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(
+                new org.springframework.transaction.support.TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        if (photoUrl != null && photoUrl.startsWith("/uploads/")) storage.deleteStored(photoUrl, null);
+                        storage.deleteStored(null, privatePhoto);
+                        evidence.forEach(name -> storage.deleteStored(null, name));
+                    }
+                });
         return Map.of("removed", reference);
     }
 
@@ -240,6 +278,7 @@ public class AdminController {
         requireKeyOrAdmin(key, request);
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        refuseSelfLockout(user, request, "reject");
         user.setApprovalStatus(ApprovalStatus.REJECTED);
         return UserResponse.from(userRepository.save(user));
     }
@@ -252,7 +291,35 @@ public class AdminController {
         requireKeyOrAdmin(key, request);
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        refuseSelfLockout(user, request, "delete");
+        /* Posts, comments and claims belong to the record of what happened
+           on the board, and conversations with other students depend on
+           them. Rather than a raw foreign-key failure, say what to do. */
+        long history = items.countByUserId(id) + comments.countByUserId(id) + claims.countByUserId(id);
+        if (history > 0) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "This account has posts, comments or claims, so it cannot be deleted. "
+                            + "Reject it instead: that blocks sign-in and keeps the record intact");
+        }
         userRepository.delete(user);
         return Map.of("deleted", id);
+    }
+
+    /**
+     * An admin rejecting or deleting their own account locks themselves out
+     * mid-session, and if they are the only admin, locks everyone out.
+     * Another admin, or the bootstrap settings, must do it.
+     */
+    private void refuseSelfLockout(User target, HttpServletRequest request, String action) {
+        boolean self = currentUser.from(request).map(me -> me.getId().equals(target.getId())).orElse(false);
+        if (self) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "You cannot " + action + " your own account");
+        }
+        if (target.getRole() == com.teamproteinpowder.lostfound.domain.Role.ADMIN && target.isApproved()
+                && userRepository.countByRoleAndApprovalStatus(com.teamproteinpowder.lostfound.domain.Role.ADMIN,
+                        ApprovalStatus.APPROVED) <= 1) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "This is the only active admin account. Approve another admin first");
+        }
     }
 }

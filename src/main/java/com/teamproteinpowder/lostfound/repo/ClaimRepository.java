@@ -27,6 +27,8 @@ public interface ClaimRepository extends JpaRepository<Claim, Long> {
 
     boolean existsByReference(String reference);
 
+    long countByUserId(Long userId);
+
     long countByItemAndStatus(Item item, ClaimStatus status);
 
     boolean existsByItemAndClaimantEmailIgnoreCaseAndStatus(Item item, String email, ClaimStatus status);

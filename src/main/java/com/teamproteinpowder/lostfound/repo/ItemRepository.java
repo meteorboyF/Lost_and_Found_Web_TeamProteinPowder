@@ -25,6 +25,8 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 
     boolean existsByReference(String reference);
 
+    long countByUserId(Long userId);
+
     long countByKind(ItemKind kind);
 
     long countByStatus(ItemStatus status);
