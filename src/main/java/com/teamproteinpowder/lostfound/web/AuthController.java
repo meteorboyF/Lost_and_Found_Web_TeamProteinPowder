@@ -64,7 +64,9 @@ public class AuthController {
                                                  HttpServletRequest httpRequest) {
         String email = request.getEmail().trim().toLowerCase();
         String username = request.getUsername().trim();
-        String studentId = request.getStudentId().trim();
+        /* Canonical case, so uniqueness does not depend on the database's
+           collation: MySQL compares case-insensitively, H2 does not. */
+        String studentId = request.getStudentId().trim().toUpperCase(java.util.Locale.ROOT);
 
         if (userRepository.existsByEmailIgnoreCase(email)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "An account with this student email already exists");

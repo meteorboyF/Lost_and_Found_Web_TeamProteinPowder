@@ -17,7 +17,12 @@ import jakarta.persistence.Table;
 @Table(name = "users", indexes = {
         @Index(name = "idx_user_email", columnList = "email", unique = true),
         @Index(name = "idx_user_username", columnList = "username", unique = true),
-        @Index(name = "idx_user_student_id", columnList = "studentId")
+        /* One student ID, one account: approval and the desk's in-person ID
+           check both assume it. Named uk_ rather than reusing idx_user_student_id
+           because ddl-auto=update creates missing indexes but never alters an
+           existing one — the old non-unique index would have stayed non-unique
+           on every database that already had it. */
+        @Index(name = "uk_user_student_id", columnList = "studentId", unique = true)
 })
 public class User {
 

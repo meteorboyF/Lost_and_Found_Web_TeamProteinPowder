@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -50,6 +51,42 @@ public class ApiExceptionHandler {
                 "status", HttpStatus.PAYLOAD_TOO_LARGE.value(),
                 "error", "Upload too large",
                 "message", "Photographs must be 5 MB or smaller",
+                "timestamp", Instant.now().toString()));
+    }
+
+    /**
+     * A unique constraint fired in the database.
+     *
+     * Every "does this already exist?" check in the services is check-then-
+     * insert, so two simultaneous requests can both pass it; the database
+     * constraint is what actually guarantees uniqueness. Without this handler
+     * the request that lost that race got a bare 500. It now gets the same 409
+     * a sequential duplicate would have produced.
+     *
+     * The raw driver message is never sent to the client — it can contain SQL
+     * and the conflicting value. Only the constraint name is inspected, to pick
+     * a human message; matching is case-insensitive because MySQL and H2
+     * report index names in different case.
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, Object>> onIntegrityViolation(DataIntegrityViolationException ex) {
+        String cause = String.valueOf(ex.getMostSpecificCause().getMessage()).toLowerCase(java.util.Locale.ROOT);
+
+        String message;
+        if (cause.contains("idx_user_email")) {
+            message = "An account with this student email already exists";
+        } else if (cause.contains("idx_user_username")) {
+            message = "Username is already taken";
+        } else if (cause.contains("uk_user_student_id")) {
+            message = "A student account with this Student ID already exists";
+        } else {
+            message = "This conflicts with an existing record";
+        }
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
+                "status", HttpStatus.CONFLICT.value(),
+                "error", "Conflict",
+                "message", message,
                 "timestamp", Instant.now().toString()));
     }
 
