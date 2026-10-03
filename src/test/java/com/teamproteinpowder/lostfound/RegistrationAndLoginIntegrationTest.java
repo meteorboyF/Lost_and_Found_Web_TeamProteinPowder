@@ -41,6 +41,20 @@ class RegistrationAndLoginIntegrationTest {
     @Autowired ObjectMapper mapper;
     @Autowired UserRepository users;
 
+    /**
+     * The login throttle and the rate limiter are singletons, and Spring shares
+     * one context across test classes, so every MockMvc request would otherwise
+     * come from 127.0.0.1 and draw on one shared per-address budget. JUnit makes
+     * a fresh instance per test method, so this gives each test its own client,
+     * which also models separate users more honestly.
+     */
+    private final String clientAddress = "10.%d.%d.%d".formatted(
+            (int) (Math.random() * 250) + 1, (int) (Math.random() * 250) + 1, (int) (Math.random() * 250) + 1);
+
+    private org.springframework.test.web.servlet.request.RequestPostProcessor fromClient() {
+        return request -> { request.setRemoteAddr(clientAddress); return request; };
+    }
+
     private String body(String username, String email, String studentId) {
         return mapper.writeValueAsString(Map.of(
                 "username", username,
@@ -62,7 +76,7 @@ class RegistrationAndLoginIntegrationTest {
                 String json = bodyFor.apply(i);
                 futures.add(pool.submit(() -> {
                     start.await();
-                    var response = mvc.perform(post("/api/auth/register")
+                    var response = mvc.perform(post("/api/auth/register").with(fromClient())
                                     .header("Origin", ORIGIN)
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(json))
@@ -126,13 +140,13 @@ class RegistrationAndLoginIntegrationTest {
     void studentIdsDifferingOnlyByCaseAreTheSameId() throws Exception {
         String tag = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
 
-        mvc.perform(post("/api/auth/register").header("Origin", ORIGIN)
+        mvc.perform(post("/api/auth/register").with(fromClient()).header("Origin", ORIGIN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body("lower-" + tag, "lower-" + tag + "@campus.edu", "case-" + tag)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.studentId").value("CASE-" + tag));
 
-        mvc.perform(post("/api/auth/register").header("Origin", ORIGIN)
+        mvc.perform(post("/api/auth/register").with(fromClient()).header("Origin", ORIGIN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body("upper-" + tag, "upper-" + tag + "@campus.edu", "CASE-" + tag)))
                 .andExpect(status().isConflict());
@@ -141,12 +155,12 @@ class RegistrationAndLoginIntegrationTest {
     @Test
     void conflictMessagesNameTheFieldAndNeverLeakSql() throws Exception {
         String tag = UUID.randomUUID().toString().substring(0, 6);
-        mvc.perform(post("/api/auth/register").header("Origin", ORIGIN)
+        mvc.perform(post("/api/auth/register").with(fromClient()).header("Origin", ORIGIN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body("first-" + tag, "dup-" + tag + "@campus.edu", "DUP-" + tag)))
                 .andExpect(status().isCreated());
 
-        String response = mvc.perform(post("/api/auth/register").header("Origin", ORIGIN)
+        String response = mvc.perform(post("/api/auth/register").with(fromClient()).header("Origin", ORIGIN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body("second-" + tag, "dup-" + tag + "@campus.edu", "OTHER-" + tag)))
                 .andExpect(status().isConflict())
@@ -158,22 +172,37 @@ class RegistrationAndLoginIntegrationTest {
         assertEquals(false, lower.contains("constraint"), response);
     }
 
+    @Test
+    void signupsFromOneAddressAreCappedButOtherAddressesAreNot() throws Exception {
+        // Signup reveals whether an email is taken, so unlimited signups would
+        // be an enumeration oracle; they would also flood the approval queue.
+        String tag = UUID.randomUUID().toString().substring(0, 6);
+        int max = com.teamproteinpowder.lostfound.service.RateLimiter.REGISTRATION.max();
+        for (int i = 0; i < max; i++) {
+            mvc.perform(post("/api/auth/register").with(fromClient()).header("Origin", ORIGIN)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body("cap-" + tag + "-" + i, "cap-" + tag + "-" + i + "@campus.edu", "CAP-" + tag + "-" + i)))
+                    .andExpect(status().isCreated());
+        }
+        mvc.perform(post("/api/auth/register").with(fromClient()).header("Origin", ORIGIN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body("cap-" + tag + "-x", "cap-" + tag + "-x@campus.edu", "CAP-" + tag + "-X")))
+                .andExpect(status().isTooManyRequests());
+
+        // A student elsewhere is unaffected.
+        mvc.perform(post("/api/auth/register").with(request -> { request.setRemoteAddr("192.0.2.77"); return request; })
+                        .header("Origin", ORIGIN).contentType(MediaType.APPLICATION_JSON)
+                        .content(body("cap-" + tag + "-y", "cap-" + tag + "-y@campus.edu", "CAP-" + tag + "-Y")))
+                .andExpect(status().isCreated());
+    }
+
     // ------------------------------------------------------------------
     // Login brute-force protection, end to end through the controller
     // ------------------------------------------------------------------
 
-    /**
-     * The throttle is a singleton and Spring shares one context across test
-     * classes, so every MockMvc request would otherwise come from 127.0.0.1 and
-     * draw on one shared per-address budget. A distinct address per test keeps
-     * them independent, and models separate clients more honestly anyway.
-     */
-    private final String clientAddress = "10.%d.%d.%d".formatted(
-            (int) (Math.random() * 250) + 1, (int) (Math.random() * 250) + 1, (int) (Math.random() * 250) + 1);
-
     private int login(String identifier, String password) throws Exception {
         return mvc.perform(post("/api/auth/login").header("Origin", ORIGIN)
-                        .with(request -> { request.setRemoteAddr(clientAddress); return request; })
+                        .with(fromClient())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(Map.of("identifier", identifier, "password", password))))
                 .andReturn().getResponse().getStatus();
@@ -183,7 +212,7 @@ class RegistrationAndLoginIntegrationTest {
     void loginLocksAfterFiveFailuresAndRefusesEvenTheCorrectPassword() throws Exception {
         String tag = UUID.randomUUID().toString().substring(0, 6);
         String username = "victim-" + tag;
-        mvc.perform(post("/api/auth/register").header("Origin", ORIGIN)
+        mvc.perform(post("/api/auth/register").with(fromClient()).header("Origin", ORIGIN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body(username, username + "@campus.edu", "V-" + tag)))
                 .andExpect(status().isCreated());

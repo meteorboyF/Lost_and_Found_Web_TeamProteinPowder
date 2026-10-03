@@ -19,6 +19,7 @@ import com.teamproteinpowder.lostfound.domain.User;
 import com.teamproteinpowder.lostfound.repo.UserRepository;
 import com.teamproteinpowder.lostfound.service.LoginThrottle;
 import com.teamproteinpowder.lostfound.service.PasswordService;
+import com.teamproteinpowder.lostfound.service.RateLimiter;
 import com.teamproteinpowder.lostfound.web.dto.LoginRequest;
 import com.teamproteinpowder.lostfound.web.dto.RegisterRequest;
 import com.teamproteinpowder.lostfound.web.dto.UserResponse;
@@ -39,6 +40,7 @@ public class AuthController {
     private final UserRepository userRepository;
     private final PasswordService passwordService;
     private final LoginThrottle throttle;
+    private final RateLimiter rateLimiter;
 
     /**
      * A real salted hash that no password matches, verified whenever the
@@ -50,7 +52,8 @@ public class AuthController {
     private final String dummyHash;
 
     public AuthController(UserRepository userRepository, PasswordService passwordService,
-                          LoginThrottle throttle) {
+                          LoginThrottle throttle, RateLimiter rateLimiter) {
+        this.rateLimiter = rateLimiter;
         this.userRepository = userRepository;
         this.passwordService = passwordService;
         this.throttle = throttle;
@@ -62,6 +65,12 @@ public class AuthController {
     @Transactional
     public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterRequest request,
                                                  HttpServletRequest httpRequest) {
+        /* Before any lookup: signup also answers "is this email registered?",
+           so an unlimited endpoint would be a fast enumeration oracle and would
+           undo the login endpoint's protection. It also stops mass signups
+           flooding the admin approval queue. */
+        rateLimiter.consume(RateLimiter.REGISTRATION, httpRequest.getRemoteAddr());
+
         String email = request.getEmail().trim().toLowerCase();
         String username = request.getUsername().trim();
         /* Canonical case, so uniqueness does not depend on the database's

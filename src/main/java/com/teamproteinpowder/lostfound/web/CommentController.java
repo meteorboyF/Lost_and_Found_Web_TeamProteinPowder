@@ -20,6 +20,7 @@ import com.teamproteinpowder.lostfound.repo.CommentRepository;
 import com.teamproteinpowder.lostfound.service.ItemService;
 import com.teamproteinpowder.lostfound.service.CurrentUser;
 import com.teamproteinpowder.lostfound.service.AccessService;
+import com.teamproteinpowder.lostfound.service.RateLimiter;
 import com.teamproteinpowder.lostfound.domain.User;
 import com.teamproteinpowder.lostfound.domain.Role;
 import com.teamproteinpowder.lostfound.web.dto.CommentRequest;
@@ -43,9 +44,13 @@ public class CommentController {
     private final CurrentUser currentUser;
     private final AccessService access;
 
+    private final RateLimiter rateLimiter;
+
     public CommentController(CommentRepository comments,
                              ItemService items,
-                             @Value("${app.admin.key}") String adminKey, CurrentUser currentUser, AccessService access) {
+                             @Value("${app.admin.key}") String adminKey, CurrentUser currentUser, AccessService access,
+                             RateLimiter rateLimiter) {
+        this.rateLimiter = rateLimiter;
         this.comments = comments;
         this.items = items;
         this.adminKey = adminKey;
@@ -93,6 +98,13 @@ public class CommentController {
                     "Open a verified claim to send private messages");
         }
         User user = currentUser.from(httpRequest).orElse(null);
+        /* Members are limited per account, so a shared campus address doesn't
+           throttle a whole network; guests can only be told apart by address. */
+        if (user != null) {
+            rateLimiter.consume(RateLimiter.MEMBER_COMMENT, "user:" + user.getId());
+        } else {
+            rateLimiter.consume(RateLimiter.GUEST_COMMENT, httpRequest.getRemoteAddr());
+        }
         String sessionEmail = user == null ? null : user.getEmail();
         String sessionName = user == null ? null : user.getUsername();
 
