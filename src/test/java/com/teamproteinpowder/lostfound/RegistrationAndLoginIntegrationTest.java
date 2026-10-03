@@ -49,8 +49,12 @@ class RegistrationAndLoginIntegrationTest {
                 "password", "Correct-Horse-42"));
     }
 
+    /** Messages returned by the 409s of the most recent race. */
+    private final java.util.Set<String> conflictMessages = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
     /** Fire n registrations at the same instant; return each HTTP status. */
     private List<Integer> raceRegistrations(int n, IntFunction<String> bodyFor) throws Exception {
+        conflictMessages.clear();
         CountDownLatch start = new CountDownLatch(1);
         List<Future<Integer>> futures = new ArrayList<>();
         try (var pool = Executors.newVirtualThreadPerTaskExecutor()) {
@@ -58,11 +62,15 @@ class RegistrationAndLoginIntegrationTest {
                 String json = bodyFor.apply(i);
                 futures.add(pool.submit(() -> {
                     start.await();
-                    return mvc.perform(post("/api/auth/register")
+                    var response = mvc.perform(post("/api/auth/register")
                                     .header("Origin", ORIGIN)
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(json))
-                            .andReturn().getResponse().getStatus();
+                            .andReturn().getResponse();
+                    if (response.getStatus() == 409) {
+                        conflictMessages.add(mapper.readTree(response.getContentAsString()).path("message").asString());
+                    }
+                    return response.getStatus();
                 }));
             }
             start.countDown();
@@ -93,6 +101,7 @@ class RegistrationAndLoginIntegrationTest {
 
         assertEquals(1, count(statuses, 201), "exactly one signup may own the student ID: " + statuses);
         assertEquals(7, count(statuses, 409), "the rest must be clean conflicts: " + statuses);
+        assertEquals(java.util.Set.of("A student account with this Student ID already exists"), conflictMessages);
         assertEquals(1, users.findAll().stream().filter(u -> sid.equals(u.getStudentId())).count());
     }
 
@@ -109,6 +118,8 @@ class RegistrationAndLoginIntegrationTest {
         assertEquals(0, count(statuses, 500), "a lost race must never surface as a 500: " + statuses);
         assertEquals(1, count(statuses, 201), statuses.toString());
         assertEquals(7, count(statuses, 409), statuses.toString());
+        // The user must be told which field clashed, not given a generic error.
+        assertEquals(java.util.Set.of("An account with this student email already exists"), conflictMessages);
     }
 
     @Test

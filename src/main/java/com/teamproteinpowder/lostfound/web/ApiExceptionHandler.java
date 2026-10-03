@@ -72,12 +72,18 @@ public class ApiExceptionHandler {
     public ResponseEntity<Map<String, Object>> onIntegrityViolation(DataIntegrityViolationException ex) {
         String cause = String.valueOf(ex.getMostSpecificCause().getMessage()).toLowerCase(java.util.Locale.ROOT);
 
+        /* Match the index name OR the column. MySQL reports the named index
+           ("for key 'users.idx_user_email'"), but H2 builds a separate,
+           auto-named constraint for @Column(unique = true) and reports that
+           instead ("CONSTRAINT_4D4 ... ON PUBLIC.USERS(EMAIL"). Checking only
+           the index name gave H2 a generic message. "users(email" cannot match
+           student_email: the character before "email" there is "_", not "(". */
         String message;
-        if (cause.contains("idx_user_email")) {
+        if (cause.contains("idx_user_email") || cause.contains("users(email")) {
             message = "An account with this student email already exists";
-        } else if (cause.contains("idx_user_username")) {
+        } else if (cause.contains("idx_user_username") || cause.contains("users(username")) {
             message = "Username is already taken";
-        } else if (cause.contains("uk_user_student_id")) {
+        } else if (cause.contains("uk_user_student_id") || cause.contains("users(student_id")) {
             message = "A student account with this Student ID already exists";
         } else {
             message = "This conflicts with an existing record";
