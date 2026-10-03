@@ -81,6 +81,9 @@ public class StorageService {
         if (!contentType.equals(detected)) {
             throw new ResponseStatusException(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "The file contents must match its image type");
         }
+        /* Strip GPS and other identifying metadata, then validate what will
+           actually be stored, so a stripping fault can never save a broken file. */
+        data = ImageMetadataStripper.strip(data, detected);
         validateImage(data, detected);
         String extension = switch (detected) {
             case "image/png" -> "png";
