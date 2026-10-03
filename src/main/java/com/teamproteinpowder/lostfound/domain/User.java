@@ -106,8 +106,13 @@ public class User {
     }
     public void setApprovalStatus(ApprovalStatus approvalStatus) { this.approvalStatus = approvalStatus; }
 
+    /**
+     * Approval applies to every role. It used to exempt admins, which meant
+     * rejecting an admin account did nothing: it kept signing in with full
+     * powers. Every way of creating an admin sets APPROVED explicitly.
+     */
     public boolean isApproved() {
-        return role == Role.ADMIN || approvalStatus == ApprovalStatus.APPROVED;
+        return approvalStatus == ApprovalStatus.APPROVED;
     }
 
     public Instant getCreatedAt() { return createdAt; }

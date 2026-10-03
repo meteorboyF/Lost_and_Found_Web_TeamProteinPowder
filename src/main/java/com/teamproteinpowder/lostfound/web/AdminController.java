@@ -276,10 +276,41 @@ public class AdminController {
                                    @RequestHeader(value = "X-Admin-Key", required = false) String key,
                                    HttpServletRequest request) {
         requireKeyOrAdmin(key, request);
-        User user = userRepository.findById(id)
+        User user = userRepository.lockById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
         refuseSelfLockout(user, request, "reject");
         user.setApprovalStatus(ApprovalStatus.REJECTED);
+        return UserResponse.from(userRepository.save(user));
+    }
+
+    public record RoleChange(@jakarta.validation.constraints.NotNull com.teamproteinpowder.lostfound.domain.Role role) {}
+
+    /**
+     * Promote a student to admin, or return an admin to a normal account.
+     * Takes effect on the target's very next request: roles are read from
+     * the database each time, never trusted from the session.
+     */
+    @PostMapping("/users/{id}/role")
+    @Transactional
+    public UserResponse changeRole(@PathVariable Long id,
+                                   @jakarta.validation.Valid @org.springframework.web.bind.annotation.RequestBody RoleChange change,
+                                   @RequestHeader(value = "X-Admin-Key", required = false) String key,
+                                   HttpServletRequest request) {
+        requireKeyOrAdmin(key, request);
+        User user = userRepository.lockById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        if (user.getRole() == change.role()) {
+            return UserResponse.from(user);
+        }
+        if (change.role() == com.teamproteinpowder.lostfound.domain.Role.ADMIN) {
+            if (!user.isApproved()) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                        "Approve this account before making it an admin");
+            }
+        } else {
+            refuseSelfLockout(user, request, "remove admin rights from");
+        }
+        user.setRole(change.role());
         return UserResponse.from(userRepository.save(user));
     }
 
@@ -289,7 +320,7 @@ public class AdminController {
                                           @RequestHeader(value = "X-Admin-Key", required = false) String key,
                                           HttpServletRequest request) {
         requireKeyOrAdmin(key, request);
-        User user = userRepository.findById(id)
+        User user = userRepository.lockById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
         refuseSelfLockout(user, request, "delete");
         /* Posts, comments and claims belong to the record of what happened
@@ -316,8 +347,7 @@ public class AdminController {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "You cannot " + action + " your own account");
         }
         if (target.getRole() == com.teamproteinpowder.lostfound.domain.Role.ADMIN && target.isApproved()
-                && userRepository.countByRoleAndApprovalStatus(com.teamproteinpowder.lostfound.domain.Role.ADMIN,
-                        ApprovalStatus.APPROVED) <= 1) {
+                && userRepository.lockActiveAdmins().size() <= 1) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "This is the only active admin account. Approve another admin first");
         }

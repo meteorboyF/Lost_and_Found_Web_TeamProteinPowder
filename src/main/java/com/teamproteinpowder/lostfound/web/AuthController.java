@@ -142,16 +142,14 @@ public class AuthController {
         User user = userOpt.get();
         throttle.recordSuccess(identifier);
 
-        // Verification check: Non-admin users must be approved by admin
-        if (user.getRole() != Role.ADMIN) {
-            if (user.getApprovalStatus() == ApprovalStatus.PENDING) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                        "Your account is pending administrator approval. Please wait for an administrator to verify your student credentials (Student ID: "
-                                + user.getStudentId() + ").");
-            } else if (user.getApprovalStatus() == ApprovalStatus.REJECTED) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                        "Your registration was rejected by an administrator. Please contact campus support.");
-            }
+        // Every account, admins included, must be approved to sign in.
+        if (user.getApprovalStatus() == ApprovalStatus.PENDING) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Your account is pending administrator approval. Please wait for an administrator to verify your student credentials (Student ID: "
+                            + user.getStudentId() + ").");
+        } else if (user.getApprovalStatus() == ApprovalStatus.REJECTED) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Your account has been deactivated by an administrator. Please contact campus support.");
         }
 
         HttpSession session = httpRequest.getSession(true);

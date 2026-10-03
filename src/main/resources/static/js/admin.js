@@ -23,9 +23,12 @@
 
   function request(path, options) {
     options = options || {};
+    var headers = { Accept: 'application/json', 'X-Admin-Key': key() };
+    if (options.body !== undefined) headers['Content-Type'] = 'application/json';
     return fetch(path, {
       method: options.method || 'GET',
-      headers: { Accept: 'application/json', 'X-Admin-Key': key() }
+      headers: headers,
+      body: options.body === undefined ? undefined : JSON.stringify(options.body)
     }).then(function (res) {
       return res.json().then(function (payload) {
         if (!res.ok) throw Object.assign(new Error(payload.message || 'Request failed'), { status: res.status });
@@ -278,17 +281,30 @@
       return LF.emptyState({ icon: 'i-user', title: 'No accounts', message: 'No registered student accounts found.' });
     }
 
+    var me = LF.auth.getUser();
     var rows = state.users.map(function (u) {
       var actionButtons = '';
-      if (u.role === 'ADMIN') {
-        actionButtons = '<span class="text-xs font-semibold text-muted">Administrator</span>';
+      var roleButton = u.role === 'ADMIN'
+        ? '<button type="button" class="btn btn-ghost btn-sm" data-role-user="' + u.id + '" data-role="USER">Remove admin</button>'
+        : u.approvalStatus === 'APPROVED'
+        ? '<button type="button" class="btn btn-ghost btn-sm" data-role-user="' + u.id + '" data-role="ADMIN">Make admin</button>'
+        : '';
+      if (me && String(me.id) === String(u.id)) {
+        /* The server refuses self-demotion and self-rejection; don't offer them. */
+        actionButtons = '<span class="text-xs font-semibold text-muted">You</span>';
+      } else if (u.role === 'ADMIN') {
+        actionButtons = '<div class="flex items-center justify-end gap-2">' + roleButton +
+          (u.approvalStatus === 'APPROVED'
+            ? ''
+            : '<button type="button" class="btn btn-secondary btn-sm text-found" data-approve-user="' + u.id + '">Approve</button>') +
+          '</div>';
       } else if (u.approvalStatus === 'PENDING') {
         actionButtons = '<div class="flex items-center justify-end gap-2">' +
           '<button type="button" class="btn btn-primary btn-sm" data-approve-user="' + u.id + '">Approve</button>' +
           '<button type="button" class="btn btn-secondary btn-sm text-lost" data-reject-user="' + u.id + '">Reject</button>' +
           '</div>';
       } else if (u.approvalStatus === 'APPROVED') {
-        actionButtons = '<div class="flex items-center justify-end gap-2">' +
+        actionButtons = '<div class="flex items-center justify-end gap-2">' + roleButton +
           '<button type="button" class="btn btn-ghost btn-sm text-lost" data-reject-user="' + u.id + '">Revoke</button>' +
           '</div>';
       } else {
@@ -301,7 +317,8 @@
         '<tr class="border-t border-line">' +
           '<td class="p-3">' +
             '<p class="text-sm font-medium text-heading">' + e(u.username) + '</p>' +
-            '<p class="text-xs text-muted">' + (u.role === 'ADMIN' ? 'Staff' : 'Student') + '</p>' +
+            '<p class="text-xs ' + (u.role === 'ADMIN' ? 'font-semibold text-brand-text' : 'text-muted') + '">' +
+              (u.role === 'ADMIN' ? 'Administrator' : 'Student') + '</p>' +
           '</td>' +
           '<td class="p-3 font-mono text-xs text-heading">' + e(u.studentId || '—') + '</td>' +
           '<td class="p-3">' +
@@ -402,6 +419,34 @@
             });
             render();
             LF.toast.success('Approved student account for ' + updated.username);
+          })
+          .catch(function (err) {
+            btn.disabled = false;
+            LF.toast.error(err.message);
+          });
+      });
+    });
+
+    host.querySelectorAll('[data-role-user]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var id = btn.dataset.roleUser;
+        var role = btn.dataset.role;
+        var target = state.users.filter(function (u) { return String(u.id) === String(id); })[0];
+        var name = target ? target.username : 'this account';
+        var question = role === 'ADMIN'
+          ? 'Make ' + name + ' an administrator? They will be able to approve accounts, moderate posts and manage other admins.'
+          : 'Remove administrator rights from ' + name + '? They keep a normal student account.';
+        if (!window.confirm(question)) return;
+        btn.disabled = true;
+        request('/api/admin/users/' + id + '/role', { method: 'POST', body: { role: role } })
+          .then(function (updated) {
+            state.users.forEach(function (u) {
+              if (String(u.id) === String(id)) u.role = updated.role;
+            });
+            render();
+            LF.toast.success(updated.role === 'ADMIN'
+              ? updated.username + ' is now an administrator'
+              : updated.username + ' is no longer an administrator');
           })
           .catch(function (err) {
             btn.disabled = false;

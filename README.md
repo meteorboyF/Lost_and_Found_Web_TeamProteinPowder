@@ -73,18 +73,25 @@ the styling — the compiled stylesheet is committed.
 
 Then open <http://localhost:8080>.
 
-Posting and chat require an approved account. On a fresh database, configure
-`APP_BOOTSTRAP_ADMIN_EMAIL` and `APP_BOOTSTRAP_ADMIN_PASSWORD` (at least 12
-characters) before startup to create an administrator. Sign in using that email
-and password, then approve student registrations in `/admin.html`. Bootstrap
-does not reset or promote existing accounts; remove its password from the
-environment after the account is created.
+`./run.sh` is for local development, so it creates demo accounts unless you
+start it with `APP_DEMO_ENABLED=false`: `admin` / `admin123`,
+`student` / `student123`, and a pending student. Admins sign in on the normal
+login page like everyone else and then open `/admin.html`.
 
-For a local demonstration only, explicitly set `APP_DEMO_ENABLED=true` before
-starting. This creates `admin` / `admin123`, `student` / `student123`, and a
-pending student. Demo credentials and the legacy shared moderation key are
-disabled by default. Disabling demo creation does not remove accounts already
-in an existing database: change or remove their published passwords before deployment.
+Outside `run.sh` (Docker, Render, `mvnw` by hand) demo accounts are off. Posting
+and chat require an approved account, so on a fresh database configure
+`APP_BOOTSTRAP_ADMIN_EMAIL` and `APP_BOOTSTRAP_ADMIN_PASSWORD` (at least 12
+characters) before startup to create an administrator. The app logs a warning at
+startup whenever no active administrator exists. Bootstrap does not reset or
+promote existing accounts; remove its password from the environment after the
+account is created. Disabling demo creation does not remove accounts already in
+an existing database: change or remove their published passwords before deployment.
+
+**Roles.** In `/admin.html` → Student Approvals, an admin can approve or revoke
+accounts and promote an approved account to admin or back. Changes apply on the
+target's next request, including sessions already open. An admin cannot demote,
+reject or delete their own account, and the last active admin cannot be removed.
+Approval applies to admins too: a revoked admin loses access immediately.
 
 `run.sh` picks a real JDK, recompiles the stylesheet if `frontend/node_modules`
 is present, and starts the application. To run the pieces by hand instead:

@@ -77,4 +77,14 @@ EOF
   exit 1
 fi
 
+# This script is for local development, so seed the demo accounts
+# (admin@campus.edu / admin123, student@campus.edu / student123) unless told
+# otherwise. Without them a fresh database has no admin, and since every
+# signup needs an admin's approval, nobody could ever sign in. Production
+# deployments do not use this script and keep demo accounts off.
+export APP_DEMO_ENABLED="${APP_DEMO_ENABLED:-true}"
+if [ "$APP_DEMO_ENABLED" = "true" ]; then
+  echo "Demo accounts enabled: admin@campus.edu / admin123, student@campus.edu / student123"
+fi
+
 exec ./mvnw -q -B spring-boot:run

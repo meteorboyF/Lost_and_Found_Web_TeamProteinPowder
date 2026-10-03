@@ -70,6 +70,7 @@ public class SeedLoader implements ApplicationRunner {
     public void run(ApplicationArguments args) throws Exception {
         if (demoEnabled) seedUsers();
         else bootstrapAdmin();
+        warnIfNoAdmin();
 
         if (repository.count() > 0) {
             log.info("Database already has {} items — skipping seed", repository.count());
@@ -249,6 +250,19 @@ public class SeedLoader implements ApplicationRunner {
         }
 
         log.info("Seeded initial users with student credentials and verification statuses");
+    }
+
+    /**
+     * Every signup waits for an admin to approve it, so a database without an
+     * active admin is stuck: nobody can sign in and nobody can be approved.
+     * Say so loudly at startup, with the fix, instead of failing silently.
+     */
+    private void warnIfNoAdmin() {
+        if (userRepository.countByRoleAndApprovalStatus(Role.ADMIN, ApprovalStatus.APPROVED) > 0) return;
+        log.warn("No active administrator account exists, so new signups cannot be approved. "
+                + "Local development: start with APP_DEMO_ENABLED=true (./run.sh does this by default) "
+                + "to create admin@campus.edu / admin123. Production: set APP_BOOTSTRAP_ADMIN_EMAIL and "
+                + "APP_BOOTSTRAP_ADMIN_PASSWORD (12+ characters) and restart.");
     }
 
     private void bootstrapAdmin() {
