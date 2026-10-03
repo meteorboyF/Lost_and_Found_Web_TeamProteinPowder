@@ -31,29 +31,29 @@
   }
 
   /**
-   * Ask for matches on everything this browser posted, and keep only pairs
+   * Ask for matches on the account's posts, and keep only pairs
    * we have not already shown.
    */
   function check() {
-    var mine = LF.mine.all();
-    if (!mine.items.length) return Promise.resolve([]);
-
+    if (!LF.auth.isLoggedIn()) return Promise.resolve([]);
     var already = seen();
-
-    return Promise.all(mine.items.map(function (ref) {
-      return LF.api
-        .get('/api/items/' + encodeURIComponent(ref) + '/matches')
-        .then(function (matches) {
-          return matches.map(function (m) {
-            return { source: ref, match: m, id: ref + '>' + m.item.reference };
-          });
-        })
-        .catch(function () { return []; });
-    })).then(function (lists) {
+    return LF.api.get('/api/items/mine').then(function (items) {
+      return Promise.all(items.filter(function (item) { return item.status !== 'RESOLVED'; }).map(function (item) {
+        var ref = item.reference;
+        return LF.api
+          .get('/api/items/' + encodeURIComponent(ref) + '/matches')
+          .then(function (matches) {
+            return matches.map(function (m) {
+              return { source: ref, match: m, id: ref + '>' + m.item.reference };
+            });
+          })
+          .catch(function () { return []; });
+      }));
+    }).then(function (lists) {
       return lists.flat().filter(function (entry) {
         return already.indexOf(entry.id) === -1;
       });
-    });
+    }).catch(function () { return []; });
   }
 
   /* ------------------------------------------------------------------

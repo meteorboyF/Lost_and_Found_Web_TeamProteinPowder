@@ -15,6 +15,12 @@ import com.teamproteinpowder.lostfound.domain.ItemStatus;
 
 public interface ItemRepository extends JpaRepository<Item, Long> {
 
+    java.util.List<Item> findByUserIdOrderByCreatedAtDesc(Long userId);
+
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT i FROM Item i WHERE i.reference = :reference")
+    Optional<Item> lockByReference(@Param("reference") String reference);
+
     Optional<Item> findByReference(String reference);
 
     boolean existsByReference(String reference);

@@ -7,6 +7,7 @@
   var LF = window.LF;
   var e = LF.escapeHtml;
   var host = document.querySelector('[data-item]');
+  var disposeMaps = [];
 
   function skeleton() {
     return (
@@ -49,6 +50,8 @@
   }
 
   function render(item) {
+    disposeMaps.forEach(function (dispose) { dispose(); });
+    disposeMaps = [];
     document.title = item.title + ' — Lost & Found';
     var crumb = document.querySelector('[data-crumb]');
     if (crumb) crumb.textContent = item.reference;
@@ -76,6 +79,8 @@
 
         '<aside class="lg:pt-2">' +
           '<div class="card divide-y divide-line">' +
+            (item.handoverFrozen ? '<p class="p-5 text-sm text-lost">Handover frozen: campus staff must resolve a reported dispute before pickup.</p>' : '') +
+            (item.deskReviewRequired ? '<p class="p-5 text-sm text-brand-text">Valuable item: campus-desk review and an in-person student-ID check are required.</p>' : '') +
             '<div class="px-5 py-2">' +
               row('Where', item.location, 'i-pin') +
               (item.happenedOn ? row('When', LF.formatDate(item.happenedOn), 'i-calendar') : '') +
@@ -86,7 +91,9 @@
             '</div>' +
 
             '<div class="p-5">' +
-              (resolved
+              (item.viewerIsOwner
+                ? '<p class="text-sm text-muted">This is your post. Incoming claims appear below.</p>'
+                : resolved
                 ? '<div class="rounded-xl bg-found-soft p-4 text-center">' +
                   '<svg class="icon mx-auto h-6 w-6 text-found" aria-hidden="true"><use href="/assets/icons.svg#i-check"></use></svg>' +
                   '<p class="mt-2 text-sm font-semibold text-found-text">Back with its owner</p>' +
@@ -104,15 +111,75 @@
         '</aside>' +
       '</div>';
 
+    renderLocation(item);
+
     var claimBtn = host.querySelector('[data-claim]');
     if (claimBtn) claimBtn.addEventListener('click', function () { openClaimDialog(item); });
 
     /* If this browser posted the item, show who is asking about it rather
        than offering to claim your own thing. */
-    if (LF.mine.hasItem(item.reference)) loadClaimsForOwner(item);
+    if (item.viewerIsOwner) loadClaimsForOwner(item);
+
+    if (item.hasPrivatePhoto && (item.viewerIsOwner || LF.auth.isAdmin())) {
+      var privateSection = document.createElement('div');
+      privateSection.className = 'card mt-4 p-4';
+      privateSection.innerHTML = '<h2 class="text-xl text-heading">Private photograph</h2>' +
+        '<img class="mt-3 w-full rounded-xl" alt="Private identifying details" src="/api/items/' + encodeURIComponent(item.reference) + '/private-photo">';
+      host.querySelector('aside').appendChild(privateSection);
+    }
 
     if (item.status !== 'RESOLVED') loadMatches(item);
     loadComments(item);
+  }
+
+  function renderLocation(item) {
+    var geo = LF.maps, pinned = geo.hasPin(item);
+    var section = document.createElement('section');
+    section.className = 'item-location-card';
+    section.innerHTML = '<h2 class="text-heading">' + (item.kind === 'LOST' ? 'Where to start looking' : 'Where it was found') + '</h2>' +
+      '<p class="mt-2 text-sm text-muted">' + e(item.location) + '</p>' +
+      (pinned ? '<div class="geo-map item-location-preview" data-item-location-map aria-label="Reported item location"></div>' +
+        '<p class="mt-3 text-xs text-muted">Reported spot' + (item.searchRadiusMeters ? ' · Search within ' + item.searchRadiusMeters + ' metres' : '') + '</p>' +
+        '<div class="item-location-actions"><a class="btn btn-primary" target="_blank" rel="noopener noreferrer" href="' + e(geo.directions(item)) + '">Walking directions</a>' +
+        '<a class="btn btn-secondary" href="/map.html?ref=' + encodeURIComponent(item.reference) + '">Explore on campus map</a></div>'
+        : '<p class="mt-3 text-sm text-muted">No map pin has been added yet. Use the location description or ask the poster for a more precise spot.</p>') +
+      (item.viewerIsOwner ? '<details class="item-location-editor" data-location-editor><summary>' +
+        (pinned ? 'Adjust your location pin' : 'Add a location pin') + '</summary>' +
+        '<form data-location-form novalidate><label for="location-edit-label" class="label">Location description</label>' +
+        '<input id="location-edit-label" name="location" class="field" maxlength="160" required value="' + e(item.location) + '">' +
+        '<div data-location-edit-picker></div><p class="text-sm text-lost" data-location-save-error role="alert"></p>' +
+        '<button type="submit" class="btn btn-primary mt-3" data-location-save>Save reported location</button></form></details>' : '');
+    host.firstElementChild.firstElementChild.appendChild(section);
+    if (pinned) {
+      try { var previewMap = geo.preview(section.querySelector('[data-item-location-map]'), item); disposeMaps.push(function () { previewMap.remove(); }); }
+      catch (err) { LF.toast.error(err.message); }
+    }
+    if (!item.viewerIsOwner) return;
+    var details = section.querySelector('[data-location-editor]'), picker;
+    details.addEventListener('toggle', function () {
+      if (details.open && !picker) {
+        picker = geo.picker(section.querySelector('[data-location-edit-picker]'), item, { id: 'edit-pin', kind: item.kind });
+        disposeMaps.push(function () { picker.destroy(); });
+      }
+    });
+    section.querySelector('[data-location-form]').addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      if (!LF.auth.require()) return;
+      var form = ev.currentTarget, error = form.querySelector('[data-location-save-error]');
+      var button = form.querySelector('[data-location-save]');
+      if (button.disabled || !picker) return;
+      var body;
+      try {
+        body = picker.read(); body.location = form.elements.location.value.trim();
+        if (!body.location) throw new Error('Add a location description.');
+      } catch (err) { error.textContent = err.message; return; }
+      button.disabled = true; error.textContent = '';
+      LF.api.put('/api/items/' + encodeURIComponent(item.reference) + '/location', body).then(function (updated) {
+        // Supplementary sections live outside the main item host; replace them once.
+        host.parentElement.querySelectorAll('[data-item-supplement]').forEach(function (node) { node.remove(); });
+        render(updated); LF.toast.success('Reported location saved.');
+      }).catch(function (err) { error.textContent = err.message; button.disabled = false; });
+    });
   }
 
   /* ------------------------------------------------------------------
@@ -125,12 +192,14 @@
     var defaultEmail = (user && user.email) || LF.mine.all().email || '';
 
     var section = document.createElement('section');
+    section.id = 'clues';
+    section.setAttribute('data-item-supplement', 'comments');
     section.className = 'mt-12 border-t border-line pt-8';
     section.innerHTML =
-      '<h2 class="text-xl text-heading">Can anyone help?</h2>' +
+      '<h2 class="text-xl text-heading">Clues &amp; community updates</h2>' +
       '<p class="mt-2 text-sm text-muted">' +
-        'Seen this around, or know something that might narrow it down? Say so here. ' +
-        'This thread is public, or you can send a private message with secret details directly to the post owner.' +
+        'Searched near the reported spot, seen the item, or found a useful clue? Share an update here. ' +
+        'This thread is public. Use the claim button for private, verified chat.' +
       '</p>' +
       '<div class="mt-5" data-comments></div>' +
       '<form class="mt-5 card p-4" data-comment-form novalidate>' +
@@ -139,18 +208,7 @@
           'placeholder="I think I saw one like this near the sports hall on Tuesday."></textarea>' +
         '<p class="min-h-5 text-sm text-lost" data-error="body"></p>' +
 
-        '<div class="rounded-xl border border-line bg-sunken/40 p-3 mb-4">' +
-          '<label class="flex items-start gap-2.5 cursor-pointer">' +
-            '<input type="checkbox" id="comment-private" name="privateMessage" class="mt-0.5 h-4 w-4 rounded border-line text-brand focus:ring-brand">' +
-            '<div class="text-xs leading-relaxed text-body">' +
-              '<span class="inline-flex items-center gap-1 font-semibold text-heading">' +
-                '<svg class="icon h-3.5 w-3.5 text-brand" aria-hidden="true"><use href="/assets/icons.svg#i-lock"></use></svg>' +
-                'Send as private message / secret information' +
-              '</span><br>' +
-              'Restricted privacy: only visible to the post owner, you, and moderators. Other users will not be able to see this.' +
-            '</div>' +
-          '</label>' +
-        '</div>' +
+        '<p class="mb-4 text-xs text-muted">Keep secret identifying details out of public comments.</p>' +
 
         '<div class="mt-2 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">' +
           '<div class="grid gap-1.5">' +
@@ -166,6 +224,9 @@
       '</form>';
 
     host.parentElement.appendChild(section);
+    if (window.location.hash === '#clues') {
+      requestAnimationFrame(function () { if (section.isConnected) section.scrollIntoView({ block: 'start' }); });
+    }
 
     var list = section.querySelector('[data-comments]');
     var form = section.querySelector('[data-comment-form]');
@@ -255,6 +316,7 @@
         if (!matches.length) return;
 
         var section = document.createElement('section');
+        section.setAttribute('data-item-supplement', 'matches');
         section.className = 'mt-12 border-t border-line pt-8';
         section.innerHTML =
           '<div class="flex items-center gap-2">' +
@@ -285,7 +347,10 @@
      ------------------------------------------------------------------ */
 
   function openClaimDialog(item) {
+    if (!LF.auth.require()) return;
     var known = LF.mine.all();
+    known.name = LF.auth.getUser().username;
+    known.email = LF.auth.getUser().email;
     var asking = item.kind === 'FOUND'
       ? 'Describe something about it that is not in the photo or the description — a mark, what was inside, where exactly you lost it.'
       : 'Describe what you found, and where. The person who lost it will recognise the details.';
@@ -309,28 +374,42 @@
       '</form>' +
 
       '<form data-claim-form class="grid gap-4 p-5" novalidate>' +
+        (item.handoverFrozen ? '<p class="text-sm text-lost">This item has a dispute. No handover can complete until campus staff resolves it.</p>' : '') +
+        (item.deskReviewRequired ? '<p class="text-sm text-brand-text">This valuable item requires campus-desk review and an in-person student-ID check before approval.</p>' : '') +
+        '<div class="grid gap-1.5">' +
+          '<label for="claim-answer" class="label">' + e(item.securityQuestion) + '</label>' +
+          (item.securityQuestionConfigured
+            ? '<input id="claim-answer" name="securityAnswer" type="password" maxlength="200" autocomplete="off" class="field" required>' +
+              '<p class="text-xs text-muted">Answer correctly to unlock private chat. Case and extra spaces are ignored.</p>'
+            : '<p class="text-sm text-muted">Include your answer in the proof below. The poster must review it before chat opens.</p>') +
+          '<p class="min-h-5 text-sm text-lost" data-error="securityAnswer"></p></div>' +
         '<div class="rounded-xl bg-brand-soft p-3.5 text-sm leading-relaxed text-brand-text">' +
           '<svg class="icon mb-1 h-[1.15rem] w-[1.15rem]" aria-hidden="true"><use href="/assets/icons.svg#i-shield"></use></svg>' +
           '<p>' + asking + '</p>' +
         '</div>' +
 
         '<div class="grid gap-1.5">' +
-          '<label for="claim-proof" class="label">What only you would know</label>' +
+          '<label for="claim-proof" class="label">Private ownership evidence</label>' +
           '<textarea id="claim-proof" name="proof" rows="4" maxlength="2000" class="field resize-y" ' +
             'placeholder="There is a faded band sticker on the inside flap, and a maths notebook in the front pocket."></textarea>' +
           '<p class="min-h-5 text-sm text-lost" data-error="proof"></p>' +
         '</div>' +
 
+        '<div class="grid gap-1.5"><label for="claim-evidence" class="label">Older photo or redacted receipt image (optional)</label>' +
+          '<input id="claim-evidence" name="evidence" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="field">' +
+          '<p class="text-xs text-muted">Describe concealed details or a partial serial number above. Images must be 5 MB or smaller. Only you, the poster and campus staff can view evidence. Do not upload a full student ID or device passwords.</p>' +
+          '<p class="text-sm text-lost" data-error="evidence"></p></div>' +
+
         '<div class="grid gap-4 sm:grid-cols-2">' +
           '<div class="grid gap-1.5">' +
             '<label for="claim-name" class="label">Your name</label>' +
-            '<input id="claim-name" name="claimantName" maxlength="80" class="field" value="' +
+            '<input id="claim-name" name="claimantName" maxlength="80" readonly class="field" value="' +
               e(known.name) + '">' +
             '<p class="min-h-5 text-sm text-lost" data-error="claimantName"></p>' +
           '</div>' +
           '<div class="grid gap-1.5">' +
             '<label for="claim-email" class="label">Email</label>' +
-            '<input id="claim-email" name="claimantEmail" type="email" maxlength="160" class="field" value="' +
+            '<input id="claim-email" name="claimantEmail" type="email" maxlength="160" readonly class="field" value="' +
               e(known.email) + '" placeholder="you@university.edu">' +
             '<p class="min-h-5 text-sm text-lost" data-error="claimantEmail"></p>' +
           '</div>' +
@@ -377,22 +456,26 @@
     var payload = {
       proof: form.elements.proof.value.trim(),
       claimantName: form.elements.claimantName.value.trim(),
-      claimantEmail: form.elements.claimantEmail.value.trim()
+      claimantEmail: form.elements.claimantEmail.value.trim(),
+      securityAnswer: form.elements.securityAnswer ? form.elements.securityAnswer.value : null
     };
 
     /* Mirrors the Bean Validation rules on ClaimRequest; the server stays
        the authority, this just saves a round trip. */
     var errors = {};
+    if (item.securityQuestionConfigured && !payload.securityAnswer.trim()) errors.securityAnswer = 'Answer the security question to open chat';
     if (payload.proof.length < 20) {
       errors.proof = 'Give at least 20 characters — enough that only the owner could have written it';
     }
     if (!payload.claimantName) errors.claimantName = 'Tell us your name';
+    var evidence = form.elements.evidence.files[0];
+    if (evidence && evidence.size > 5 * 1024 * 1024) errors.evidence = 'Evidence must be 5 MB or smaller';
     if (!payload.claimantEmail) errors.claimantEmail = 'We need an email address to reach you';
     else if (!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(payload.claimantEmail)) {
       errors.claimantEmail = 'That does not look like a valid email address';
     }
 
-    ['proof', 'claimantName', 'claimantEmail'].forEach(function (f) { setErr(f, errors[f]); });
+    ['proof', 'claimantName', 'claimantEmail', 'securityAnswer', 'evidence'].forEach(function (f) { setErr(f, errors[f]); });
     if (Object.keys(errors).length) {
       var first = dialog.querySelector('[aria-invalid="true"]');
       if (first) first.focus();
@@ -403,8 +486,10 @@
     submit.disabled = true;
     submit.textContent = 'Sending…';
 
-    LF.api
-      .post('/api/items/' + encodeURIComponent(item.reference) + '/claims', payload)
+    var body = new FormData();
+    body.append('claim', new Blob([JSON.stringify(payload)], { type: 'application/json' }));
+    if (evidence) body.append('evidence', evidence);
+    LF.safety.multipart('/api/items/' + encodeURIComponent(item.reference) + '/claims', body)
       .then(function (claim) {
         LF.mine.addClaim(claim.reference);
         LF.mine.remember(payload.claimantName, payload.claimantEmail);
@@ -431,7 +516,7 @@
       .then(function (claims) {
         if (!claims.length) return;
 
-        var open = claims.filter(function (c) { return c.status === 'OPEN'; });
+        var open = claims.filter(function (c) { return c.status === 'OPEN' || c.status === 'APPROVED'; });
         var list = claims.map(function (c) {
           return (
             '<a href="/claim.html?ref=' + encodeURIComponent(c.reference) + '" ' +

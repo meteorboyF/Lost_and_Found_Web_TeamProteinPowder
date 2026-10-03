@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Campus desk — Lost &amp; Found</title>
+<meta name="description" content="Private evidence review, disputed claims and handover safety.">
+
+<!-- Applied before first paint so a dark-theme visitor never sees a light flash. -->
+<script>
+  (function () {
+    try {
+      var t = localStorage.getItem('lf.theme');
+      if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    } catch (e) {}
+  })();
+</script>
+
+<link rel="preload" href="/assets/fonts/inter-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/inter-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/css/app.css">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+</head>
+
+<body class="min-h-screen flex flex-col bg-page">
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="sticky top-0 z-40 border-b border-line bg-page/80 backdrop-blur-xl">
+  <div class="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6 lg:px-8">
+
+    <a href="/" class="flex items-center gap-2.5 font-bold tracking-tight text-heading">
+      <span class="grid h-9 w-9 place-items-center rounded-xl bg-brand text-white shadow-[var(--shadow-brand)]">
+        <svg class="icon h-5 w-5" aria-hidden="true"><use href="/assets/icons.svg#i-pin"></use></svg>
+      </span>
+      <span class="text-[1.0625rem]">Lost &amp; Found</span>
+    </a>
+
+
+    <div class="ml-auto flex items-center gap-2">
+      <div data-auth-nav class="flex items-center"></div>
+
+      <span class="relative" data-alerts>
+        <button type="button" data-alerts-toggle aria-expanded="false" aria-haspopup="true"
+                aria-controls="alerts-panel" aria-label="Notifications" hidden
+                class="grid h-9 w-9 place-items-center rounded-lg text-muted transition hover:bg-sunken hover:text-heading">
+          <svg class="icon h-[1.15rem] w-[1.15rem]" aria-hidden="true"><use href="/assets/icons.svg#i-bell"></use></svg>
+          <span class="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-lost px-1 text-[0.625rem] font-bold text-white dark:text-[#11121a]"
+                data-alerts-badge hidden>0</span>
+        </button>
+        <span id="alerts-panel" data-alerts-panel hidden
+              class="absolute right-0 top-full z-50 mt-2 block w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-line bg-surface shadow-[var(--shadow-pop)]"></span>
+      </span>
+
+      <button type="button" data-theme-toggle
+              class="grid h-9 w-9 place-items-center rounded-lg text-muted transition hover:bg-sunken hover:text-heading"
+              aria-label="Switch to dark theme" aria-pressed="false">
+        <svg class="icon h-[1.15rem] w-[1.15rem]" aria-hidden="true" data-theme-icon="light"><use href="/assets/icons.svg#i-sun"></use></svg>
+        <svg class="icon h-[1.15rem] w-[1.15rem]" aria-hidden="true" data-theme-icon="dark" hidden><use href="/assets/icons.svg#i-moon"></use></svg>
+      </button>
+
+    </div>
+  </div>
+</header>
+
+<main id="main" class="flex-1">
+<div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+       <div class="flex flex-wrap items-center justify-between gap-4"><div><p class="text-sm text-brand-text">STAFF WORKSPACE</p><h1 class="mt-2 text-3xl text-heading">Campus desk &amp; fraud review</h1><p class="mt-2 text-muted">Review ownership evidence, check student ID in person, and resolve disputes before pickup.</p></div><a class="btn btn-secondary" href="/admin.html">Moderation</a></div>
+       <p class="mt-4 text-xs text-muted">Check the claimant's student ID in person before clearing a review. Record the outcome, not full ID numbers or ID photos.</p>
+       <div class="mt-6" data-desk></div></div></main>
+
+<footer class="mt-20 border-t border-line bg-surface">
+  <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+    <div class="flex flex-wrap items-center justify-between gap-6">
+      <div class="flex items-center gap-2.5">
+        <span class="grid h-8 w-8 place-items-center rounded-lg bg-brand text-white">
+          <svg class="icon h-4 w-4" aria-hidden="true"><use href="/assets/icons.svg#i-pin"></use></svg>
+        </span>
+        <div>
+          <p class="text-sm font-semibold text-heading">Lost &amp; Found</p>
+          <p class="text-xs text-muted">Team Protein Powder</p>
+        </div>
+      </div>
+      <nav class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted" aria-label="Footer">
+        <a href="/browse.html" class="inline-block py-1 transition hover:text-heading">Browse</a>
+        <a href="/report.html" class="inline-block py-1 transition hover:text-heading">Post an item</a>
+        <a href="/dashboard.html" class="inline-block py-1 transition hover:text-heading">My items</a>
+        <a href="/map.html" class="inline-block py-1 transition hover:text-heading">Campus map</a>
+        <a href="/gallery.html" class="inline-block py-1 transition hover:text-heading">Reunions</a>
+        <a href="/help.html" class="inline-block py-1 transition hover:text-heading">Claim &amp; collection guide</a>
+      </nav>
+      <p class="text-xs text-faint">Items are held for 90 days before archiving.</p>
+    </div>
+  </div>
+</footer>
+
+<div class="pointer-events-none fixed bottom-4 right-4 z-50 flex w-[min(24rem,calc(100vw-2rem))] flex-col-reverse gap-2"
+     data-toast-region role="status" aria-live="polite"></div>
+
+<script src="/js/app.js"></script>
+<script src="/js/ui.js"></script>
+<script src="/js/alerts.js"></script>
+<script src="/js/safety.js"></script><script src="/js/desk.js"></script>
+</body>
+</html>

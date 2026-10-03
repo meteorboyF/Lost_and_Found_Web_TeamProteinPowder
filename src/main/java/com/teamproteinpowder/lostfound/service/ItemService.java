@@ -29,14 +29,18 @@ public class ItemService {
     private static final int MAX_PAGE_SIZE = 60;
 
     private final ItemRepository repository;
+    private final QuestionService questions;
+    private final AccessService access;
     private final SecureRandom random = new SecureRandom();
 
-    public ItemService(ItemRepository repository) {
+    public ItemService(ItemRepository repository, QuestionService questions, AccessService access) {
         this.repository = repository;
+        this.questions = questions;
+        this.access = access;
     }
 
     @Transactional
-    public Item create(ItemRequest request) {
+    public Item create(ItemRequest request, User user) {
         Item item = new Item();
         item.setReference(nextReference());
         item.setKind(request.getKind());
@@ -48,10 +52,34 @@ public class ItemService {
         item.setLocation(request.getLocation().trim());
         item.setLatitude(request.getLatitude());
         item.setLongitude(request.getLongitude());
+        item.setSearchRadiusMeters(request.getLatitude() == null ? null
+                : request.getSearchRadiusMeters() == null ? 25 : request.getSearchRadiusMeters());
         item.setHappenedOn(request.getHappenedOn());
         item.setPhotoUrl(blankToNull(request.getPhotoUrl()));
-        item.setReporterName(request.getReporterName().trim());
-        item.setReporterEmail(request.getReporterEmail().trim().toLowerCase());
+        item.setPrivatePhotoName(request.getPrivatePhotoName());
+        item.setDeskReviewRequired(request.isDeskReviewRequired());
+        questions.configure(item, request.getSecurityQuestion(), request.getSecurityAnswer());
+        item.setReporterName(user.getUsername());
+        item.setReporterEmail(user.getEmail());
+        item.setUser(user);
+        return repository.save(item);
+    }
+
+    @Transactional(readOnly = true)
+    public java.util.List<Item> mine(User user) {
+        return repository.findByUserIdOrderByCreatedAtDesc(user.getId());
+    }
+
+    @Transactional
+    public Item updateLocation(String reference, com.teamproteinpowder.lostfound.web.dto.LocationRequest request, User user) {
+        Item item = repository.lockByReference(reference).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "Report not found"));
+        access.requireOwner(item, user);
+        item.setLocation(request.location().trim());
+        item.setLatitude(request.latitude());
+        item.setLongitude(request.longitude());
+        item.setSearchRadiusMeters(request.latitude() == null ? null
+                : request.searchRadiusMeters() == null ? 25 : request.searchRadiusMeters());
         return repository.save(item);
     }
 
@@ -71,13 +99,6 @@ public class ItemService {
 
         return repository.search(kind, status, category, q,
                 PageRequest.of(safePage, safeSize, order));
-    }
-
-    /** Record which account posted an item, once it is known. */
-    @Transactional
-    public Item attachOwner(Item item, User user) {
-        item.setUser(user);
-        return repository.save(item);
     }
 
     @Transactional(readOnly = true)

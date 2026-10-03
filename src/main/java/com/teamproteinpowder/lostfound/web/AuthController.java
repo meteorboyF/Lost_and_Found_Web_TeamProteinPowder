@@ -111,6 +111,7 @@ public class AuthController {
         }
 
         HttpSession session = httpRequest.getSession(true);
+        httpRequest.changeSessionId();
         bindSession(session, user);
 
         return ResponseEntity.ok(UserResponse.from(user));
@@ -136,6 +137,7 @@ public class AuthController {
         Long userId = (Long) session.getAttribute(SESSION_USER_ID);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
+        if (!user.isApproved()) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Account approval required");
 
         return ResponseEntity.ok(UserResponse.from(user));
     }

@@ -125,7 +125,9 @@
           var msg =
             (payload && (payload.message || payload.error)) ||
             'Request failed with status ' + res.status;
-          throw new ApiError(msg, res.status);
+          var error = new ApiError(msg, res.status);
+          error.fields = payload && payload.fields;
+          throw error;
         }
         return payload;
       });
@@ -239,22 +241,17 @@
   LF.toast = toast;
 
   /* =====================================================================
-     "Mine" — what this browser has done.
-
-     There is no sign-in yet, so the browser is the identity. We remember the
-     references of items posted here and claims opened here, which is what
-     lets the dashboard show your things and lets a conversation work out
-     which side of it you are on.
-
-     This is deliberately a stopgap: it does not survive a different device,
-     and it is not a security boundary. Real accounts replace it.
+     Local suggestions and remembered form details, scoped to the account.
+     Authorization, dashboards and viewer roles come from the server.
      ===================================================================== */
 
   var MINE_KEY = 'lf.mine';
 
+  function mineKey() { return MINE_KEY + (authUser ? '.' + authUser.id : '.guest'); }
+
   function readMine() {
     try {
-      var raw = JSON.parse(localStorage.getItem(MINE_KEY));
+      var raw = JSON.parse(localStorage.getItem(mineKey()));
       return {
         items: Array.isArray(raw && raw.items) ? raw.items : [],
         claims: Array.isArray(raw && raw.claims) ? raw.claims : [],
@@ -268,7 +265,7 @@
 
   function writeMine(value) {
     try {
-      localStorage.setItem(MINE_KEY, JSON.stringify(value));
+      localStorage.setItem(mineKey(), JSON.stringify(value));
     } catch (e) {}
     return value;
   }
@@ -306,7 +303,7 @@
 
     clear: function () {
       try {
-        localStorage.removeItem(MINE_KEY);
+        localStorage.removeItem(mineKey());
       } catch (e) {}
     }
   };
@@ -407,6 +404,12 @@
     isLoggedIn: function () { return !!authUser; },
     isAdmin: function () { return authUser && authUser.role === 'ADMIN'; },
 
+    require: function () {
+      if (authUser) return true;
+      window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+      return false;
+    },
+
     me: function () {
       return LF.api.get('/api/auth/me')
         .then(function (user) {
@@ -460,7 +463,7 @@
 
     init: function () {
       syncAuthNav();
-      LF.auth.me();
+      return LF.auth.me();
     }
   };
 
@@ -517,8 +520,9 @@
   function boot() {
     initTheme();
     initNav();
-    LF.auth.init();
-    document.dispatchEvent(new CustomEvent('lf:ready'));
+    LF.auth.init().then(function () {
+      document.dispatchEvent(new CustomEvent('lf:ready'));
+    });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);

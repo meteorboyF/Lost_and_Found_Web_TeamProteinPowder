@@ -37,10 +37,7 @@ public class Claim {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /**
-     * Doubles as the access key for the conversation until sign-in exists:
-     * whoever holds the code can read and reply to the thread.
-     */
+    /** Human-readable identifier. Access always requires a participant's session. */
     @Column(nullable = false, unique = true, length = 16)
     private String reference;
 
@@ -77,8 +74,22 @@ public class Claim {
     @Column(nullable = false, length = 2000)
     private String proof;
 
+    // Nullable for existing rows: old claims require the poster to review proof.
+    private Boolean chatUnlocked;
+
+    @Column(length = 300)
+    private String evidencePhotoName;
+    private Instant evidenceReviewedAt;
+    @Column(length = 16)
+    private String deskReviewStatus;
+    private Boolean disputed;
+    private Instant approvedAt;
+    private Instant posterHandoverAt;
+    private Instant claimantHandoverAt;
+    private Instant studentIdCheckedAt;
+
     @OneToMany(mappedBy = "claim", cascade = CascadeType.ALL, orphanRemoval = true)
-    @OrderBy("createdAt ASC")
+    @OrderBy("createdAt ASC, id ASC")
     private List<ClaimMessage> messages = new ArrayList<>();
 
     @Column(nullable = false)
@@ -148,4 +159,23 @@ public class Claim {
     public void setUser(User user) {
         this.user = user;
     }
+
+    public boolean isChatUnlocked() { return Boolean.TRUE.equals(chatUnlocked); }
+    public void setChatUnlocked(boolean value) { chatUnlocked = value; }
+    public String getEvidencePhotoName() { return evidencePhotoName; }
+    public void setEvidencePhotoName(String value) { evidencePhotoName = value; }
+    public Instant getEvidenceReviewedAt() { return evidenceReviewedAt; }
+    public void setEvidenceReviewedAt(Instant value) { evidenceReviewedAt = value; }
+    public String getDeskReviewStatus() { return deskReviewStatus == null ? "NONE" : deskReviewStatus; }
+    public void setDeskReviewStatus(String value) { deskReviewStatus = value; }
+    public boolean isDisputed() { return Boolean.TRUE.equals(disputed); }
+    public void setDisputed(boolean value) { disputed = value; }
+    public Instant getApprovedAt() { return approvedAt; }
+    public void setApprovedAt(Instant value) { approvedAt = value; }
+    public Instant getPosterHandoverAt() { return posterHandoverAt; }
+    public void setPosterHandoverAt(Instant value) { posterHandoverAt = value; }
+    public Instant getClaimantHandoverAt() { return claimantHandoverAt; }
+    public void setClaimantHandoverAt(Instant value) { claimantHandoverAt = value; }
+    public Instant getStudentIdCheckedAt() { return studentIdCheckedAt; }
+    public void setStudentIdCheckedAt(Instant value) { studentIdCheckedAt = value; }
 }

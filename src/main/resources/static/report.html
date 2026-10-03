@@ -22,6 +22,8 @@
 <link rel="preload" href="/assets/fonts/inter-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/css/app.css">
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/vendor/leaflet/leaflet.css">
+<link rel="stylesheet" href="/css/maps.css">
 </head>
 
 <body class="min-h-screen flex flex-col bg-page">
@@ -171,7 +173,13 @@
     </div>
 
     <div class="p-5 sm:p-6">
-      <span class="label">Photograph <span class="font-normal text-faint">optional, but it helps a lot</span></span>
+      <h2 class="text-xl text-heading">Pin the reported spot</h2>
+      <p class="mt-2 mb-4 text-sm text-muted">Choose where you last saw the item, or where you found it. Click to place a pin, then drag it to the right spot. A pin is optional if you are unsure.</p>
+      <div data-location-picker></div>
+    </div>
+
+    <div class="p-5 sm:p-6">
+      <span class="label">Public photograph <span class="font-normal text-faint">optional; visible to everyone</span></span>
       <label class="mt-3 flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-line-strong
                     bg-sunken px-6 py-10 text-center transition hover:border-brand hover:bg-brand-soft
                     has-[:focus-visible]:border-brand" data-dropzone>
@@ -194,13 +202,32 @@
         </div>
       </div>
       <p class="min-h-5 text-sm text-lost" data-error="photo"></p>
+      <label for="privatePhoto" class="label">Private photograph (optional)</label>
+      <p class="mt-1 text-sm text-muted">Keep identifying details here. Only you and administrators can view it until handover is completed.</p>
+      <input id="privatePhoto" type="file" name="privatePhoto" accept="image/jpeg,image/png,image/webp,image/gif" class="field mt-3">
+      <div class="mt-3 hidden" data-private-preview><img alt="Private photo preview" class="h-16 w-16 rounded-lg object-cover" data-private-preview-img></div>
+      <p class="min-h-5 text-sm text-lost" data-error="privatePhoto"></p>
+    </div>
+
+    <div class="grid gap-3 p-5 sm:p-6">
+      <label class="flex items-start gap-3 text-sm text-body"><input type="checkbox" name="deskReviewRequired" class="mt-1"><span>Require campus-desk review for this item<br><span class="text-xs text-muted">Electronics and jewellery always require staff review and an in-person student-ID check. Select this for other valuable items.</span></span></label>
+      <h2 class="text-xl text-heading">Security question for chat</h2>
+      <p class="text-sm text-muted">A question is generated from the category. Edit it if needed, then set a secret answer that is absent from the public photo and description. Choose a detail the owner or finder can know.</p>
+      <label for="securityQuestion" class="label">Question</label>
+      <input id="securityQuestion" name="securityQuestion" maxlength="300" class="field" aria-describedby="securityQuestion-error">
+      <button type="button" data-generate-question class="btn btn-secondary">Generate question</button>
+      <p id="securityQuestion-error" class="min-h-5 text-sm text-lost" data-error="securityQuestion"></p>
+      <label for="securityAnswer" class="label">Secret answer</label>
+      <input id="securityAnswer" name="securityAnswer" type="password" minlength="3" maxlength="200" autocomplete="new-password" class="field" aria-describedby="securityAnswer-error">
+      <p id="securityAnswer-error" class="min-h-5 text-sm text-lost" data-error="securityAnswer"></p>
+      <p class="text-xs text-muted">Answers ignore letter case and extra spaces. They are stored as salted hashes.</p>
     </div>
 
     <div class="grid gap-5 p-5 sm:grid-cols-2 sm:p-6">
       <div class="sm:col-span-2">
         <span class="label">How we reach you</span>
         <p class="mt-1 text-sm text-muted">
-          Your email is never shown on the board — only used for matches and claims.
+          Your signed-in account is used for your posts and conversations. Your email is never shown on the board.
         </p>
       </div>
       <div class="grid gap-1.5">
@@ -245,6 +272,7 @@
         <a href="/dashboard.html" class="inline-block py-1 transition hover:text-heading">My items</a>
         <a href="/map.html" class="inline-block py-1 transition hover:text-heading">Campus map</a>
         <a href="/gallery.html" class="inline-block py-1 transition hover:text-heading">Reunions</a>
+        <a href="/help.html" class="inline-block py-1 transition hover:text-heading">Claim &amp; collection guide</a>
       </nav>
       <p class="text-xs text-faint">Items are held for 90 days before archiving.</p>
     </div>
@@ -257,6 +285,6 @@
 <script src="/js/app.js"></script>
 <script src="/js/ui.js"></script>
 <script src="/js/alerts.js"></script>
-<script src="/js/report.js"></script>
+<script src="/assets/vendor/leaflet/leaflet.js"></script><script src="/js/maps.js"></script><script src="/js/report.js"></script>
 </body>
 </html>

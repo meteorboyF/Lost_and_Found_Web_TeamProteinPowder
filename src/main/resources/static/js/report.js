@@ -16,7 +16,9 @@
   var successHost = document.querySelector('[data-success]');
   var fileInput = document.querySelector('input[name="photo"]');
   var preview = document.querySelector('[data-preview]');
+  var privateInput = document.querySelector('input[name="privatePhoto"]');
   var MAX_BYTES = 5 * 1024 * 1024;
+  var locationPicker;
 
   /* ------------------------------------------------------------------
      Field errors
@@ -56,6 +58,11 @@
     if (!data.category) errors.category = 'Pick a category';
     if (!data.description.trim()) errors.description = 'Describe the item';
     if (!data.location.trim()) errors.location = 'Say roughly where it happened';
+    if (locationPicker) {
+      try { locationPicker.read(); } catch (err) { errors.coordinatesPaired = err.message; }
+    }
+    if (!form.elements.securityQuestion.value.trim()) errors.securityQuestion = 'Set a security question';
+    if (form.elements.securityAnswer.value.trim().length < 3) errors.securityAnswer = 'Use at least 3 characters for the secret answer';
     if (!data.reporterName.trim()) errors.reporterName = 'Tell us your name';
 
     var email = data.reporterEmail.trim();
@@ -76,6 +83,8 @@
     if (file && file.size > MAX_BYTES) {
       errors.photo = 'That photo is ' + (file.size / 1048576).toFixed(1) + ' MB. The limit is 5 MB.';
     }
+    var privateFile = privateInput.files && privateInput.files[0];
+    if (privateFile && privateFile.size > MAX_BYTES) errors.privatePhoto = 'The private photo must be 5 MB or smaller';
 
     return errors;
   }
@@ -181,6 +190,7 @@
 
   function submit(ev) {
     ev.preventDefault();
+    if (!LF.auth.require() || submitBtn.disabled) return;
 
     var kindEl = document.querySelector('input[name="kind"]:checked');
     var data = {
@@ -212,13 +222,19 @@
       location: data.location.trim(),
       happenedOn: data.happenedOn || null,
       reporterName: data.reporterName.trim(),
-      reporterEmail: data.reporterEmail.trim()
+      reporterEmail: data.reporterEmail.trim(),
+      securityQuestion: form.elements.securityQuestion.value.trim(),
+      deskReviewRequired: form.elements.deskReviewRequired.checked,
+      securityAnswer: form.elements.securityAnswer.value
     };
+    if (locationPicker) Object.assign(payload, locationPicker.read());
 
     var body = new FormData();
     body.append('item', new Blob([JSON.stringify(payload)], { type: 'application/json' }));
     var file = fileInput.files && fileInput.files[0];
     if (file) body.append('photo', file);
+    var privateFile = privateInput.files && privateInput.files[0];
+    if (privateFile) body.append('privatePhoto', privateFile);
 
     submitBtn.disabled = true;
     var originalLabel = submitBtn.textContent;
@@ -232,6 +248,8 @@
         });
       })
       .then(function (item) {
+        if (locationPicker) locationPicker.destroy();
+        form.elements.securityAnswer.value = '';
         /* Remember it, so the dashboard can show it and so the item page
            knows to show incoming claims rather than a claim button. */
         LF.mine.addItem(item.reference);
@@ -269,7 +287,7 @@
           '<h1 class="mt-1 text-2xl text-heading">Posted to the board</h1>' +
           '<p class="max-w-md text-sm text-body">' +
             (item.kind === 'LOST'
-              ? 'We will watch the found side and email you if something matches.'
+              ? 'Check your match alerts for similar posts on the found side.'
               : 'Whoever lost this can now find it and start a conversation with you.') +
           '</p>' +
         '</div>' +
@@ -286,6 +304,7 @@
         '</div>' +
         '<div class="flex flex-wrap gap-3 bg-sunken p-6">' +
           '<a href="/item.html?ref=' + encodeURIComponent(item.reference) + '" class="btn btn-primary">View the post</a>' +
+          (LF.maps.hasPin(item) ? '<a href="/map.html?ref=' + encodeURIComponent(item.reference) + '" class="btn btn-secondary">See your map pin</a>' : '') +
           '<a href="/browse.html" class="btn btn-secondary">Browse the board</a>' +
           '<a href="/report.html" class="btn btn-ghost">Post another</a>' +
         '</div>' +
@@ -335,8 +354,43 @@
      ------------------------------------------------------------------ */
 
   document.addEventListener('lf:ready', function () {
+    if (!LF.auth.require()) return;
+    var user = LF.auth.getUser();
+    form.elements.reporterName.value = user.username;
+    form.elements.reporterEmail.value = user.email;
+    form.elements.reporterName.readOnly = true;
+    form.elements.reporterEmail.readOnly = true;
     initKind();
     initPhoto();
+    locationPicker = LF.maps.picker(document.querySelector('[data-location-picker]'), {}, { id: 'report-pin' });
+    var privateUrl = null;
+    privateInput.addEventListener('change', function () {
+      if (privateUrl) URL.revokeObjectURL(privateUrl);
+      privateUrl = null;
+      var file = privateInput.files && privateInput.files[0];
+      var box = document.querySelector('[data-private-preview]');
+      box.classList.add('hidden');
+      setError('privatePhoto', file && file.size > MAX_BYTES ? 'The private photo must be 5 MB or smaller' : '');
+      if (file && file.size <= MAX_BYTES) {
+        privateUrl = URL.createObjectURL(file);
+        box.querySelector('img').src = privateUrl;
+        box.classList.remove('hidden');
+      }
+    });
+
+    var questionVersion = 0;
+    function generateQuestion() {
+      var category = form.elements.category.value;
+      if (!category) { setError('securityQuestion', 'Pick a category first'); return; }
+      var version = ++questionVersion;
+      LF.api.get('/api/items/questions?category=' + encodeURIComponent(category)).then(function (result) {
+        if (version !== questionVersion) return;
+        form.elements.securityQuestion.value = result.question;
+        setError('securityQuestion', '');
+      }).catch(function (err) { LF.toast.error(err.message); });
+    }
+    form.elements.category.addEventListener('change', generateQuestion);
+    document.querySelector('[data-generate-question]').addEventListener('click', generateQuestion);
 
     LF.api
       .get('/api/items/categories')

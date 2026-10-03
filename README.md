@@ -6,6 +6,9 @@ of the board for likely matches.
 
 Built by **Team Protein Powder**.
 
+New to the project? Start with [Getting started](GETTING_STARTED.md) for the
+tech stack, quick setup, project structure and test commands.
+
 ---
 
 ## Stack
@@ -30,14 +33,16 @@ request.
 
 | | |
 |---|---|
-| **Post an item** | Lost or found, with a photo, description, category, location and date. |
+| **Post an item** | Signed-in, approved users post lost or found items with a public photo and an optional private evidence photo. |
 | **Browse the board** | Keyword search across title, description, location and colour, plus filters for side of the board, category and status. Sort and paging. Filter state lives in the URL, so a filtered board is a shareable link. |
-| **Claim an item** | Describe something only the owner would know, then talk it through in a private thread with whoever has it. |
+| **Claim an item** | Answer a security question and submit private identifying details or an evidence image. Participants and authorized campus staff can review it. |
+| **Automatic questions** | Category-based prompts are generated locally. Posters can edit the question and set a secret answer, stored as a salted hash. |
+| **Private images** | Poster images are protected until handover completes. Claimant evidence images are limited to the two participants and authorized staff. |
 | **Comment publicly** | An open thread on every listing, so several people can help identify something. |
 | **Smart matching** | Every post is scored against the opposite side of the board and strong overlaps surface as suggestions — with the reasons why. |
 | **Match alerts** | A bell that tells you when something resembling your post turns up, without repeating itself. |
-| **My items** | Everything you have posted or claimed, plus claims other people have made on your posts. |
-| **Campus map** | A schematic of campus that tints darker where more is reported. |
+| **My items** | Account-based posts and conversations on any device, including incoming claims. |
+| **Campus map** | Interactive UIU map with report pins, suggested search areas, filters and walking directions. |
 | **Reunions** | A wall of items that made it home. |
 | **Dark mode** | Authored independently of light, not an inversion. Follows the system by default, and remembers your choice. |
 
@@ -49,7 +54,7 @@ where a comment can be hidden and restored rather than destroyed.
 ### Status lifecycle
 
 ```
-OPEN ──first claim──> PENDING ──accepted──> RESOLVED
+OPEN ──first claim──> PENDING ──both confirm handover──> RESOLVED
   ^                      │
   └──all claims closed───┘
 ```
@@ -67,6 +72,19 @@ the styling — the compiled stylesheet is committed.
 ```
 
 Then open <http://localhost:8080>.
+
+Posting and chat require an approved account. On a fresh database, configure
+`APP_BOOTSTRAP_ADMIN_EMAIL` and `APP_BOOTSTRAP_ADMIN_PASSWORD` (at least 12
+characters) before startup to create an administrator. Sign in using that email
+and password, then approve student registrations in `/admin.html`. Bootstrap
+does not reset or promote existing accounts; remove its password from the
+environment after the account is created.
+
+For a local demonstration only, explicitly set `APP_DEMO_ENABLED=true` before
+starting. This creates `admin` / `admin123`, `student` / `student123`, and a
+pending student. Demo credentials and the legacy shared moderation key are
+disabled by default. Disabling demo creation does not remove accounts already
+in an existing database: change or remove their published passwords before deployment.
 
 `run.sh` picks a real JDK, recompiles the stylesheet if `frontend/node_modules`
 is present, and starts the application. To run the pieces by hand instead:
@@ -155,24 +173,37 @@ All JSON, all on the same origin as the pages.
 | `GET` | `/api/health` | Liveness, used to tell "API down" from "board empty" |
 | `GET` | `/api/items` | Browse. `kind` `status` `category` `q` `sort` `page` `size` |
 | `GET` | `/api/items/{ref}` | One item |
-| `POST` | `/api/items` | Create (multipart: `item` JSON part + optional `photo`) |
+| `POST` | `/api/items` | Create (approved session; multipart `item` JSON + optional public `photo` and `privatePhoto`) |
+| `GET` | `/api/items/mine` | The signed-in account's posts |
+| `GET` | `/api/items/questions?category=KEYS` | Generate a category-specific security question |
+| `GET` | `/api/items/{ref}/private-photo` | Protected image; poster, administrator, or claimant after completed handover |
 | `GET` | `/api/items/{ref}/matches` | Scored matches from the other side of the board |
 | `GET` | `/api/items/stats` | Board-wide counts |
 | `GET` | `/api/items/categories` | Category list, so the frontend never hard-codes the enum |
 | `GET` `POST` | `/api/items/{ref}/comments` | Public comment thread |
 | `POST` | `/api/items/{ref}/claims` | Open a claim |
-| `GET` | `/api/claims/{ref}` | One conversation |
+| `GET` | `/api/claims/{ref}` | One conversation; participant session required |
+| `GET` | `/api/claims` | Signed-in account's conversations |
+| `POST` | `/api/claims/{ref}/verify` | Poster reviews private evidence; also unlocks legacy chat |
 | `POST` | `/api/claims/{ref}/messages` | Reply |
-| `POST` | `/api/claims/{ref}/accept` · `/decline` · `/withdraw` | Resolve a claim |
-| `GET` | `/api/admin/*` | Moderation. Requires `X-Admin-Key` |
+| `POST` | `/api/claims/{ref}/accept` | Approve pickup after evidence/staff checks; does not mark returned |
+| `POST` | `/api/claims/{ref}/handover` | Each participant confirms; both are required for return |
+| `POST` | `/api/claims/{ref}/decline` · `/withdraw` | Close a claim without clearing unresolved disputes |
+| `POST` / `GET` | `/api/claims/{ref}/evidence` | Upload/read a protected claimant evidence image |
+| `POST` | `/api/claims/{ref}/flag` · `/desk-review` | Report fraud and freeze handovers, or request staff review |
+| `GET` | `/api/claims/{ref}/audit` | Participant-only claim history |
+| `GET` | `/api/desk/claims` · `/claims/{ref}` · `/audit` | Staff-only review queue, details and audit log |
+| `POST` | `/api/desk/claims/{ref}/review` | Staff clears after ID check or rejects with notes |
+| `GET` | `/api/admin/*` | Moderation. Requires an administrator session or explicitly configured legacy key |
 
 Validation failures return a `fields` map of input name to message, so a form
 can put each message beside the input that caused it.
 
 ### Moderation key
 
-`app.admin.key`, default `campus-admin-2026`, override with the `APP_ADMIN_KEY`
-environment variable. It is checked on the server for every admin endpoint.
+`app.admin.key` is empty by default. Administrator accounts are preferred. Set
+`APP_ADMIN_KEY` only if the legacy key flow is needed; the server checks every
+moderation endpoint. Never use the former published `campus-admin-2026` key.
 
 ## Design decisions
 
@@ -229,23 +260,100 @@ There is no server-side templating engine, so `frontend/genpages.py` generates
 every page from a single shared chrome template. Edit the template and re-run
 it — never edit the masthead in four files by hand.
 
-### What is deliberately unfinished
+### Image privacy and verified chat
 
-Three things are stopgaps, marked as such in the code, and all three are the
-same underlying gap — **there are no user accounts yet**:
+The report form accepts one public photograph and one private photograph,
+each up to 5 MB (JPEG, PNG, GIF or WebP). The server checks file contents and
+stores private photographs in `uploads/private/`, outside public routing.
+Private responses are marked `no-store`; public responses never contain a
+private filename or security answer. Existing public images remain public.
 
-1. **The browser is the identity.** `localStorage` remembers which posts and
-   claims belong to you. It does not follow you to another device, and it is
-   not a security boundary.
-2. **A claim's reference code is its access key.** Whoever holds the code can
-   read and reply to that thread. Codes are four characters from a 32-symbol
-   alphabet, so they are not guessable in bulk, but that is obscurity, not
-   authorisation.
-3. **Moderation is a shared key.** Fine for a demo; it is not a role system.
+A category generates a suggested question. The poster edits it if needed and
+provides an answer absent from public information. Matching ignores case,
+Unicode compatibility differences, and repeated whitespace. Answers use the
+same salted PBKDF2 implementation as account passwords. Five incorrect answers
+lock further checks for that account for 15 minutes, including across sessions
+and application restarts. No claim is created for an incorrect answer.
 
-Adding sign-in replaces all three at once. Alerts are also browser-side
-re-checks rather than email, because there is no mail server — the UI never
-promises a notification it cannot send.
+Legacy posts without an answer still accept ownership proof, but their chat
+stays locked until the poster reviews it. Existing conversations also require
+this review if they predate verification. Unlinked legacy guest content is not
+automatically assigned to accounts by email; operators must verify ownership
+before migrating it. Bundled registry posts are assigned to an administrator.
+
+Each chat endpoint checks the current account against the stored participant
+IDs. Sender roles come from the session. Only the poster accepts, declines or
+verifies a claim; only the claimant withdraws it. Chat refreshes every five
+seconds while visible, preserves drafts, and becomes read-only when closed.
+Public comments remain available, including guest comments; new private
+messages must go through a verified claim. Existing private comments remain
+restricted to their linked author, poster and moderators.
+
+Match alerts remain browser-side rechecks; there is no email delivery service.
+Uploaded files need persistent storage in production. Docker Compose mounts
+the entire uploads directory, including its private subdirectory; the existing
+Render free-tier blueprint does not provide a persistent upload disk.
+
+### UIU campus map
+
+The campus map uses a real OpenStreetMap basemap centered on United International
+University at `23.7978829, 90.4497100`, from the supplied campus Maps link.
+Leaflet 1.9.4 and its license are vendored under `static/assets/vendor/leaflet`;
+map imagery needs an internet connection.
+
+When posting, click the reported spot or drag the pin, choose a suggested search
+radius (10–500 metres), and describe the floor, room or nearby landmark. Pins are
+optional; text-only older reports are never assigned guessed coordinates. Posters
+can add, adjust or remove their pin from their item page. The server validates
+coordinate pairs and restricts these edits to the approved report owner.
+
+The map supports lost/found filters, search, returned items, shared report links,
+and Google Maps walking directions to the saved coordinates. “My location” is
+opt-in: the explorer uses it only in browser memory for approximate straight-line
+distances and directions, not live tracking. On the report form, “Use my location”
+sets the public report pin; check it before publishing. Search circles are
+poster estimates, not indoor routing or guaranteed GPS accuracy. Share searches
+and sightings through the public “Clues & community updates” thread, keeping
+secret verification details in the verified private chat.
+
+To populate a running local server with six pinned UIU reports,
+run `node scripts/add-map-reports.mjs` with Node 22+. It uses the local student
+account, skips reports already present, and never modifies existing reports.
+The security answer for these initial reports is `blue star`.
+Optional `SEED_BASE_URL`, `SEED_USERNAME` and `SEED_PASSWORD` environment variables
+override the local URL and credentials. Non-local servers are rejected.
+
+### Safe handover
+
+New claims use `OPEN → APPROVED → ACCEPTED`: approval reserves pickup, while
+the item remains pending until both distinct participants confirm the physical
+handover. The poster must explicitly review private evidence before approval.
+Electronics, jewellery and explicitly marked valuables require staff review
+and an in-person student-ID-check attestation. Fraud reports freeze every
+handover for that item until all disputes are resolved; withdrawal cannot
+dismiss a dispute. Staff cannot review their own claim or report.
+
+Open `/help.html` for ownership and collection guidance. Add local reports and
+claims with `node scripts/add-claim-reports.mjs`; open `/desk.html` as staff
+for reviews. See [the claim and collection guide](docs/CLAIM_AND_COLLECTION_GUIDE.md)
+for testing accounts, test commands, database upgrades and security boundaries.
+
+### Verification
+
+Run `./mvnw test` (or `./mvnw.cmd test` on Windows) with Java 21+. Integration
+tests use H2 with open-in-view disabled and exercise private image permissions,
+chat authorization, spoofed roles, answer lockouts, legacy proof review,
+invalid uploads, cross-origin writes, private-comment bypass prevention, exact
+coordinate round trips, owner-only location edits and invalid map coordinates.
+The suite includes 21 tests, including private claimant evidence, staff gates,
+fraud freezes, audit access, two-party handover and concurrent actions. The
+`npm run test:fraud` browser suite in `frontend/` exercises the visible workflow
+against an isolated local test server (see the claim and collection guide).
+`npm run test:content` checks public pages and responsive layouts without changing reports.
+Rebuild the committed stylesheet with `npm run build` in `frontend/` after
+changing HTML or JavaScript utility classes.
+
+See [the project review](docs/PROJECT_REVIEW.md) for findings and remaining limits.
 
 ## Team
 

@@ -22,9 +22,28 @@ public record ClaimResponse(
         List<MessageResponse> messages,
         Instant createdAt,
         Instant updatedAt,
-        Instant resolvedAt) {
+        Instant resolvedAt,
+        boolean chatUnlocked,
+        String viewerRole,
+        Safety safety) {
+
+    public record Safety(String proof, boolean hasEvidencePhoto, Instant evidenceReviewedAt,
+            String deskReviewStatus, boolean disputed, boolean handoverFrozen,
+            Instant approvedAt, Instant posterHandoverAt, Instant claimantHandoverAt,
+            Instant studentIdCheckedAt) {
+        static Safety from(Claim claim) {
+            return new Safety(claim.getProof(), claim.getEvidencePhotoName() != null,
+                    claim.getEvidenceReviewedAt(), claim.getDeskReviewStatus(), claim.isDisputed(),
+                    claim.getItem().isHandoverFrozen(), claim.getApprovedAt(), claim.getPosterHandoverAt(),
+                    claim.getClaimantHandoverAt(), claim.getStudentIdCheckedAt());
+        }
+    }
 
     public static ClaimResponse from(Claim claim) {
+        return from(claim, null);
+    }
+
+    public static ClaimResponse from(Claim claim, String viewerRole) {
         return new ClaimResponse(
                 claim.getReference(),
                 claim.getStatus().name(),
@@ -34,11 +53,15 @@ public record ClaimResponse(
                 claim.getMessages().stream().map(MessageResponse::from).toList(),
                 claim.getCreatedAt(),
                 claim.getUpdatedAt(),
-                claim.getResolvedAt());
+                claim.getResolvedAt(), claim.isChatUnlocked(), viewerRole, Safety.from(claim));
     }
 
     /** Summary form for lists, without dragging every message along. */
     public static ClaimResponse summary(Claim claim) {
+        return summary(claim, null);
+    }
+
+    public static ClaimResponse summary(Claim claim, String viewerRole) {
         return new ClaimResponse(
                 claim.getReference(),
                 claim.getStatus().name(),
@@ -48,7 +71,7 @@ public record ClaimResponse(
                 List.of(),
                 claim.getCreatedAt(),
                 claim.getUpdatedAt(),
-                claim.getResolvedAt());
+                claim.getResolvedAt(), claim.isChatUnlocked(), viewerRole, Safety.from(claim));
     }
 
     public record MessageResponse(

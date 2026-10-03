@@ -107,6 +107,7 @@ FOOT = """</main>
         <a href="/dashboard.html" class="inline-block py-1 transition hover:text-heading">My items</a>
         <a href="/map.html" class="inline-block py-1 transition hover:text-heading">Campus map</a>
         <a href="/gallery.html" class="inline-block py-1 transition hover:text-heading">Reunions</a>
+        <a href="/help.html" class="inline-block py-1 transition hover:text-heading">Claim &amp; collection guide</a>
       </nav>
       <p class="text-xs text-faint">Items are held for 90 days before archiving.</p>
     </div>
@@ -143,7 +144,7 @@ NAV_TOGGLE = """      <button type="button" data-nav-toggle aria-controls="prima
 CURRENT = ' aria-current="page"'
 
 
-def page(filename, title, description, body, scripts, active=None, public_nav=True):
+def page(filename, title, description, body, scripts, active=None, public_nav=True, map_assets=False):
     """Render one page.
 
     public_nav=False drops the site navigation — used by the moderation
@@ -161,6 +162,8 @@ def page(filename, title, description, body, scripts, active=None, public_nav=Tr
     }
 
     html = HEAD.format(title=title, description=description, **chrome) + body + FOOT.format(scripts=scripts)
+    if map_assets:
+        html = html.replace('</head>', '<link rel="stylesheet" href="/assets/vendor/leaflet/leaflet.css">\n<link rel="stylesheet" href="/css/maps.css">\n</head>')
     (STATIC / filename).write_text(html, encoding="utf-8")
     print(f"wrote {filename} ({len(html):,} bytes)")
 
@@ -514,7 +517,13 @@ REPORT_BODY = """
     </div>
 
     <div class="p-5 sm:p-6">
-      <span class="label">Photograph <span class="font-normal text-faint">optional, but it helps a lot</span></span>
+      <h2 class="text-xl text-heading">Pin the reported spot</h2>
+      <p class="mt-2 mb-4 text-sm text-muted">Choose where you last saw the item, or where you found it. Click to place a pin, then drag it to the right spot. A pin is optional if you are unsure.</p>
+      <div data-location-picker></div>
+    </div>
+
+    <div class="p-5 sm:p-6">
+      <span class="label">Public photograph <span class="font-normal text-faint">optional; visible to everyone</span></span>
       <label class="mt-3 flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-line-strong
                     bg-sunken px-6 py-10 text-center transition hover:border-brand hover:bg-brand-soft
                     has-[:focus-visible]:border-brand" data-dropzone>
@@ -537,13 +546,32 @@ REPORT_BODY = """
         </div>
       </div>
       <p class="min-h-5 text-sm text-lost" data-error="photo"></p>
+      <label for="privatePhoto" class="label">Private photograph (optional)</label>
+      <p class="mt-1 text-sm text-muted">Keep identifying details here. Only you and administrators can view it until handover is completed.</p>
+      <input id="privatePhoto" type="file" name="privatePhoto" accept="image/jpeg,image/png,image/webp,image/gif" class="field mt-3">
+      <div class="mt-3 hidden" data-private-preview><img alt="Private photo preview" class="h-16 w-16 rounded-lg object-cover" data-private-preview-img></div>
+      <p class="min-h-5 text-sm text-lost" data-error="privatePhoto"></p>
+    </div>
+
+    <div class="grid gap-3 p-5 sm:p-6">
+      <label class="flex items-start gap-3 text-sm text-body"><input type="checkbox" name="deskReviewRequired" class="mt-1"><span>Require campus-desk review for this item<br><span class="text-xs text-muted">Electronics and jewellery always require staff review and an in-person student-ID check. Select this for other valuable items.</span></span></label>
+      <h2 class="text-xl text-heading">Security question for chat</h2>
+      <p class="text-sm text-muted">A question is generated from the category. Edit it if needed, then set a secret answer that is absent from the public photo and description. Choose a detail the owner or finder can know.</p>
+      <label for="securityQuestion" class="label">Question</label>
+      <input id="securityQuestion" name="securityQuestion" maxlength="300" class="field" aria-describedby="securityQuestion-error">
+      <button type="button" data-generate-question class="btn btn-secondary">Generate question</button>
+      <p id="securityQuestion-error" class="min-h-5 text-sm text-lost" data-error="securityQuestion"></p>
+      <label for="securityAnswer" class="label">Secret answer</label>
+      <input id="securityAnswer" name="securityAnswer" type="password" minlength="3" maxlength="200" autocomplete="new-password" class="field" aria-describedby="securityAnswer-error">
+      <p id="securityAnswer-error" class="min-h-5 text-sm text-lost" data-error="securityAnswer"></p>
+      <p class="text-xs text-muted">Answers ignore letter case and extra spaces. They are stored as salted hashes.</p>
     </div>
 
     <div class="grid gap-5 p-5 sm:grid-cols-2 sm:p-6">
       <div class="sm:col-span-2">
         <span class="label">How we reach you</span>
         <p class="mt-1 text-sm text-muted">
-          Your email is never shown on the board — only used for matches and claims.
+          Your signed-in account is used for your posts and conversations. Your email is never shown on the board.
         </p>
       </div>
       <div class="grid gap-1.5">
@@ -611,18 +639,18 @@ DASH_BODY = """
     <div>
       <h1 class="text-3xl text-heading sm:text-4xl" data-greeting>My items</h1>
       <p class="mt-3 max-w-2xl text-body">
-        Everything you have posted or claimed from this browser.
+        Everything your account has posted or claimed, on any device.
       </p>
     </div>
-    <button type="button" data-forget class="btn btn-ghost btn-sm text-lost">Forget this device</button>
+    <button type="button" data-forget class="btn btn-ghost btn-sm text-lost">Clear local suggestions</button>
   </div>
 
   <div class="mb-6 rounded-xl border border-line bg-brand-soft p-4 text-sm leading-relaxed text-brand-text">
     <svg class="icon mb-1 h-[1.15rem] w-[1.15rem]" aria-hidden="true"><use href="/assets/icons.svg#i-info"></use></svg>
     <p>
-      There are no accounts yet, so this list is stored on this device. Keep your
-      reference codes — they are how you get back to a post or a conversation from
-      anywhere else.
+      Your posts and private conversations belong to your signed-in account.
+      Claimants answer an ownership question before chat opens. A reference code
+      identifies a conversation; access is limited to its two participants.
     </p>
   </div>
 
@@ -673,30 +701,46 @@ GALLERY_BODY = """
 # ============================== map ==============================
 
 MAP_BODY = """
-<div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-  <div class="mb-8">
-    <h1 class="text-3xl text-heading sm:text-4xl">Where things go missing</h1>
-    <p class="mt-3 max-w-2xl text-body">
-      Every report placed on campus. Darker buildings lose more. Select one to see what
-      has been reported there.
-    </p>
+<div class="campus-explorer mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+  <div class="map-page-heading">
+    <div>
+      <p class="map-eyebrow">UNITED INTERNATIONAL UNIVERSITY</p>
+      <h1 class="text-3xl text-heading sm:text-4xl">A place to start looking.</h1>
+      <p class="mt-3 max-w-2xl text-muted">Follow a reported pin, explore the surrounding area, and share what you find. A small clue can bring something home.</p>
+    </div>
+    <a href="/report.html?kind=LOST" class="btn btn-primary"><svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#i-pin"></use></svg>Report &amp; drop a pin</a>
   </div>
-
-  <div class="mb-6 flex flex-wrap gap-2" role="group" aria-label="Filter the map">
-    <button type="button" data-map-kind="" aria-pressed="true"
-            class="pill pill-lg border border-line-strong text-body transition aria-[pressed=true]:border-brand aria-[pressed=true]:bg-brand aria-[pressed=true]:text-white">All reports</button>
-    <button type="button" data-map-kind="LOST" aria-pressed="false"
-            class="pill pill-lg border border-line-strong text-body transition aria-[pressed=true]:border-lost aria-[pressed=true]:bg-lost aria-[pressed=true]:text-white">Lost here</button>
-    <button type="button" data-map-kind="FOUND" aria-pressed="false"
-            class="pill pill-lg border border-line-strong text-body transition aria-[pressed=true]:border-found aria-[pressed=true]:bg-found aria-[pressed=true]:text-white">Found here</button>
+  <div class="map-summary" aria-label="Map overview">
+    <span><i class="map-dot map-dot-lost"></i><strong data-map-lost>0</strong> lost</span>
+    <span><i class="map-dot map-dot-found"></i><strong data-map-found>0</strong> found</span>
+    <span><svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#i-pin"></use></svg><strong data-map-pinned>0</strong> with a pin</span>
+    <span class="map-summary-note">Reported locations · community clues</span>
   </div>
-
-  <div data-map></div>
-
-  <div class="mt-10">
-    <h2 class="text-xl text-heading" data-map-heading>All locations</h2>
-    <div class="mt-5" data-map-list></div>
+  <div class="map-workspace">
+    <aside class="map-sidebar" aria-label="Reports and location details">
+      <div class="map-sidebar-tools">
+        <label for="map-search" class="sr-only">Search reports by item or location</label>
+        <div class="map-search-wrap"><svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#i-search"></use></svg><input id="map-search" class="field" type="search" placeholder="Search an item or location" data-map-search></div>
+        <div class="map-kind-tabs" role="group" aria-label="Filter reports">
+          <button type="button" data-map-kind="" aria-pressed="true">All</button>
+          <button type="button" data-map-kind="LOST" aria-pressed="false">Lost</button>
+          <button type="button" data-map-kind="FOUND" aria-pressed="false">Found</button>
+        </div>
+        <div class="map-options"><label><input type="checkbox" data-map-resolved> Include returned items</label><button type="button" data-map-refresh aria-label="Refresh reports">Refresh</button></div>
+      </div>
+      <div data-map-selection></div>
+      <div class="map-list-heading"><h2 data-map-heading>Reports near campus</h2><span data-map-count>0</span></div>
+      <div class="map-report-list" data-map-list><p class="map-list-empty">Loading reports…</p></div>
+    </aside>
+    <div class="map-stage">
+      <div class="map-floating-tools"><button type="button" class="map-control" data-map-campus><svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#i-pin"></use></svg>UIU campus</button><button type="button" class="map-control" data-map-fit>Show all pins</button><button type="button" class="map-control" data-map-locate>My location</button></div>
+      <div class="geo-map campus-real-map" data-map aria-label="Interactive UIU map with reported lost and found locations"></div>
+      <div class="map-compass" aria-hidden="true"><span>N</span><svg viewBox="0 0 24 24"><path d="m12 3 6 17-6-4-6 4Z" fill="currentColor"/></svg></div>
+      <div class="map-bottom-note"><span class="map-note-icon">⌖</span><div><strong>Start at the reported spot</strong><p>Select a pin for directions and community clues.</p></div></div>
+    </div>
   </div>
+  <p class="map-service-status" data-map-status role="status" aria-live="polite"></p>
+  <p class="map-footnote">Pins show where an item was reported lost or found. Shaded areas are the poster’s suggested search area. Your device location is used only when you choose “My location”. Map imagery: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>.</p>
 </div>
 """
 
@@ -715,18 +759,19 @@ ADMIN_BODY = """
         </span>
         <h1 class="mt-4 text-2xl text-heading">Moderation</h1>
         <p class="mt-2 text-sm text-body">
-          Enter the moderation key to manage posts and comments.
+          Sign in with an administrator account to manage posts, comments and student approvals.
         </p>
+        <a href="/login.html?redirect=%2Fadmin.html" class="btn btn-primary mt-4 w-full">Sign in as administrator</a>
         <form class="mt-5 grid gap-1.5" data-admin-form novalidate>
-          <label for="adminKey" class="label">Moderation key</label>
+          <label for="adminKey" class="label">Legacy moderation key (if configured)</label>
           <input id="adminKey" name="adminKey" type="password" class="field" autocomplete="current-password">
           <p class="min-h-5 text-sm text-lost" data-admin-error></p>
           <button type="submit" class="btn btn-primary mt-1">Open workspace</button>
         </form>
       </div>
       <p class="mt-4 text-center text-xs text-faint">
-        A shared key is a coursework stopgap, not real authorisation. It is checked on
-        the server for every request, not just used to hide this screen.
+        Administrator access is checked on the server for every request.
+        Shared-key access is disabled unless explicitly configured by the operator.
       </p>
     </div>
   </div>
@@ -738,7 +783,7 @@ ADMIN_BODY = """
         <h1 class="text-3xl text-heading sm:text-4xl">Moderation</h1>
         <p class="mt-2 text-body">Board health, posts, and the comment queue.</p>
       </div>
-      <button type="button" data-admin-signout class="btn btn-ghost btn-sm">Sign out</button>
+      <div class="flex gap-3"><a href="/desk.html" class="btn btn-secondary btn-sm">Campus desk &amp; fraud review</a><button type="button" data-admin-signout class="btn btn-ghost btn-sm">Sign out</button></div>
     </div>
 
     <div class="mb-6 border-b border-line">
@@ -774,15 +819,15 @@ page("browse.html", "Browse the board — Lost &amp; Found",
 
 page("report.html", "Post an item — Lost &amp; Found",
      "Report something you lost or hand in something you found.",
-     REPORT_BODY, '<script src="/js/report.js"></script>', active="nav_report")
+     REPORT_BODY, '<script src="/assets/vendor/leaflet/leaflet.js"></script><script src="/js/maps.js"></script><script src="/js/report.js"></script>', active="nav_report", map_assets=True)
 
 page("item.html", "Item — Lost &amp; Found",
      "Details for one item on the Lost and Found board.",
-     ITEM_BODY, '<script src="/js/item.js"></script>')
+     ITEM_BODY, '<script src="/assets/vendor/leaflet/leaflet.js"></script><script src="/js/maps.js"></script><script src="/js/safety.js"></script><script src="/js/item.js"></script>', map_assets=True)
 
 page("claim.html", "Claim — Lost &amp; Found",
      "A conversation about one claimed item.",
-     CLAIM_BODY, '<script src="/js/claim.js"></script>')
+     CLAIM_BODY, '<script src="/js/safety.js"></script><script src="/js/claim.js"></script>')
 
 page("dashboard.html", "My items — Lost &amp; Found",
      "Everything you have posted or claimed.",
@@ -794,8 +839,48 @@ page("gallery.html", "Reunions — Lost &amp; Found",
 
 page("map.html", "Campus map — Lost &amp; Found",
      "Where items are lost and found across campus.",
-     MAP_BODY, '<script src="/js/map.js"></script>', active="nav_map")
+     MAP_BODY, '<script src="/assets/vendor/leaflet/leaflet.js"></script><script src="/js/maps.js"></script><script src="/js/map.js"></script>', active="nav_map", map_assets=True)
 
 page("admin.html", "Moderation — Lost &amp; Found",
      "Moderation tools for the campus Lost and Found board.",
      ADMIN_BODY, '<script src="/js/admin.js"></script>', public_nav=False)
+
+page("desk.html", "Campus desk — Lost &amp; Found",
+     "Private evidence review, disputed claims and handover safety.",
+     '''<div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+       <div class="flex flex-wrap items-center justify-between gap-4"><div><p class="text-sm text-brand-text">STAFF WORKSPACE</p><h1 class="mt-2 text-3xl text-heading">Campus desk &amp; fraud review</h1><p class="mt-2 text-muted">Review ownership evidence, check student ID in person, and resolve disputes before pickup.</p></div><a class="btn btn-secondary" href="/admin.html">Moderation</a></div>
+       <p class="mt-4 text-xs text-muted">Check the claimant's student ID in person before clearing a review. Record the outcome, not full ID numbers or ID photos.</p>
+       <div class="mt-6" data-desk></div></div>''',
+     '<script src="/js/safety.js"></script><script src="/js/desk.js"></script>', public_nav=False)
+
+page("help.html", "Claim &amp; collection guide — Lost &amp; Found",
+     "How to verify ownership, arrange collection and report a suspicious claim.",
+     '''<div class="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+       <p class="text-sm text-brand-text">GETTING YOUR ITEM BACK</p>
+       <h1 class="mt-2 text-3xl text-heading">Claim with confidence. Collect safely.</h1>
+       <p class="mt-3 text-body">A little care helps an item reach its rightful owner. Keep identifying details private and confirm a return only after the exchange.</p>
+       <div class="mt-6 flex flex-wrap gap-3"><a class="btn btn-primary" href="/browse.html">Find your item</a><a class="btn btn-secondary" href="/dashboard.html">Manage my claims</a></div>
+       <div class="mt-8 grid gap-5">
+         <section class="card p-6"><h2 class="text-xl text-heading">1. Provide private ownership evidence</h2>
+           <p class="mt-3 text-body">Answer the report's security question and describe a detail only the owner would know. An older photo, a redacted receipt, a partial serial number or a concealed marking can help the finder verify your claim.</p>
+           <p class="mt-3 text-sm text-muted">Evidence is visible only to the people handling your claim and authorized staff. Image uploads support JPEG, PNG, WebP and GIF up to 5 MB. Never share a device password, full student-ID number or ID photo.</p>
+         </section>
+         <section class="card p-6"><h2 class="text-xl text-heading">2. Review the claim and arrange pickup</h2>
+           <p class="mt-3 text-body">The finder compares the private evidence before approving pickup. Approval means the item is reserved for collection, not that it has already been returned. Use the private chat to agree on a safe meeting place.</p>
+           <p class="mt-3 text-sm text-muted">Electronics, jewellery and other items marked as valuable require campus-desk review. Staff check the evidence and the claimant's student ID in person before clearing the review.</p>
+         </section>
+         <section class="card p-6"><h2 class="text-xl text-heading">3. Confirm the actual handover</h2>
+           <p class="mt-3 text-body">After the item changes hands, both the finder and claimant confirm the handover in their claim page. The item is marked returned only when both confirmations are recorded.</p>
+         </section>
+         <section class="card p-6"><h2 class="text-xl text-heading">Something doesn't add up?</h2>
+           <p class="mt-3 text-body">Use “Report suspicious claim” on the claim page and explain your concern. Pickup is paused while staff investigate. Withdrawing a claim does not remove the report or its review history.</p>
+           <p class="mt-3 text-sm text-muted">Do not hand over an item while its review is unresolved. Ownership checks reduce risk, but staff and finders should still carefully compare the evidence.</p>
+         </section>
+       </div>
+     </div>''', '')
+
+# Keep previously shared links working without maintaining a second guide.
+page("prototype.html", "Claim &amp; collection guide — Lost &amp; Found",
+     "How to claim and collect a lost item safely.",
+     '<div class="mx-auto max-w-4xl px-4 py-8"><h1 class="text-3xl text-heading">Claim &amp; collection guide</h1><a class="btn btn-primary mt-6" href="/help.html">Read the guide</a></div>',
+     '<script>location.replace("/help.html");</script>')

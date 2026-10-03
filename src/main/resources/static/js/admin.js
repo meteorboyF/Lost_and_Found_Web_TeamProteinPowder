@@ -1,9 +1,8 @@
 /**
  * admin.js — moderation workspace.
  *
- * The key is held in sessionStorage, not localStorage: it should not outlive
- * the browser session on a shared machine. Every request carries it, and the
- * server checks it on every endpoint — hiding the UI is not the control.
+ * Administrator sessions are preferred. An explicitly configured legacy key
+ * can be held in sessionStorage. The server authorizes every endpoint.
  */
 (function () {
   'use strict';
@@ -82,6 +81,7 @@
           sessionStorage.removeItem(KEY);
         } catch (err) {}
         showGate('');
+        if (LF.auth.isAdmin()) LF.auth.logout();
       });
     }
   }
@@ -101,6 +101,7 @@
       request('/api/admin/users')
     ])
       .then(function (r) {
+        if (!LF.auth.isAdmin() && !key()) return;
         state.overview = r[0];
         state.items = r[1];
         state.comments = r[2];
@@ -449,12 +450,22 @@
     });
 
     /* A key already in this session skips the gate. */
-    if (key()) {
+    if (LF.auth.isAdmin() || key()) {
       request('/api/admin/session', { method: 'POST' }).then(showApp).catch(function () {
         showGate('');
       });
     } else {
       showGate('');
+    }
+  });
+  document.addEventListener('lf:auth-change', function (event) {
+    if (!event.detail.user) {
+      state.items = [];
+      state.comments = [];
+      state.users = [];
+      state.overview = null;
+      document.querySelector('[data-admin-panel]').innerHTML = '';
+      showGate('Sign in with an administrator account.');
     }
   });
 })();

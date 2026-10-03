@@ -480,6 +480,13 @@
   }
 }
 
+/* Private review panels must fit mobile widths even with long account names. */
+@layer components {
+  .claim-workspace, .claim-workspace > *, [data-desk-detail] { min-width: 0; }
+  .claim-workspace, [data-desk] { overflow-wrap: anywhere; }
+  .claim-workspace .btn { white-space: normal; }
+}
+
 
 /* ==========================================================================
    Primary Navigation Header & Responsive Menu

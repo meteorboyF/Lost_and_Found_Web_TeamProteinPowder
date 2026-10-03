@@ -1,9 +1,5 @@
 /**
- * dashboard.js — everything this browser has posted or claimed.
- *
- * Without sign-in there is no server-side "me", so the page resolves the
- * references held in localStorage. That is stated plainly in the UI rather
- * than pretending to be an account.
+ * dashboard.js — the signed-in account's posts and conversations.
  */
 (function () {
   'use strict';
@@ -18,37 +14,15 @@
      ------------------------------------------------------------------ */
 
   function load() {
-    var mine = LF.mine.all();
+    if (!LF.auth.require()) return;
     var host = document.querySelector('[data-dash]');
-
-    if (!mine.items.length && !mine.claims.length) {
-      renderEmpty();
-      return;
-    }
-
     host.innerHTML = LF.skeletonGrid(3);
-
-    /* One request per collection, not one per reference. */
-    var itemReqs = mine.items.map(function (ref) {
-      return LF.api.get('/api/items/' + encodeURIComponent(ref)).catch(function () {
-        return null;   // a deleted post must not break the whole page
-      });
-    });
-
-    var claimReq = mine.claims.length
-      ? LF.api.get('/api/claims?refs=' + encodeURIComponent(mine.claims.join(','))).catch(function () { return []; })
-      : Promise.resolve([]);
-
-    /* Claims other people have opened on this browser's posts. */
-    var incomingReqs = mine.items.map(function (ref) {
-      return LF.api.get('/api/items/' + encodeURIComponent(ref) + '/claims').catch(function () { return []; });
-    });
-
-    Promise.all([Promise.all(itemReqs), claimReq, Promise.all(incomingReqs)])
+    Promise.all([LF.api.get('/api/items/mine'), LF.api.get('/api/claims')])
       .then(function (results) {
-        state.items = results[0].filter(Boolean);
-        state.claims = results[1];
-        state.incoming = results[2].flat();
+        if (!LF.auth.isLoggedIn()) return;
+        state.items = results[0];
+        state.claims = results[1].filter(function (c) { return c.viewerRole === 'CLAIMANT'; });
+        state.incoming = results[1].filter(function (c) { return c.viewerRole === 'POSTER'; });
         render();
       })
       .catch(function (err) {
@@ -62,8 +36,7 @@
     document.querySelector('[data-dash]').innerHTML = LF.emptyState({
       icon: 'i-inbox',
       title: 'Nothing here yet',
-      message: 'Anything you post or claim from this browser shows up here. ' +
-               'Because there are no accounts yet, this list lives on this device.',
+      message: 'Your account’s posts and conversations appear here on every device.',
       actionHref: '/report.html',
       actionLabel: 'Post an item'
     });
@@ -76,6 +49,7 @@
 
   var CLAIM_STATUS = {
     OPEN: 'bg-amber-soft text-amber-text',
+    APPROVED: 'bg-brand-soft text-brand-text',
     ACCEPTED: 'bg-found-soft text-found-text',
     DECLINED: 'bg-lost-soft text-lost-text',
     WITHDRAWN: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
@@ -101,7 +75,7 @@
           '</span>' +
         '</span>' +
         '<span class="pill ' + (CLAIM_STATUS[claim.status] || CLAIM_STATUS.OPEN) + '">' +
-          e(claim.status.charAt(0) + claim.status.slice(1).toLowerCase()) + '</span>' +
+          e(claim.status === 'APPROVED' ? 'Awaiting pickup' : claim.status === 'ACCEPTED' ? 'Returned' : claim.status.charAt(0) + claim.status.slice(1).toLowerCase()) + '</span>' +
       '</a>'
     );
   }
@@ -152,7 +126,7 @@
   }
 
   function paintCounts() {
-    var open = (state.incoming || []).filter(function (c) { return c.status === 'OPEN'; }).length;
+    var open = (state.incoming || []).filter(function (c) { return c.status === 'OPEN' || c.status === 'APPROVED'; }).length;
     var map = {
       posts: state.items.length,
       claims: state.claims.length,
@@ -208,19 +182,17 @@
     var button = document.querySelector('[data-forget]');
     if (!button) return;
     button.addEventListener('click', function () {
-      if (!window.confirm('Forget the posts and claims remembered on this device? The posts themselves stay on the board.')) {
+      if (!window.confirm('Clear local suggestions? Your account posts and conversations remain available.')) {
         return;
       }
       LF.mine.clear();
-      state.items = [];
-      state.claims = [];
-      state.incoming = [];
-      renderEmpty();
-      LF.toast.info('This device no longer remembers your posts and claims.');
+      load();
+      LF.toast.info('Local suggestions were cleared. Your account records are still available.');
     });
   }
 
   document.addEventListener('lf:ready', function () {
+    if (!LF.auth.require()) return;
     initTabs();
     initReset();
 
@@ -229,5 +201,13 @@
     if (greeting && mine.name) greeting.textContent = 'Hello, ' + mine.name;
 
     load();
+  });
+  document.addEventListener('lf:auth-change', function (event) {
+    if (!event.detail.user) {
+      state.items = [];
+      state.claims = [];
+      state.incoming = [];
+      renderEmpty();
+    }
   });
 })();

@@ -13,7 +13,10 @@ services:
     ports:
       - "8080:8080"
     environment:
-      APP_ADMIN_KEY: ${APP_ADMIN_KEY:-campus-admin-2026}
+      APP_ADMIN_KEY: ${APP_ADMIN_KEY:-}
+      APP_DEMO_ENABLED: ${APP_DEMO_ENABLED:-false}
+      APP_BOOTSTRAP_ADMIN_EMAIL: ${APP_BOOTSTRAP_ADMIN_EMAIL:-}
+      APP_BOOTSTRAP_ADMIN_PASSWORD: ${APP_BOOTSTRAP_ADMIN_PASSWORD:-}
       DB_URL: jdbc:mysql://db:3306/lostfound?allowPublicKeyRetrieval=true&useSSL=false
       DB_USERNAME: lostfound
       DB_PASSWORD: ${DB_PASSWORD:-lostfound}

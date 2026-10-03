@@ -9,7 +9,7 @@ public class MessageRequest {
     @Size(max = 2000, message = "Keep the message under 2000 characters")
     private String body;
 
-    /** Which side of the conversation is speaking. */
+    /** Legacy client field, ignored by the server; the session determines the author. */
     private boolean fromPoster;
 
     /** Optional note attached when declining a claim. */

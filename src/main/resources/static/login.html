@@ -107,11 +107,6 @@
           Sign In
         </button>
 
-        <div class="mt-4 rounded-xl bg-sunken/60 p-3.5 text-xs text-muted space-y-1">
-          <p class="font-semibold text-heading">Demo accounts available:</p>
-          <p>• Student: <span class="font-mono text-body">student@campus.edu</span> / <span class="font-mono text-body">student123</span></p>
-          <p>• Admin: <span class="font-mono text-body">admin@campus.edu</span> / <span class="font-mono text-body">admin123</span></p>
-        </div>
       </form>
 
       <!-- Register Form -->
@@ -192,6 +187,11 @@
     }
 
     var redirectUrl = params.get('redirect') || '/';
+    try {
+      var redirect = new URL(redirectUrl, window.location.origin);
+      redirectUrl = redirect.origin === window.location.origin
+        ? redirect.pathname + redirect.search + redirect.hash : '/';
+    } catch (err) { redirectUrl = '/'; }
 
     // Login Form Submit
     var loginForm = document.getElementById('auth-login-form');

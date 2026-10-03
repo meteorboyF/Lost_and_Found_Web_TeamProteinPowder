@@ -72,12 +72,29 @@ public class Item {
     private Double latitude;
     private Double longitude;
 
+    /** Approximate search area reported by the poster, in metres. */
+    private Integer searchRadiusMeters;
+    private Boolean deskReviewRequired;
+    private Boolean handoverFrozen;
+
     /** The day it went missing or was picked up — often not the day it was posted. */
     private LocalDate happenedOn;
 
     /** Path under /uploads, or a bundled placeholder for seeded rows. */
     @Column(length = 300)
     private String photoUrl;
+
+    @Column(length = 300)
+    private String privatePhotoName;
+
+    @Column(length = 300)
+    private String securityQuestion;
+
+    @Column(length = 200)
+    private String securityAnswerHash;
+
+    @Column(length = 64)
+    private String securityAnswerSalt;
 
     @Column(nullable = false, length = 80)
     private String reporterName;
@@ -209,6 +226,14 @@ public class Item {
     public void setLongitude(Double longitude) {
         this.longitude = longitude;
     }
+    public Integer getSearchRadiusMeters() { return searchRadiusMeters; }
+    public void setSearchRadiusMeters(Integer value) { searchRadiusMeters = value; }
+    public boolean isDeskReviewRequired() {
+        return Boolean.TRUE.equals(deskReviewRequired) || category == Category.ELECTRONICS || category == Category.JEWELLERY;
+    }
+    public void setDeskReviewRequired(boolean value) { deskReviewRequired = value; }
+    public boolean isHandoverFrozen() { return Boolean.TRUE.equals(handoverFrozen); }
+    public void setHandoverFrozen(boolean value) { handoverFrozen = value; }
 
     public LocalDate getHappenedOn() {
         return happenedOn;
@@ -265,4 +290,13 @@ public class Item {
     public void setUser(User user) {
         this.user = user;
     }
+
+    public String getPrivatePhotoName() { return privatePhotoName; }
+    public void setPrivatePhotoName(String value) { privatePhotoName = value; }
+    public String getSecurityQuestion() { return securityQuestion; }
+    public void setSecurityQuestion(String value) { securityQuestion = value; }
+    public String getSecurityAnswerHash() { return securityAnswerHash; }
+    public void setSecurityAnswerHash(String value) { securityAnswerHash = value; }
+    public String getSecurityAnswerSalt() { return securityAnswerSalt; }
+    public void setSecurityAnswerSalt(String value) { securityAnswerSalt = value; }
 }

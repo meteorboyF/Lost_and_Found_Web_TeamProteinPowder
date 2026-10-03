@@ -33,7 +33,6 @@ import com.teamproteinpowder.lostfound.service.ItemService;
 import com.teamproteinpowder.lostfound.web.dto.UserResponse;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 
 /**
  * Moderation tools.
@@ -50,28 +49,24 @@ public class AdminController {
     private final UserRepository userRepository;
     private final ItemService itemService;
     private final String adminKey;
+    private final com.teamproteinpowder.lostfound.service.CurrentUser currentUser;
 
     public AdminController(ItemRepository items,
                            CommentRepository comments,
                            UserRepository userRepository,
                            ItemService itemService,
-                           @Value("${app.admin.key}") String adminKey) {
+                           @Value("${app.admin.key}") String adminKey,
+                           com.teamproteinpowder.lostfound.service.CurrentUser currentUser) {
         this.items = items;
         this.comments = comments;
         this.userRepository = userRepository;
         this.itemService = itemService;
         this.adminKey = adminKey;
+        this.currentUser = currentUser;
     }
 
     private void requireKeyOrAdmin(String provided, HttpServletRequest request) {
-        // Check session for ADMIN role
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            String role = (String) session.getAttribute(AuthController.SESSION_USER_ROLE);
-            if ("ADMIN".equalsIgnoreCase(role)) {
-                return;
-            }
-        }
+        if (currentUser.from(request).filter(user -> user.getRole() == com.teamproteinpowder.lostfound.domain.Role.ADMIN).isPresent()) return;
 
         // Otherwise check X-Admin-Key header
         if (adminKey == null || adminKey.isBlank() || !adminKey.equals(provided)) {

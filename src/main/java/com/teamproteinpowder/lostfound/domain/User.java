@@ -56,6 +56,9 @@ public class User {
     @Column(nullable = false)
     private Instant createdAt;
 
+    private Integer securityFailures;
+    private Instant securityWindowStarted;
+
     @PrePersist
     void onCreate() {
         if (createdAt == null) {
@@ -104,4 +107,8 @@ public class User {
 
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+    public int getSecurityFailures() { return securityFailures == null ? 0 : securityFailures; }
+    public void setSecurityFailures(int value) { securityFailures = value; }
+    public Instant getSecurityWindowStarted() { return securityWindowStarted; }
+    public void setSecurityWindowStarted(Instant value) { securityWindowStarted = value; }
 }

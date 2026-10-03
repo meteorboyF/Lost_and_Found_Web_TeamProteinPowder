@@ -22,6 +22,9 @@ public class ClaimRequest {
     @Size(min = 20, max = 2000, message = "Give at least 20 characters of detail")
     private String proof;
 
+    @Size(max = 200)
+    private String securityAnswer;
+
     public String getClaimantName() { return claimantName; }
     public void setClaimantName(String claimantName) { this.claimantName = claimantName; }
 
@@ -30,4 +33,6 @@ public class ClaimRequest {
 
     public String getProof() { return proof; }
     public void setProof(String proof) { this.proof = proof; }
+    public String getSecurityAnswer() { return securityAnswer; }
+    public void setSecurityAnswer(String value) { securityAnswer = value; }
 }

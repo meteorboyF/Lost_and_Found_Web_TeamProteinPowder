@@ -28,9 +28,20 @@ public record ItemResponse(
         LocalDate happenedOn,
         String photoUrl,
         String reporterName,
-        Instant createdAt) {
+        Instant createdAt,
+        String securityQuestion,
+        boolean securityQuestionConfigured,
+        boolean hasPrivatePhoto,
+        boolean viewerIsOwner,
+        Integer searchRadiusMeters,
+        boolean deskReviewRequired,
+        boolean handoverFrozen) {
 
     public static ItemResponse from(Item item) {
+        return from(item, false);
+    }
+
+    public static ItemResponse from(Item item, boolean viewerIsOwner) {
         return new ItemResponse(
                 item.getId(),
                 item.getReference(),
@@ -47,6 +58,12 @@ public record ItemResponse(
                 item.getHappenedOn(),
                 item.getPhotoUrl(),
                 item.getReporterName(),
-                item.getCreatedAt());
+                item.getCreatedAt(),
+                item.getSecurityQuestion() == null
+                    ? com.teamproteinpowder.lostfound.service.QuestionService.generate(item.getCategory())
+                    : item.getSecurityQuestion(),
+                item.getSecurityAnswerHash() != null,
+                item.getPrivatePhotoName() != null,
+                viewerIsOwner, item.getSearchRadiusMeters(), item.isDeskReviewRequired(), item.isHandoverFrozen());
     }
 }

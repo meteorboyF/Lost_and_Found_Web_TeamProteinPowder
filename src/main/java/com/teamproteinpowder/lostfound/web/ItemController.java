@@ -43,13 +43,15 @@ public class ItemController {
     private final StorageService storage;
     private final MatchService matches;
     private final CurrentUser currentUser;
+    private final com.teamproteinpowder.lostfound.service.AccessService access;
 
     public ItemController(ItemService items, StorageService storage, MatchService matches,
-                          CurrentUser currentUser) {
+                          CurrentUser currentUser, com.teamproteinpowder.lostfound.service.AccessService access) {
         this.items = items;
         this.storage = storage;
         this.matches = matches;
         this.currentUser = currentUser;
+        this.access = access;
     }
 
     /** Browse and search. Every filter is optional. */
@@ -73,8 +75,26 @@ public class ItemController {
     }
 
     @GetMapping("/{reference}")
-    public ItemResponse one(@PathVariable String reference) {
-        return ItemResponse.from(items.getByReference(reference));
+    public ItemResponse one(@PathVariable String reference, HttpServletRequest http) {
+        Item item = items.getByReference(reference);
+        return ItemResponse.from(item, access.owns(item, currentUser.from(http).orElse(null)));
+    }
+
+    @GetMapping("/mine")
+    public List<ItemResponse> mine(HttpServletRequest http) {
+        return items.mine(currentUser.require(http)).stream().map(i -> ItemResponse.from(i, true)).toList();
+    }
+
+    @GetMapping("/questions")
+    public Map<String, String> question(@RequestParam Category category) {
+        return Map.of("question", com.teamproteinpowder.lostfound.service.QuestionService.generate(category));
+    }
+
+    @org.springframework.web.bind.annotation.PutMapping("/{reference}/location")
+    public ItemResponse updateLocation(@PathVariable String reference,
+            @Valid @org.springframework.web.bind.annotation.RequestBody com.teamproteinpowder.lostfound.web.dto.LocationRequest request,
+            HttpServletRequest http) {
+        return ItemResponse.from(items.updateLocation(reference, request, currentUser.require(http)), true);
     }
 
     /**
@@ -86,16 +106,25 @@ public class ItemController {
     public ResponseEntity<ItemResponse> create(
             @RequestPart("item") @Valid @Validated ItemRequest request,
             @RequestPart(value = "photo", required = false) MultipartFile photo,
+            @RequestPart(value = "privatePhoto", required = false) MultipartFile privatePhoto,
             HttpServletRequest httpRequest) {
-
-        request.setPhotoUrl(storage.store(photo));
-        Item saved = items.create(request);
-        /* Link the post to its author when one is signed in; a guest post
-           simply keeps its email and stays unlinked. */
-        currentUser.from(httpRequest).ifPresent(user -> items.attachOwner(saved, user));
+        var user = currentUser.require(httpRequest);
+        String publicUrl = null;
+        String privateName = null;
+        Item saved;
+        try {
+            publicUrl = storage.store(photo);
+            privateName = storage.storePrivate(privatePhoto);
+            request.setPhotoUrl(publicUrl);
+            request.setPrivatePhotoName(privateName);
+            saved = items.create(request, user);
+        } catch (RuntimeException ex) {
+            storage.deleteStored(publicUrl, privateName);
+            throw ex;
+        }
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(ItemResponse.from(saved));
+                .body(ItemResponse.from(saved, true));
     }
 
     /** Likely matches on the opposite side of the board. */

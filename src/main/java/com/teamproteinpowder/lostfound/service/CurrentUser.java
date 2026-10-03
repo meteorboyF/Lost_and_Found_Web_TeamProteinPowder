@@ -14,9 +14,7 @@ import jakarta.servlet.http.HttpSession;
 /**
  * Resolves the signed-in account from the session, if there is one.
  *
- * Content can be posted by a guest, so every caller treats the result as
- * optional: an absent user means the row keeps only its email, which is
- * exactly how everything worked before accounts existed.
+ * Browsing remains public; posts, claims and chat require an approved account.
  */
 @Component
 public class CurrentUser {
@@ -39,6 +37,11 @@ public class CurrentUser {
         if (!(id instanceof Long userId)) {
             return Optional.empty();
         }
-        return users.findById(userId);
+        return users.findById(userId).filter(User::isApproved);
+    }
+
+    public User require(HttpServletRequest request) {
+        return from(request).orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.UNAUTHORIZED, "Sign in with an approved account to continue"));
     }
 }

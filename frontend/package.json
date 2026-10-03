@@ -4,11 +4,15 @@
   "description": "Tailwind build for the Lost & Found registry frontend",
   "scripts": {
     "build": "tailwindcss -i ./src/input.css -o ../src/main/resources/static/css/app.css --minify",
-    "watch": "tailwindcss -i ./src/input.css -o ../src/main/resources/static/css/app.css --watch"
+    "watch": "tailwindcss -i ./src/input.css -o ../src/main/resources/static/css/app.css --watch",
+    "test:fraud": "node tests/fraud-flow.cjs",
+    "test:content": "node tests/content.cjs"
   },
   "license": "ISC",
   "devDependencies": {
     "@tailwindcss/cli": "^4.3.3",
+    "leaflet": "1.9.4",
+    "playwright": "1.63.0",
     "tailwindcss": "^4.3.3"
   },
   "private": true

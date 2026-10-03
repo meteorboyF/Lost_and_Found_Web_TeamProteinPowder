@@ -18,11 +18,14 @@ import com.teamproteinpowder.lostfound.domain.Comment;
 import com.teamproteinpowder.lostfound.domain.Item;
 import com.teamproteinpowder.lostfound.repo.CommentRepository;
 import com.teamproteinpowder.lostfound.service.ItemService;
+import com.teamproteinpowder.lostfound.service.CurrentUser;
+import com.teamproteinpowder.lostfound.service.AccessService;
+import com.teamproteinpowder.lostfound.domain.User;
+import com.teamproteinpowder.lostfound.domain.Role;
 import com.teamproteinpowder.lostfound.web.dto.CommentRequest;
 import com.teamproteinpowder.lostfound.web.dto.CommentResponse;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
 /**
@@ -37,13 +40,17 @@ public class CommentController {
     private final CommentRepository comments;
     private final ItemService items;
     private final String adminKey;
+    private final CurrentUser currentUser;
+    private final AccessService access;
 
     public CommentController(CommentRepository comments,
                              ItemService items,
-                             @Value("${app.admin.key}") String adminKey) {
+                             @Value("${app.admin.key}") String adminKey, CurrentUser currentUser, AccessService access) {
         this.comments = comments;
         this.items = items;
         this.adminKey = adminKey;
+        this.currentUser = currentUser;
+        this.access = access;
     }
 
     @GetMapping
@@ -53,14 +60,10 @@ public class CommentController {
                                       HttpServletRequest httpRequest) {
         Item item = items.getByReference(reference);
 
-        HttpSession session = httpRequest.getSession(false);
-        String currentUserEmail = session != null ? (String) session.getAttribute(AuthController.SESSION_USER_EMAIL) : null;
-        String currentUserRole = session != null ? (String) session.getAttribute(AuthController.SESSION_USER_ROLE) : null;
-
-        boolean isAdmin = ("ADMIN".equalsIgnoreCase(currentUserRole))
+        User user = currentUser.from(httpRequest).orElse(null);
+        boolean isAdmin = (user != null && user.getRole() == Role.ADMIN)
                 || (adminKey != null && !adminKey.isBlank() && adminKey.equals(xAdminKey));
-
-        boolean isPostOwner = currentUserEmail != null && currentUserEmail.equalsIgnoreCase(item.getReporterEmail());
+        boolean isPostOwner = access.owns(item, user);
 
         return comments.findVisibleForItem(item).stream()
                 .filter(c -> {
@@ -70,8 +73,7 @@ public class CommentController {
                     if (isAdmin || isPostOwner) {
                         return true;
                     }
-                    if (currentUserEmail != null && c.getAuthorEmail() != null
-                            && currentUserEmail.equalsIgnoreCase(c.getAuthorEmail())) {
+                    if (user != null && c.getUser() != null && user.getId().equals(c.getUser().getId())) {
                         return true;
                     }
                     return false;
@@ -86,23 +88,27 @@ public class CommentController {
                                                @Valid @RequestBody CommentRequest request,
                                                HttpServletRequest httpRequest) {
         Item item = items.getByReference(reference);
-
-        HttpSession session = httpRequest.getSession(false);
-        String sessionEmail = session != null ? (String) session.getAttribute(AuthController.SESSION_USER_EMAIL) : null;
-        String sessionName = session != null ? (String) session.getAttribute(AuthController.SESSION_USER_NAME) : null;
+        if (request.isPrivateMessage()) {
+            throw new org.springframework.web.server.ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Open a verified claim to send private messages");
+        }
+        User user = currentUser.from(httpRequest).orElse(null);
+        String sessionEmail = user == null ? null : user.getEmail();
+        String sessionName = user == null ? null : user.getUsername();
 
         String authorName = request.getAuthorName();
-        if ((authorName == null || authorName.isBlank()) && sessionName != null) {
+        if (sessionName != null) {
             authorName = sessionName;
         }
 
         String authorEmail = request.getAuthorEmail();
-        if ((authorEmail == null || authorEmail.isBlank()) && sessionEmail != null) {
+        if (sessionEmail != null) {
             authorEmail = sessionEmail;
         }
 
         Comment comment = new Comment();
         comment.setItem(item);
+        comment.setUser(user);
         comment.setAuthorName(authorName != null ? authorName.trim() : "Anonymous");
         comment.setAuthorEmail(authorEmail == null ? null : authorEmail.trim().toLowerCase());
         comment.setBody(request.getBody().trim());

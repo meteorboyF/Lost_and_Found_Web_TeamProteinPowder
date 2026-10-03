@@ -19,6 +19,11 @@ import com.teamproteinpowder.lostfound.domain.Item;
  * time. Fetching explicitly also avoids an N+1 on the list endpoints.
  */
 public interface ClaimRepository extends JpaRepository<Claim, Long> {
+    @Query("SELECT c FROM Claim c JOIN FETCH c.item ORDER BY c.updatedAt DESC")
+    List<Claim> findForDesk();
+
+    @Query("SELECT c FROM Claim c JOIN FETCH c.item i WHERE c.user.id = :userId OR i.user.id = :userId ORDER BY c.updatedAt DESC")
+    List<Claim> findForUser(@Param("userId") Long userId);
 
     boolean existsByReference(String reference);
 

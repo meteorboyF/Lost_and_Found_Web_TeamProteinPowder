@@ -46,20 +46,30 @@ public class SeedLoader implements ApplicationRunner {
     private final UserRepository userRepository;
     private final PasswordService passwordService;
     private final ObjectMapper mapper;
+    private final boolean demoEnabled;
+    private final String bootstrapEmail;
+    private final String bootstrapPassword;
 
     public SeedLoader(ItemRepository repository,
                       UserRepository userRepository,
                       PasswordService passwordService,
-                      ObjectMapper mapper) {
+                      ObjectMapper mapper,
+                      @org.springframework.beans.factory.annotation.Value("${app.demo.enabled:false}") boolean demoEnabled,
+                      @org.springframework.beans.factory.annotation.Value("${app.bootstrap.admin-email:}") String bootstrapEmail,
+                      @org.springframework.beans.factory.annotation.Value("${app.bootstrap.admin-password:}") String bootstrapPassword) {
         this.repository = repository;
         this.userRepository = userRepository;
         this.passwordService = passwordService;
         this.mapper = mapper;
+        this.demoEnabled = demoEnabled;
+        this.bootstrapEmail = bootstrapEmail;
+        this.bootstrapPassword = bootstrapPassword;
     }
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        seedUsers();
+        if (demoEnabled) seedUsers();
+        else bootstrapAdmin();
 
         if (repository.count() > 0) {
             log.info("Database already has {} items — skipping seed", repository.count());
@@ -191,10 +201,7 @@ public class SeedLoader implements ApplicationRunner {
     private void seedUsers() {
         // Ensure Admin user
         userRepository.findByEmailIgnoreCase("admin@campus.edu").ifPresentOrElse(admin -> {
-            admin.setApprovalStatus(ApprovalStatus.APPROVED);
-            admin.setRole(Role.ADMIN);
-            if (admin.getStudentId() == null) admin.setStudentId("ADMIN-001");
-            userRepository.save(admin);
+            // Existing accounts and approval decisions are never rewritten on restart.
         }, () -> {
             String adminSalt = passwordService.generateSalt();
             User admin = new User();
@@ -211,9 +218,7 @@ public class SeedLoader implements ApplicationRunner {
 
         // Ensure Approved Student user
         userRepository.findByEmailIgnoreCase("student@campus.edu").ifPresentOrElse(student -> {
-            student.setApprovalStatus(ApprovalStatus.APPROVED);
-            if (student.getStudentId() == null) student.setStudentId("STU-2026-001");
-            userRepository.save(student);
+            // Preserve administrator decisions on existing accounts.
         }, () -> {
             String studentSalt = passwordService.generateSalt();
             User student = new User();
@@ -244,5 +249,23 @@ public class SeedLoader implements ApplicationRunner {
         }
 
         log.info("Seeded initial users with student credentials and verification statuses");
+    }
+
+    private void bootstrapAdmin() {
+        if (bootstrapEmail.isBlank() || bootstrapPassword.isBlank()) return;
+        if (bootstrapPassword.length() < 12) throw new IllegalStateException("Bootstrap admin password must be at least 12 characters");
+        String email = bootstrapEmail.trim().toLowerCase(Locale.ROOT);
+        if (userRepository.findByEmailIgnoreCase(email).isPresent()) return;
+        User admin = new User();
+        admin.setUsername("registry-admin");
+        admin.setEmail(email);
+        admin.setStudentEmail(email);
+        admin.setStudentId("BOOTSTRAP-ADMIN");
+        admin.setRole(Role.ADMIN);
+        admin.setApprovalStatus(ApprovalStatus.APPROVED);
+        admin.setSalt(passwordService.generateSalt());
+        admin.setPasswordHash(passwordService.hashPassword(bootstrapPassword, admin.getSalt()));
+        userRepository.save(admin);
+        log.info("Created configured registry administrator");
     }
 }

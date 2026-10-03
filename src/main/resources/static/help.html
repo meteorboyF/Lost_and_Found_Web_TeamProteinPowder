@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claim &amp; collection guide — Lost &amp; Found</title>
+<meta name="description" content="How to verify ownership, arrange collection and report a suspicious claim.">
+
+<!-- Applied before first paint so a dark-theme visitor never sees a light flash. -->
+<script>
+  (function () {
+    try {
+      var t = localStorage.getItem('lf.theme');
+      if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    } catch (e) {}
+  })();
+</script>
+
+<link rel="preload" href="/assets/fonts/inter-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/inter-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/css/app.css">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+</head>
+
+<body class="min-h-screen flex flex-col bg-page">
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="sticky top-0 z-40 border-b border-line bg-page/80 backdrop-blur-xl">
+  <div class="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6 lg:px-8">
+
+    <a href="/" class="flex items-center gap-2.5 font-bold tracking-tight text-heading">
+      <span class="grid h-9 w-9 place-items-center rounded-xl bg-brand text-white shadow-[var(--shadow-brand)]">
+        <svg class="icon h-5 w-5" aria-hidden="true"><use href="/assets/icons.svg#i-pin"></use></svg>
+      </span>
+      <span class="text-[1.0625rem]">Lost &amp; Found</span>
+    </a>
+
+    <nav id="primary-nav" aria-label="Primary" data-open="false">
+      <a href="/browse.html">Browse</a>
+      <a href="/report.html">Post an item</a>
+      <a href="/dashboard.html">My items</a>
+      <a href="/map.html">Campus map</a>
+      <a href="/gallery.html">Reunions</a>
+    </nav>
+
+    <div class="ml-auto flex items-center gap-2">
+      <div data-auth-nav class="flex items-center"></div>
+
+      <span class="relative" data-alerts>
+        <button type="button" data-alerts-toggle aria-expanded="false" aria-haspopup="true"
+                aria-controls="alerts-panel" aria-label="Notifications" hidden
+                class="grid h-9 w-9 place-items-center rounded-lg text-muted transition hover:bg-sunken hover:text-heading">
+          <svg class="icon h-[1.15rem] w-[1.15rem]" aria-hidden="true"><use href="/assets/icons.svg#i-bell"></use></svg>
+          <span class="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-lost px-1 text-[0.625rem] font-bold text-white dark:text-[#11121a]"
+                data-alerts-badge hidden>0</span>
+        </button>
+        <span id="alerts-panel" data-alerts-panel hidden
+              class="absolute right-0 top-full z-50 mt-2 block w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-line bg-surface shadow-[var(--shadow-pop)]"></span>
+      </span>
+
+      <button type="button" data-theme-toggle
+              class="grid h-9 w-9 place-items-center rounded-lg text-muted transition hover:bg-sunken hover:text-heading"
+              aria-label="Switch to dark theme" aria-pressed="false">
+        <svg class="icon h-[1.15rem] w-[1.15rem]" aria-hidden="true" data-theme-icon="light"><use href="/assets/icons.svg#i-sun"></use></svg>
+        <svg class="icon h-[1.15rem] w-[1.15rem]" aria-hidden="true" data-theme-icon="dark" hidden><use href="/assets/icons.svg#i-moon"></use></svg>
+      </button>
+
+      <button type="button" data-nav-toggle aria-controls="primary-nav" aria-expanded="false"
+              aria-label="Open navigation"
+              class="grid h-9 w-9 place-items-center rounded-lg text-muted transition hover:bg-sunken hover:text-heading">
+        <svg class="icon h-[1.15rem] w-[1.15rem]" aria-hidden="true"><use href="/assets/icons.svg#i-menu"></use></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="flex-1">
+<div class="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+       <p class="text-sm text-brand-text">GETTING YOUR ITEM BACK</p>
+       <h1 class="mt-2 text-3xl text-heading">Claim with confidence. Collect safely.</h1>
+       <p class="mt-3 text-body">A little care helps an item reach its rightful owner. Keep identifying details private and confirm a return only after the exchange.</p>
+       <div class="mt-6 flex flex-wrap gap-3"><a class="btn btn-primary" href="/browse.html">Find your item</a><a class="btn btn-secondary" href="/dashboard.html">Manage my claims</a></div>
+       <div class="mt-8 grid gap-5">
+         <section class="card p-6"><h2 class="text-xl text-heading">1. Provide private ownership evidence</h2>
+           <p class="mt-3 text-body">Answer the report's security question and describe a detail only the owner would know. An older photo, a redacted receipt, a partial serial number or a concealed marking can help the finder verify your claim.</p>
+           <p class="mt-3 text-sm text-muted">Evidence is visible only to the people handling your claim and authorized staff. Image uploads support JPEG, PNG, WebP and GIF up to 5 MB. Never share a device password, full student-ID number or ID photo.</p>
+         </section>
+         <section class="card p-6"><h2 class="text-xl text-heading">2. Review the claim and arrange pickup</h2>
+           <p class="mt-3 text-body">The finder compares the private evidence before approving pickup. Approval means the item is reserved for collection, not that it has already been returned. Use the private chat to agree on a safe meeting place.</p>
+           <p class="mt-3 text-sm text-muted">Electronics, jewellery and other items marked as valuable require campus-desk review. Staff check the evidence and the claimant's student ID in person before clearing the review.</p>
+         </section>
+         <section class="card p-6"><h2 class="text-xl text-heading">3. Confirm the actual handover</h2>
+           <p class="mt-3 text-body">After the item changes hands, both the finder and claimant confirm the handover in their claim page. The item is marked returned only when both confirmations are recorded.</p>
+         </section>
+         <section class="card p-6"><h2 class="text-xl text-heading">Something doesn't add up?</h2>
+           <p class="mt-3 text-body">Use “Report suspicious claim” on the claim page and explain your concern. Pickup is paused while staff investigate. Withdrawing a claim does not remove the report or its review history.</p>
+           <p class="mt-3 text-sm text-muted">Do not hand over an item while its review is unresolved. Ownership checks reduce risk, but staff and finders should still carefully compare the evidence.</p>
+         </section>
+       </div>
+     </div></main>
+
+<footer class="mt-20 border-t border-line bg-surface">
+  <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+    <div class="flex flex-wrap items-center justify-between gap-6">
+      <div class="flex items-center gap-2.5">
+        <span class="grid h-8 w-8 place-items-center rounded-lg bg-brand text-white">
+          <svg class="icon h-4 w-4" aria-hidden="true"><use href="/assets/icons.svg#i-pin"></use></svg>
+        </span>
+        <div>
+          <p class="text-sm font-semibold text-heading">Lost &amp; Found</p>
+          <p class="text-xs text-muted">Team Protein Powder</p>
+        </div>
+      </div>
+      <nav class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted" aria-label="Footer">
+        <a href="/browse.html" class="inline-block py-1 transition hover:text-heading">Browse</a>
+        <a href="/report.html" class="inline-block py-1 transition hover:text-heading">Post an item</a>
+        <a href="/dashboard.html" class="inline-block py-1 transition hover:text-heading">My items</a>
+        <a href="/map.html" class="inline-block py-1 transition hover:text-heading">Campus map</a>
+        <a href="/gallery.html" class="inline-block py-1 transition hover:text-heading">Reunions</a>
+        <a href="/help.html" class="inline-block py-1 transition hover:text-heading">Claim &amp; collection guide</a>
+      </nav>
+      <p class="text-xs text-faint">Items are held for 90 days before archiving.</p>
+    </div>
+  </div>
+</footer>
+
+<div class="pointer-events-none fixed bottom-4 right-4 z-50 flex w-[min(24rem,calc(100vw-2rem))] flex-col-reverse gap-2"
+     data-toast-region role="status" aria-live="polite"></div>
+
+<script src="/js/app.js"></script>
+<script src="/js/ui.js"></script>
+<script src="/js/alerts.js"></script>
+
+</body>
+</html>
