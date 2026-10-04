@@ -50,7 +50,11 @@
 
   function syncControls() {
     paintFilterCount();
-    if (searchInput) searchInput.value = state.q;
+    /* Only rewrite the box when it holds a different search (Back/Forward,
+       Clear all). Rewriting it on every debounced search replaced the box
+       with the trimmed text mid-typing, eating the space before the next
+       word: "iphone duo" became "iphoneduo". */
+    if (searchInput && searchInput.value.trim() !== state.q) searchInput.value = state.q;
     if (sortSelect) sortSelect.value = state.sort;
 
     form.querySelectorAll('[data-kind]').forEach(function (btn) {
