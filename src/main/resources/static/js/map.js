@@ -97,6 +97,26 @@
       button.addEventListener('click', function () { select(button.dataset.mapReport, true); });
     });
   }
+  /* With no pinned reports the map is just streets, which reads as broken.
+     Say why, and how to add one. */
+  function paintEmptyHint(show) {
+    var host = document.querySelector('[data-map]');
+    var hint = host && host.parentElement.querySelector('[data-map-empty]');
+    if (!host) return;
+    if (!show) { if (hint) hint.remove(); return; }
+    if (hint) return;
+    hint = document.createElement('div');
+    hint.setAttribute('data-map-empty', '');
+    hint.setAttribute('role', 'status');
+    hint.style.cssText = 'position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:500;max-width:20rem;' +
+      'padding:1rem 1.25rem;border-radius:1rem;text-align:center;background:var(--color-surface,#fff);' +
+      'color:var(--color-body,#334155);box-shadow:0 10px 30px rgba(0,0,0,.25);font-size:.875rem;line-height:1.4';
+    hint.innerHTML = '<strong style="display:block;margin-bottom:.25rem">No pinned reports to show</strong>' +
+      'None of the reports matching these filters has a map pin yet. Drop a pin when you ' +
+      '<a href="/report.html" class="text-brand">post an item</a>, or add one to your own post from its page.';
+    if (getComputedStyle(host.parentElement).position === 'static') host.parentElement.style.position = 'relative';
+    host.parentElement.appendChild(hint);
+  }
   function paint() {
     var items = visible(), selected = items.find(function (item) { return item.reference === state.selected; });
     if (!selected && state.selected) { state.selected = null; setReference(null); }
@@ -114,6 +134,7 @@
     document.querySelector('[data-map-lost]').textContent = active.filter(function (item) { return item.kind === 'LOST'; }).length;
     document.querySelector('[data-map-found]').textContent = active.filter(function (item) { return item.kind === 'FOUND'; }).length;
     document.querySelector('[data-map-pinned]').textContent = active.filter(geo.hasPin).length;
+    paintEmptyHint(state.loaded && items.filter(geo.hasPin).length === 0);
     paintSelection(selected); paintList(); updateStatus();
   }
   function load() {
@@ -128,7 +149,7 @@
       });
     }
     page(0).then(function (items) {
-      state.items = items;
+      state.items = items; state.loaded = true;
       var selected = items.find(function (item) { return item.reference === state.selected; });
       if (selected && selected.status === 'RESOLVED') {
         state.resolved = true; document.querySelector('[data-map-resolved]').checked = true;

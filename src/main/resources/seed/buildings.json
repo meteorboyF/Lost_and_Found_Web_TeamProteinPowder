@@ -1,1 +1,12 @@
-{"buildings":[{"id":"library","name":"Central Library"},{"id":"science","name":"Science Complex"},{"id":"arts","name":"Arts Building"},{"id":"engineering","name":"Engineering Hall"},{"id":"sports","name":"Sports Centre"},{"id":"cafeteria","name":"Student Commons"},{"id":"admin","name":"Administration"},{"id":"business","name":"Business School"},{"id":"east-gate","name":"East Gate"}]}
+{"_note":"Demo positions on the UIU campus for the sample items only. Real reports are never given invented pins.",
+ "buildings":[
+  {"id":"library","name":"Central Library","lat":23.798000,"lng":90.449600},
+  {"id":"science","name":"Science Complex","lat":23.797700,"lng":90.449950},
+  {"id":"arts","name":"Arts Building","lat":23.798150,"lng":90.449900},
+  {"id":"engineering","name":"Engineering Hall","lat":23.797550,"lng":90.449500},
+  {"id":"sports","name":"Sports Centre","lat":23.797350,"lng":90.450100},
+  {"id":"cafeteria","name":"Student Commons","lat":23.797900,"lng":90.449350},
+  {"id":"admin","name":"Administration","lat":23.798250,"lng":90.449550},
+  {"id":"business","name":"Business School","lat":23.798000,"lng":90.450200},
+  {"id":"east-gate","name":"East Gate","lat":23.797800,"lng":90.450500}
+ ]}

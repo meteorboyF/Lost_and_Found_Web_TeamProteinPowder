@@ -74,6 +74,7 @@ public class SeedLoader implements ApplicationRunner {
 
         if (repository.count() > 0) {
             log.info("Database already has {} items — skipping seed", repository.count());
+            backfillSamplePins();
             return;
         }
 
@@ -110,6 +111,7 @@ public class SeedLoader implements ApplicationRunner {
         item.setDescription(text(node, "description", ""));
         item.setColour(text(node, "colour", null));
         item.setLocation(buildLocation(node));
+        pinToBuilding(item, node, buildings());
         /* Seed rows deliberately carry no photograph. A missing photo renders
            as a tinted panel with the category glyph, which reads as a designed
            placeholder; the prototype's faint line-art SVGs read as a broken
@@ -163,6 +165,63 @@ public class SeedLoader implements ApplicationRunner {
             return Category.JEWELLERY;
         }
         return Category.OTHER;
+    }
+
+    /** Building id → demo [lat, lng] on the UIU campus, from seed/buildings.json. */
+    private java.util.Map<String, double[]> buildings() {
+        java.util.Map<String, double[]> positions = new java.util.HashMap<>();
+        ClassPathResource resource = new ClassPathResource("seed/buildings.json");
+        if (!resource.exists()) return positions;
+        try (InputStream in = resource.getInputStream()) {
+            for (JsonNode b : mapper.readTree(in).path("buildings")) {
+                if (b.has("lat") && b.has("lng")) {
+                    positions.put(b.path("id").asString(), new double[] {b.path("lat").asDouble(), b.path("lng").asDouble()});
+                }
+            }
+        } catch (Exception ex) {
+            log.warn("Could not read seed/buildings.json; sample items will have no map pins", ex);
+        }
+        return positions;
+    }
+
+    /**
+     * Sample items name a campus building but carried no coordinates, so the
+     * campus map had nothing to show. Pin them to their building's demo
+     * position. Only seed fixtures get this: real reports are never given an
+     * invented pin.
+     */
+    private static void pinToBuilding(Item item, JsonNode node, java.util.Map<String, double[]> buildings) {
+        double[] at = buildings.get(text(node, "buildingId", ""));
+        if (at == null) return;
+        item.setLatitude(at[0]);
+        item.setLongitude(at[1]);
+        item.setSearchRadiusMeters(25);
+    }
+
+    /** Databases seeded before buildings had coordinates: pin the untouched sample items. */
+    private void backfillSamplePins() {
+        ClassPathResource resource = new ClassPathResource("seed/items.json");
+        java.util.Map<String, double[]> buildings = buildings();
+        if (!resource.exists() || buildings.isEmpty()) return;
+        try (InputStream in = resource.getInputStream()) {
+            JsonNode root = mapper.readTree(in);
+            int pinned = 0;
+            for (JsonNode node : root.has("items") ? root.get("items") : root) {
+                var existing = repository.findByReference(text(node, "id", ""));
+                // Only untouched sample rows: still filed by the registry desk, still unpinned.
+                if (existing.isEmpty() || existing.get().getLatitude() != null
+                        || !"Registry desk".equals(existing.get().getReporterName())) continue;
+                Item item = existing.get();
+                pinToBuilding(item, node, buildings);
+                if (item.getLatitude() != null) {
+                    repository.save(item);
+                    pinned++;
+                }
+            }
+            if (pinned > 0) log.info("Added demo map pins to {} sample items", pinned);
+        } catch (Exception ex) {
+            log.warn("Could not add demo map pins to sample items", ex);
+        }
     }
 
     private static String buildLocation(JsonNode node) {
